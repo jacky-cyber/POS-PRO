@@ -1,0 +1,183 @@
+@import "~antd/lib/style/themes/default.less";
+/* .rightContent { */
+/*     padding-left: 440px; */
+/* } */
+/* .commodityListWrapper { */
+/*     padding: 10px; */
+/*     [> margin: 0 auto; <] */
+/*     [> margin-left: 440px; <] */
+/* } */
+/*  */
+/*  */
+/* .sider { */
+/*     background-color: #fff; */
+/*     height: 100vh; */
+/*     border-right: 3px solid #393939; */
+/*     [> box-shadow: 2px 0 6px rgba(0, 21, 41, .35); <] */
+/*     position: fixed; */
+/*     top: 0; */
+/*     padding-top: 48px; */
+/*     z-index: 10; */
+/*     :global(.ant-layout-sider-children) { */
+/*         display: flex; */
+/*         flex-direction: column; */
+/*     } */
+/* } */
+
+.leftContent {
+    height: calc(100vh - 235px - 48px) !important;
+    overflow: auto;
+}
+.calculator {
+    height: 235px;
+}
+.rightContent {
+    padding-left: 440px;
+}
+.commodityListWrapper {
+    padding: 10px;
+    width: 100%;
+    min-height: 550px;
+    /* margin: 0 auto;  */
+    /* margin-left: 440px; */
+    .commodityItem {
+        margin: 8px;
+        display: inline-block;
+        position: relative;
+        font-size: 11px;
+        height: auto;
+        text-align: left;
+        overflow: hidden;
+        cursor: pointer;
+        .imgWrapper {
+            width: 120px;
+            text-align: center;
+        }
+        .commodityName {
+            width: 120px;
+            text-overflow: ellipsis;
+            overflow-x: hidden;
+            white-space: nowrap;
+        }
+        &:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, .8);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        &[dataClicked="true"]::after {
+            animation: ripple 1s ease-out;
+            transform: scale(40, 40);
+            opacity: 1;
+        }
+    }
+}
+
+.priceTag {
+    position: absolute;
+    vertical-align: top;
+    right: 2px;
+    top: 2px;
+    line-height: 13px;
+    background-color: #7f82ac;
+    border-radius: 2px;
+    padding: 2px 5px;
+    color: #fff;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 1;
+    }
+    30% {
+        transform: scale(70, 70);
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(150, 150);
+    }
+}
+.sider {
+    background-color: #fff;
+    height: 100vh;
+    border-right: 3px solid #393939;
+    /* box-shadow: 2px 0 6px rgba(0, 21, 41, .35); */
+    position: fixed;
+    top: 0;
+    padding-top: 48px;
+    z-index: 10;
+    :global(.ant-layout-sider-children) {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.header {
+    padding: 0 12px 0 0;
+    background: #fff;
+    /* box-shadow: 0 1px 4px rgba(0, 21, 41, .08); */
+    border-bottom: 1px solid #BFBFBF;
+    position: relative;
+    height: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.tabHeader {
+    padding: 0 12px 0 0;
+    /* background: #fff; */
+    box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+    position: relative;
+    height: 36px;
+}
+.trigger {
+    font-size: 20px;
+    height: 100%;
+    line-height: 48px;
+    cursor: pointer;
+    transition: all .3s;
+    padding: 0 12px;
+    &:hover {
+        background: @primary-1;
+    }
+}
+.activeTrigger {
+    background: @primary-1;
+}
+
+    .right {
+        // float: right;
+        height: 100%;
+        .action {
+            cursor: pointer;
+            padding: 0 12px;
+            display: inline-block;
+            transition: all .3s;
+            height: 100%;
+            line-height: 48px;
+            > i {
+                font-size: 16px;
+                vertical-align: middle;
+            }
+            &:global(.ant-popover-open),
+            &:hover {
+                background: @primary-1;
+            }
+        }
+        .search {
+            padding: 0;
+            margin: 0 12px;
+            &:hover {
+                background: transparent;
+            }
+        }
+    }

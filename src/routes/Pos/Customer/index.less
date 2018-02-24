@@ -1,0 +1,67 @@
+.customerWrapper {
+    max-width: 1024px;
+    margin: 0 auto;
+    border-left: dashed 1px rgb(215, 215, 215);
+    border-right: dashed 1px rgb(215, 215, 215);
+}
+
+.header {
+    padding: 5px 10px;
+    border-bottom: dashed 1px rgb(215, 215, 215);
+}
+
+.addCustomer {
+    font-weight: bolder;
+}
+
+.displayArea {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.addCustomerForm {
+     :global(.ant-form-item) {
+        margin-bottom: 5px !important;
+    }
+    .nameRow {
+        margin-bottom: 5px !important;
+        * {
+            font-size: 26px;
+        }
+    }
+}
+
+.customerMessageWrapper {
+     :global(.ant-form-item) {
+        margin-bottom: 0 !important;
+    }
+     :global(.ant-form-item *) {
+        font-size: 16px;
+    }
+     :global(.ant-form-item-label) {
+        font-weight: bolder;
+    }
+}
+
+.submitFormItem {
+    text-align: right;
+     :global(button) {
+        font-size: 20px;
+        border: none;
+    }
+}
+
+.activeRow {
+    background-color: teal;
+}
+
+.customerTable {
+     :global(.ant-table-row) {
+        &:hover {
+            td {
+                background-color: transparent;
+                cursor: pointer;
+            }
+        }
+    }
+}
