@@ -3,11 +3,35 @@ import { isUrl } from '../utils/utils';
 const menuData = [{
   name: 'POS系统',
   icon: 'shopping-cart',
-  path: '/pos',
+  path: 'pos',
 }, {
   name: '快递管理',
   icon: 'rocket',
-  path: '/express',
+  path: 'express',
+}, {
+  name: '日结管理',
+  icon: 'line-chart',
+  path: 'dailyClosing',
+  children: [{
+    name: '数据统计',
+    path: 'statistics',
+  }, {
+    name: '现金收款复查',
+    path: 'cashStatistics',
+  },]
+}, {
+  name: '订货管理',
+  icon: 'shop',
+  path: 'orderGoods',
+  children: [
+    {
+      name: '发起订货',
+      path: 'placeAnOrder',
+    }, {
+      name: '订单管理',
+      path: 'orderManagement',
+    }
+  ]
 }, {
   name: 'dashboard',
   icon: 'dashboard',
@@ -21,6 +45,7 @@ const menuData = [{
   }, {
     name: '工作台',
     path: 'workplace',
+    authority: 'xxx',
     // hideInMenu: true,
   }],
 }, {

@@ -1,4 +1,4 @@
-import mockjs from 'mockjs';
+import mockjs, { Random } from 'mockjs';
 import { getRule, postRule } from './mock/rule';
 import { getActivities, getNotice, getFakeList } from './mock/api';
 import { getFakeChartData } from './mock/chart';
@@ -28,6 +28,16 @@ const proxy = {
       notifyCount: 12,
     },
   },
+  'GET /api/getGoodsToOrder': mockjs.mock({
+    'List|100': [{
+      'Sku|+2': Random.natural(10000000, 99999999),
+      EnglishName: Random.name(),
+      Name: Random.cname(),
+      Specification: Random.natural(10, 500),
+      Storage: Random.natural(0, 1000),
+      'key|+1': 0,
+    }]
+  }),
   // GET POST 可省略
   'GET /api/users': [{
     key: '1',

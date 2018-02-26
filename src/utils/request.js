@@ -132,7 +132,6 @@ export default function request(url, options={}) {
         return error;
       });
   } else {
-
     const defaultOptions = {
       credentials: 'include',
     };

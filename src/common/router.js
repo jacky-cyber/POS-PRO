@@ -79,12 +79,24 @@ export const getRouterData = (app) => {
     '/express': {
       component: dynamicWrapper(app, ['express'], () => import('../routes/Express/Company')),
     },
-    '/dashboard/analysis': {
-      component: dynamicWrapper(app, ['chart'], () => import('../routes/Dashboard/Analysis')),
+    '/dailyClosing/statistics': {
+      component: dynamicWrapper(app, ['express'], () => import('../routes/DailyClosing/Statistics')),
+    },
+    '/dailyClosing/cashStatistics': {
+      component: dynamicWrapper(app, ['express'], () => import('../routes/DailyClosing/CashStatistics')),
+    },
+    '/orderGoods/placeAnOrder': {
+      component: dynamicWrapper(app, ['orderGoods'], () => import('../routes/OrderGoods/PlaceAnOrder')),
+    },
+    '/orderGoods/orderManagement': {
+      component: dynamicWrapper(app, ['orderGoods'], () => import('../routes/OrderGoods/PlaceAnOrder')),
     },
     '/dashboard/analysis': {
       component: dynamicWrapper(app, ['chart'], () => import('../routes/Dashboard/Analysis')),
     },
+    // '/dashboard/analysis': {
+    //   component: dynamicWrapper(app, ['chart'], () => import('../routes/Dashboard/Analysis')),
+    // },
     '/dashboard/monitor': {
       component: dynamicWrapper(app, ['monitor'], () => import('../routes/Dashboard/Monitor')),
     },
@@ -175,6 +187,7 @@ export const getRouterData = (app) => {
   };
   // Get name from ./menu.js or just set it in the router data.
   const menuData = getFlatMenuData(getMenuData());
+  console.log('menuData', menuData)
 
   // Route configuration data
   // eg. {name,authority ...routerConfig }
@@ -184,7 +197,9 @@ export const getRouterData = (app) => {
     // Regular match item name
     // eg.  router /user/:id === /user/chen
     const pathRegexp = pathToRegexp(path);
+    console.log('pathRegexp', pathRegexp)
     const menuKey = Object.keys(menuData).find(key => pathRegexp.test(`/${key}`));
+    console.log('menuKey', menuKey)
     let menuItem = {};
     // If menuKey is not empty
     if (menuKey) {

@@ -108,13 +108,13 @@ export async function getCompany() {
 }
 
 export async function fetchCommodityList() {
-  return request('api/getCommodity');
+  return request('/api/getCommodity');
 }
 export async function fetchCustomerList() {
-  return request('api/getCustomer');
+  return request('/api/getCustomer');
 }
 export async function fetchGoodsToOrder() {
-  return request('api/getGoodsToOrder');
+  return request('/api/getGoodsToOrder');
 }
 
 
