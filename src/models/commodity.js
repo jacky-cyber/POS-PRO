@@ -1,9 +1,9 @@
 import moment from 'moment';
 // import key from 'keymaster';
-import { fetchCommodityList, fetchCustomerList, submitCustomer, getCustomer, deleteCustomer, updateCustomer, getMilkPowderGoods, addOrUpdateCacheOrder, fetchWaybill, submitOrder, getStoreSaleGoods, getStoreWholeSaleGoods, } from '../services/api';
+import { fetchCommodityList, fetchCustomerList, submitCustomer, getCustomer, deleteCustomer, updateCustomer, getMilkPowderGoods, addOrUpdateCacheOrder, fetchWaybill, submitOrder, getStoreSaleGoods, getStoreWholeSaleGoods, addOrUpdateDailyClosing } from '../services/api';
 import { message } from 'antd';
 import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from '../constant'
-import { calculateExpressOrShippingCost } from '../utils/utils';
+import { calculateExpressOrShippingCost, getGoodsItemRealPrice } from '../utils/utils';
 
 function getCurrentOrder(state) {
   return state.orders.filter(item => item.key === state.activeTabKey)[0];
@@ -41,6 +41,30 @@ export default {
     // },
   },
   effects: {
+    *addOrUpdateDailyClosing(action, { put, call }) {
+      const { payload } = action
+      const response = yield call(addOrUpdateDailyClosing, payload)
+      if (response.Status) {
+        message.success('提交成功')
+      } else {
+        message.error('提交失败')
+      }
+    },
+    *changeCustomer(action, { put, select }) {
+      const { payload } = action
+      yield put ({type: 'saveCurrentCustomer', payload })
+      const commodity = yield select(state => state.commodity);
+      const { activeTabKey } = commodity
+      const currentOrder = getCurrentOrder(commodity);
+      const { customer={}, selectedList, type, saleType } = currentOrder
+      const customerType = customer.memberType
+      const newSelectedList = selectedList.map(item => ({
+        ...item,
+        RealPrice: getGoodsItemRealPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice)
+      }))
+      yield put({type: 'changeSelectedList', payload: {activeTabKey, newSelectedList}})
+      console.log('customerType', customerType, selectedList)
+    },
     *addOrUpdateCacheOrder(action, { put, call }) {
       const { payload } = action
       const response = yield call(addOrUpdateCacheOrder, payload)
@@ -387,6 +411,9 @@ export default {
       const { orders, activeTabKey, pagination } = commodity
       const { pagingData, current } = pagination || {}
       const currentOrder = getCurrentOrder(commodity);
+      const { type, saleType, customer } = currentOrder
+      console.log(customer)
+      const customerType = customer.memberType || null
       const currentGoodsList = pagingData[current - 1]
       const { selectedList } = currentOrder;
       let { avoidDuplicationIndex } = currentOrder;
@@ -397,7 +424,7 @@ export default {
           ...selectedItem,
           Count: 1,
           CalculateType: 'count',
-          RealPrice: selectedItem.RetailPrice,
+          RealPrice: getGoodsItemRealPrice(type, saleType, customerType, selectedItem.RetailPrice, selectedItem.PlatinumPrice, selectedItem.DiamondPrice, selectedItem.VIPPrice, selectedItem.SVIPPrice),
         };
         return [...selectedList, newSelectedItem];
       }
@@ -441,7 +468,7 @@ export default {
       let originPrice = 0;
       let totalWeight = 0;
       selectedList.forEach((item) => {
-        const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.RetailPrice
+        const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.RealPrice
         const retailPrice = item.RetailPrice
         const count = item.Count;
         const discount = item.Discount;
@@ -541,8 +568,13 @@ export default {
       }
       const { orders, activeTabKey } = yield select(state => state.commodity);
       const currentOrder = orders.filter(item => (item.key === activeTabKey))[0];
-      const { selectedList } = currentOrder;
-      const newSelectedList = selectedList.map(item => ({ ...item, SaleType: saleType }));
+      const { selectedList, type, customer } = currentOrder;
+      const customerType = customer.memberType
+      const newSelectedList = selectedList.map(item => ({
+        ...item,
+        SaleType: saleType,
+        RealPrice: getGoodsItemRealPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
+      }));
       yield put({ type: 'changeSaleType', payload: saleType });
       yield put({ type: 'changeSelectedList', payload: { activeTabKey, newSelectedList } });
     },
@@ -629,10 +661,7 @@ export default {
           currentTime,
           createTime,
           saleType: tabType === POS_TAB_TYPE.STORESALE ? SALE_TYPE.LOCAL : null,
-          customer: {
-            memberID: '1',
-            memberName: 'orssica',
-          },
+          customer: {},
           shop: {
             departmentID: '1',
             shopName: '澳西卡',
@@ -968,5 +997,16 @@ export default {
       const newPagination = { ...pagination, current }
       return { ...state, pagination: newPagination }
     },
+    saveCurrentCustomer(state, action) {
+      const customer = action.payload;
+      const { activeTabKey } = state;
+      const newOrders = state.orders.map((item) => {
+        if (item.key === activeTabKey) {
+          return { ...item, customer };
+        }
+        return item;
+      });
+      return { ...state, orders: newOrders };
+    }
   },
 };

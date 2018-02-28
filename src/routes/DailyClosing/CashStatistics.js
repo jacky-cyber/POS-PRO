@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Card, Button, Form, Icon, Col, Row, DatePicker, TimePicker, Input, Select, Popover, InputNumber, Divider, } from 'antd';
+import { Card, Button, Form, Icon, Col, Row, DatePicker, TimePicker, Input, Select, Popover, InputNumber, Divider } from 'antd';
 import { connect } from 'dva';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import FooterToolbar from '../../components/FooterToolbar';
@@ -21,6 +21,10 @@ const serviceChargeMapping = {
 };
 
 const fieldLabelsAndNamesMapping = {
+  date: {
+    label: '日期',
+    name: 'Date',
+  },
   shopName: {
     label: '店名',
     name: 'ShopName',
@@ -210,6 +214,13 @@ class CashStatistics extends PureComponent {
       this.setState({ width });
     }
   }
+  dateChangeHandler = (date, dateString) => {
+    const payload = {
+      dtTurnoverDate: dateString,
+      setFieldsValueCallback: this.props.form.setFieldsValue,
+    }
+    this.props.dispatch({type: 'dailyClosing/getDailyClosing', payload})
+  }
 
 
   calcTotalCash = () => {
@@ -250,7 +261,6 @@ class CashStatistics extends PureComponent {
     const serviceCharge = value && value * serviceChargeMapping[name];
     const income = parseFloat((value - serviceCharge).toFixed(2));
     // this.props.form.setFieldsValue({[fieldLabelsAndNamesMapping[name]['name']]: income})
-    console.log('income', income)
     return income;
   }
   calcServiceCharge = (name) => {
@@ -275,7 +285,7 @@ class CashStatistics extends PureComponent {
     return frontEndIncome + backEndIncome;
   }
   render() {
-    const { form, dispatch, submitting } = this.props;
+    const { form, dispatch, dailyClosingResult } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
     const cashIncome = this.calcTotalCash();
     const unCashIncome = this.calcUnCashIncome();
@@ -288,6 +298,7 @@ class CashStatistics extends PureComponent {
     const creditCardServiceCharge = this.calcServiceCharge('creditCard')
     const aliPayIncome = this.calcIncome('aliPay')
     const aliPayServiceCharge = this.calcServiceCharge('aliPay')
+    const weChatPayServiceCharge = this.calcServiceCharge('weChatPay')
     const realTotalIncome = cashIncome + unCashIncome
     const difference = parseFloat((realTotalIncome - totalAccountIncome).toFixed(2))
     const errors = getFieldsError();
@@ -394,8 +405,43 @@ class CashStatistics extends PureComponent {
     const validate = () => {
       validateFieldsAndScroll((error, values) => {
         if (!error) {
+          console.log('values', values)
+          console.log(typeof values.Date.format('YYYY-MM-DD'))
+          const newValues = {
+            dtTurnoverDate: values.Date.format('YYYY-MM-DD'),
+            i100D: values.Cash100,
+            i50D: values.Cash50,
+            i20D: values.Cash20,
+            i10D: values.Cash10,
+            i5D: values.Cash5,
+            i2D: values.Cash2,
+            i1D: values.Cash1,
+            i50C: values.Cash0Dot5,
+            i20C: values.Cash0Dot2,
+            i10C: values.Cash0Dot1,
+            fUniPay: values.UnionPay,
+            fUnipayFee: unionPayServiceCharge,
+            fCredit: values.CreditCard,
+            fCreditFee: creditCardServiceCharge,
+            fAliPay: values.AliPay,
+            fAliPayFee: aliPayServiceCharge,
+            fWeChat: values.WeChatPay,
+            fWeChatFee: weChatPayServiceCharge,
+            fCashOpening: values.CashOpening,
+            fCashClosing: values.CashClosing,
+            fEftpos: values.EftopsIncome,
+            fTransfer: values.TransferIncome,
+            fZFBWC: values.LatiPayIncome,
+            iDepartmentID: 2,
+            fFrontSale: values.FrontEndIncome,
+            fBackSale: values.BackEndIncome,
+            sSaleName: values.ShopAssistant,
+            sOperator: values.Operator,
+            fFreight: values.ExportRecord,
+          }
+          console.log('newValues', newValues)
+          this.props.dispatch({type: 'dailyClosing/addOrUpdateDailyClosing', payload: newValues})
           // submit the values
-        console.log(values);
           // dispatch({
           //   type: 'form/submitAdvancedForm',
           //   payload: values,
@@ -408,6 +454,21 @@ class CashStatistics extends PureComponent {
         title="现金收款复查"
         wrapperClassName={styles.advancedForm}
       >
+        <Card title="日期" className={styles.card} bordered={false}>
+          <Form layout="horizontal" >
+            <Row guuter={16}>
+              <Col lg={12} md={12} sm={24}>
+                <Form.Item label={fieldLabelsAndNamesMapping.date.label}>
+                  {getFieldDecorator(fieldLabelsAndNamesMapping.date.name, {
+                    rules: [{ required: true, message: '请选择日期' }],
+                  })(
+                    <DatePicker onChange={this.dateChangeHandler} />
+                    )}
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Card>
         <Card title="基本信息" className={styles.card} bordered={false} />
         <Card title="在岗营业员" className={styles.card} bordered={false}>
           <Form layout="horizontal" >
@@ -415,6 +476,8 @@ class CashStatistics extends PureComponent {
               <Col lg={12} md={12} sm={24}>
                 <Form.Item label={fieldLabelsAndNamesMapping.shopAssistant.label}>
                   {getFieldDecorator(fieldLabelsAndNamesMapping.shopAssistant.name, {
+                    // initialValue: typeof dailyClosingResult['sSaleName'] === 'string' ? dailyClosingResult['sSaleName'].split(',') : [],
+                      initialValue: [],
                     rules: [{ required: true, message: '请选择在岗营业员' }],
                   })(
                     <Select placeholder="请选择在岗营业员" mode="multiple">
@@ -435,6 +498,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash100.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash100.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i100D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -444,6 +508,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash50.label} {...cashFormItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash50.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i50D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -453,6 +518,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash20.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash20.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i20D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -462,6 +528,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash10.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash10.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i10D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -471,6 +538,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash5.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash5.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i5D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -482,6 +550,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash2.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash2.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i2D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -491,6 +560,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash1.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash1.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i1D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -500,6 +570,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot5.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot5.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i50C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -509,6 +580,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot2.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot2.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i20C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -518,6 +590,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot1.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot1.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['i10C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -529,6 +602,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cashOpening.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cashOpening.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fCashOpening'] || 0,
                       rules: [{ required: true, message: '开箱金额' }],
                     })(
                       <InputNumber min={0} />
@@ -539,6 +613,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.cashClosing.label} {...cashFormItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.cashClosing.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fCashClosing'] || 0,
                       rules: [{ required: true, message: '闭箱金额' }],
                     })(
                       <InputNumber min={0} />
@@ -564,6 +639,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.unionPay.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.unionPay.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fUnipay'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -572,7 +648,6 @@ class CashStatistics extends PureComponent {
                 <Col lg={6} md={12} sm={24}>
                   <Form.Item label={fieldLabelsAndNamesMapping.unionPayIncome.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.unionPayIncome.name, {
-                      initialValue: 0,
                     })(
                       <span>{this.calcIncome('unionPay')}</span>
                       )}
@@ -602,6 +677,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.creditCard.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.creditCard.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fCredit'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -631,6 +707,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.aliPay.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.aliPay.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fAlipay'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -660,6 +737,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.weChatPay.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.weChatPay.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fWechat'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -689,6 +767,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.eftopsIncome.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.eftopsIncome.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fEftpos'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -698,6 +777,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.transferIncome.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.transferIncome.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fTransfer'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -707,6 +787,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.latiPayIncome.label} {...formItemLayout}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.latiPayIncome.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fZFBWC'] || 0,
                     })(
                       <InputNumber min={0} precision={2} />
                       )}
@@ -722,6 +803,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.frontEndIncome.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.frontEndIncome.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fFrontSale'] || 0,
                     })(
                       <InputNumber min={0} precision={2} />
                       )}
@@ -731,6 +813,7 @@ class CashStatistics extends PureComponent {
                   <Form.Item label={fieldLabelsAndNamesMapping.backEndIncome.label} {...formItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.backEndIncome.name, {
                       initialValue: 0,
+                      // initialValue: dailyClosingResult['fBackSale'] || 0,
                     })(
                       <InputNumber min={0} precision={2} />
                       )}
@@ -740,11 +823,13 @@ class CashStatistics extends PureComponent {
             </Form>
           </Card>
           <Card title="出口记录" className={styles.card} type="inner" >
-            <Form layout="horizontal" hideRequiredMark>
+            <Form layout="horizontal" >
               <Row gutter={16}>
                 <Col lg={12} md={12} sm={24}>
                   <Form.Item label={fieldLabelsAndNamesMapping.exportRecord.label} {...basicFormItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.exportRecord.name, {
+                      initialValue: [],
+                      // initialValue: typeof dailyClosingResult['fFreight'] === 'string' ? dailyClosingResult['fFreight'].split(',') : [],
                     })(
                       <Select
                         mode="tags"
@@ -757,7 +842,9 @@ class CashStatistics extends PureComponent {
                 <Col lg={12} md={12} sm={24}>
                   <Form.Item label={fieldLabelsAndNamesMapping.operator.label} {...basicFormItemLayout} >
                     {getFieldDecorator(fieldLabelsAndNamesMapping.operator.name, {
-                      initialValue: 0,
+                      initialValue: '',
+                      // initialValue: dailyClosingResult['sOperator'] || '',
+                      rules: [{ required: true, message: '操作员是必须的' }],
                     })(
                       <Input />
                       )}
@@ -784,7 +871,7 @@ class CashStatistics extends PureComponent {
 
         <FooterToolbar extra={footerExtra} style={{ width: this.state.wdith, paddingLeft: this.props.collapsed ? 100 : 280 }}>
           {getErrorInfo()}
-          <Button type="primary" onClick={validate} loading={submitting}>
+          <Button type="primary" onClick={validate}>
             提交
           </Button>
         </FooterToolbar>
@@ -794,6 +881,7 @@ class CashStatistics extends PureComponent {
 }
 
 export default connect(state => ({
-  collapsed: state.global.collapsed,
-  submitting: state.form.advancedFormSubmitting,
+  // collapsed: state.global.collapsed,
+  // submitting: state.form.advancedFormSubmitting,
+  dailyClosingResult: state.dailyClosing.dailyClosingResult,
 }))(Form.create()(CashStatistics));

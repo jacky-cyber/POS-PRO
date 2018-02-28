@@ -5,7 +5,7 @@ import { Button, Badge, Row, Col, Icon, Table, Radio, List, Card, Divider } from
 import styles from './index.less';
 import Pay from './Pay';
 import ExpressHandler from '../ExpressHandler';
-import { POS_TAB_TYPE, POS_PHASE } from '../../../constant';
+import { POS_TAB_TYPE, POS_PHASE, CUSTOMER_TYPE } from '../../../constant';
 import Print from 'rc-print';
 import MilkPowderHandler from './MilkPowderHandler/';
 import StoreSaleHandler from './StoreSaleHandler';
@@ -40,9 +40,15 @@ export default class Payment extends PureComponent {
       isConfirmEnable: bool,
     });
   }
+  selectCustomerHandler = () => {
+    const { order, activeTabKey } = this.props
+    const { lastPhase } = order
+    this.props.dispatch({type: 'commodity/changePosPhase', payload: {activeTabKey, lastPhase: POS_PHASE.PAY, targetPhase: POS_PHASE.CUSTOMER}});
+  }
   render() {
     const { dispatch } = this.props;
-    const { goodsPrice, expressCost, shippingCost, totalPrice, saleType, realMoney, changeMoney, type, ID, createTime, } = this.props.order;
+    const { goodsPrice, expressCost, shippingCost, totalPrice, saleType, realMoney, changeMoney, type, ID, createTime, customer } = this.props.order;
+    const { memberName, memberAddress, memberEmail, memberPhone, memberType, memberScore, memberCardNumber, memberID } = customer || {}
     const priceList = [
       { title: '商品金额', value: goodsPrice },
       { title: '直邮金额', value: expressCost },
@@ -97,7 +103,7 @@ export default class Payment extends PureComponent {
               </Button>
             </Col>
           </Row>
-          <Card title="订单信息" style={{ marginBottom: 24 }} extra={<a>选择或新建客户</a>}>
+          <Card title="订单信息" style={{ marginBottom: 24 }} extra={<a onClick={this.selectCustomerHandler}>选择或新建客户</a>}>
             <DescriptionList size="small"  title="基本信息">
               <Description term="订单号">{ID}</Description>
               <Description term="订单类型">门店销售/本地</Description>
@@ -105,14 +111,21 @@ export default class Payment extends PureComponent {
             </DescriptionList>
             <Divider style={{ margin: '16px 0' }} />
             {/* <Card type="inner" title="多层级信息组"> */}
-            <DescriptionList size="small" title="客户信息">
+            <DescriptionList size="small" title="会员信息">
+            {
+              memberID ?
               <DescriptionList>
-                <Description term="客户名">付小小</Description>
-                <Description term="会员卡号">32943898021309809423</Description>
-                <Description term="电子邮箱">ossica2018@163.com</Description>
-                <Description term="电话">18112345678</Description>
-                <Description term="地址">曲丽丽 18100000000 浙江省杭州市西湖区黄姑山路工专路交叉路口</Description>
+                <Description term="会员名">{memberName}</Description>
+                <Description term="会员卡号">{memberCardNumber}</Description>
+                <Description term="电子邮箱">{memberEmail}</Description>
+                <Description term="电话">{memberPhone}</Description>
+                <Description term="地址">{memberAddress}</Description>
+                <Description term="会员类型">{CUSTOMER_TYPE.filter(item => item.value === memberType)[0].label}</Description>
+                <Description term="会员积分">{typeof memberScore === 'number' ? memberScore.toString() : ''}</Description>
               </DescriptionList>
+              :
+                <Description>无会员信息</Description>
+            }
             </DescriptionList>
             {/* </Card> */}
 

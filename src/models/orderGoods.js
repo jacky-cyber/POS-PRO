@@ -1,30 +1,35 @@
-import { fetchGoodsToOrder } from '../services/api';
+import { getWholeSaleGoods, addWholeSaleOrder } from '../services/api';
+import { message } from 'antd'
 
 export default {
   namespace: 'orderGoods',
 
   state: {
     goodsList: [],
-    isGetGoodsListloading: true,
   },
 
   effects: {
     *fetchGoodsList(_, { call, put }) {
-      yield put({
-        type: 'changeGetGoodsListLoading',
-        payload: true,
-      });
-      const response = yield call(fetchGoodsToOrder);
-      const { List } = response || {}
+      const response = yield call(getWholeSaleGoods);
+      const goodsList = response.Result.Data
+      console.log('goodsList', goodsList)
       yield put({
         type: 'saveGoodsList',
-        payload: Array.isArray(List) ? List : [],
-      });
-      yield put({
-        type: 'changeGetGoodsListLoading',
-        payload: false,
+        payload: Array.isArray(goodsList) ? goodsList : [],
       });
     },
+    *addOrder(action, { call, put}) {
+      const { payload } = action
+      try {
+        const response = yield call(addWholeSaleOrder, payload)
+        if (response.Status) {
+          message.success('提交成功')
+        } else {
+          message.error('提交失败')
+        }
+      } catch (e) {
+      }
+    }
   },
 
   reducers: {
@@ -32,12 +37,6 @@ export default {
       return {
         ...state,
         goodsList: action.payload,
-      };
-    },
-    changeGetGoodsListLoading(state, action) {
-      return {
-        ...state,
-        isGetGoodsListloading: action.payload,
       };
     },
   },

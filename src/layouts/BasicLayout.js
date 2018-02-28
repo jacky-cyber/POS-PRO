@@ -92,9 +92,9 @@ class BasicLayout extends React.PureComponent {
   getPageTitle() {
     const { routerData, location } = this.props;
     const { pathname } = location;
-    let title = 'Ant Design Pro';
+    let title = 'Orssica';
     if (routerData[pathname] && routerData[pathname].name) {
-      title = `${routerData[pathname].name} - Ant Design Pro`;
+      title = `${routerData[pathname].name} - Orssica`;
     }
     return title;
   }
@@ -109,7 +109,8 @@ class BasicLayout extends React.PureComponent {
       urlParams.searchParams.delete('redirect');
       window.history.replaceState(null, 'redirect', urlParams.href);
     } else {
-      return '/dashboard/analysis';
+      // return '/dashboard/analysis';
+      return '/';
     }
     return redirect;
   }
@@ -205,25 +206,25 @@ class BasicLayout extends React.PureComponent {
           </Content>
           <Footer style={{ padding: 0 }}>
             <GlobalFooter
-              links={[{
-                key: 'Pro 首页',
-                title: 'Pro 首页',
-                href: 'http://pro.ant.design',
-                blankTarget: true,
-              }, {
-                key: 'github',
-                title: <Icon type="github" />,
-                href: 'https://github.com/ant-design/ant-design-pro',
-                blankTarget: true,
-              }, {
-                key: 'Ant Design',
-                title: 'Ant Design',
-                href: 'http://ant.design',
-                blankTarget: true,
-              }]}
+              // links={[{
+              //   key: 'Pro 首页',
+              //   title: 'Pro 首页',
+              //   href: 'http://pro.ant.design',
+              //   blankTarget: true,
+              // }, {
+              //   key: 'github',
+              //   title: <Icon type="github" />,
+              //   href: 'https://github.com/ant-design/ant-design-pro',
+              //   blankTarget: true,
+              // }, {
+              //   key: 'Ant Design',
+              //   title: 'Ant Design',
+              //   href: 'http://ant.design',
+              //   blankTarget: true,
+              // }]}
               copyright={
                 <Fragment>
-                  Copyright <Icon type="copyright" /> 2018 蚂蚁金服体验技术部出品
+                  Copyright <Icon type="copyright" /> 2018 Orssica 技术部出品
                 </Fragment>
               }
             />

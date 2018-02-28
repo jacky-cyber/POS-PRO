@@ -53,6 +53,7 @@ export async function getStoreWholeSaleGoods(params) {
 }
 
 
+
 // 提交缓存订单
 
 export async function addOrUpdateCacheOrder({ ID, order }) {
@@ -105,6 +106,62 @@ export async function updateCompany({ ID, Name, Sign, Price }) {
 export async function getCompany() {
   let options = {}
   return request(`${DOMAIN}/LogisticsCompany/GetAll`, options)
+}
+
+//用户账号管理-查询
+export async function getUser() {
+  let options = {}
+  return request(`${DOMAIN}/SysUser/GetAll`, options)
+}
+//用户账号管理-添加
+export async function addOrUpdateUser({ Username, Password, DepartmentID, ShopName, Authority }) {
+  let options = {
+    body: `Username=${Username || ''}&Password=${Password || ''}&DepartmentID=${DepartmentID || ''}&ShopName=${ShopName || ''}&Authority=${Authority || ''}`,
+  }
+  return request(`${DOMAIN}/SysUser/AddOrUpdate`, options)
+}
+
+//日结-提交
+export async function addOrUpdateDailyClosing(payload={}) {
+  const array = Object.keys(payload)
+  const newArray = array.map(item => `${item}=${payload[item]}`)
+  let options = {
+    body: newArray.join('&')
+  }
+  return request(`${DOMAIN}/DailySettle/AddOrUpdate`, options)
+}
+//日结-查找
+export async function getDailyClosing(payload={}) {
+  let options = {
+    body: `dtTurnoverDate=${payload}&iDepartmentID=2`
+  }
+  return request(`${DOMAIN}/DailySettle/Get`, options)
+}
+
+// 大货批发列表
+export async function getWholeSaleGoods(params) {
+  return request(`${DOMAIN}/Product/CargoDistribution`)
+}
+// 发起订货
+export async function addWholeSaleOrder(valueJson) {
+  let options = {
+    body: `Data=${valueJson}`
+  }
+  return request(`${DOMAIN}/Cargo/Add`, options)
+}
+
+// 查询历史订单
+export async function getHistoryOrders({ PayTime, MemberID, pagination}) {
+  let options = {
+    body: `PayTime=${PayTime}&MemberID=${MemberID || -1}&PageSize=${pagination.pageSize}&PageNum=${pagination.current}`
+  }
+  return request(`${DOMAIN}/Order/getOrder`, options)
+}
+export async function getHistoryOrderDetails(ID) {
+  let options = {
+    body: `ID=${ID}`
+  }
+  return request(`${DOMAIN}/Order/getOrderDetail`, options)
 }
 
 export async function fetchCommodityList() {

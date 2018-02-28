@@ -19,6 +19,7 @@ import GoodsList from '../routes/Pos/GoodsList';
 import GoodsTable from '../routes/Pos/GoodsTable';
 import Payment from '../routes/Pos/Payment';
 import Customer from '../routes/Pos/Customer';
+import moment from 'moment';
 
 const cls = classNames.bind(styles);
 

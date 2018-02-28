@@ -1,5 +1,45 @@
 import moment from 'moment';
+import { POS_TAB_TYPE, SALE_TYPE } from '../constant';
 
+export function getGoodsItemRealPrice(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice) {
+  // console.log(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice)
+  if (!customerType) {
+    return retailPrice
+  }
+  let realPrice = 0
+  if (type === POS_TAB_TYPE.STORESALE || type === POS_TAB_TYPE.MILKPOWDER) {
+    if (saleType === SALE_TYPE.LOCAL || saleType === SALE_TYPE.EXPRESS) {
+      switch (customerType) {
+        case 1:
+          return reatilPrice
+        case 2:
+          return platinumPrice
+        case 3:
+          return diamondPrice
+        case 4:
+          return SVVIPPrice
+        default:
+          return retailPrice
+      }
+    } else if (saleType === SALE_TYPE.SHIPPING) {
+      switch (customerType) {
+        case 1:
+          return reatilPrice
+        case 2:
+          return platinumPrice
+        case 3:
+          return VIPPrice
+        case 4:
+          return SVVIPPrice
+        default:
+          return retailPrice
+      }
+    } else if (!saleType) {
+      return retailPrice
+    }
+  }
+  return realPrice
+}
 
 export function calculateExpressOrShippingCost(unitPrice, weight, weightedWeight) {
   const totalWeight = weight + weightedWeight

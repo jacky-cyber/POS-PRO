@@ -71,7 +71,7 @@ export default class ShippingHandler extends PureComponent {
       });
   }
   render() {
-    const { form, order, dispatch, loading } = this.props;
+    const { form, order, dispatch, loading, priceListNode } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
     const { shippingData } = order || []
     // const newShippingData = shippingData.map(item => ({
@@ -118,11 +118,6 @@ export default class ShippingHandler extends PureComponent {
         </span>
       );
     };
-
-    const priceListNode = (
-      <div></div>
-
-    )
 
     return (
       <div>
@@ -207,9 +202,9 @@ export default class ShippingHandler extends PureComponent {
             </Row>
           </Form>
         </Card>
-        <FooterToolbar style={{ width: '100%' }}>
+        <FooterToolbar style={{ width: '100%' }} extra={priceListNode}>
           {getErrorInfo()}
-          <Button type="primary" onClick={this.validate} extra={priceListNode} loading={loading} >
+          <Button type="primary" onClick={this.validate}  loading={loading} >
             提交
           </Button>
         </FooterToolbar>

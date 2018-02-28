@@ -28,4 +28,11 @@ export const POS_PHASE = {
   CUSTOMER: 'CUSTOMER',
 }
 
+export const CUSTOMER_TYPE= [
+  {value: 1, label: '普通'},
+  {value: 2, label: '白金'},
+  {value: 3, label: '钻石'},
+  {value: 4, label: 'SVIP'}
+]
+
 

@@ -172,7 +172,7 @@ export default function calculate(commodity, dispatch, buttonName) {
   const currentOrder = commodity.orders.filter(item => (item.key === activeTabKey))[0];
   const { selectedList, lastPhase } = currentOrder;
   if (buttonName === 'customer') {
-    dispatch(routerRedux.push('/pos/customer'));
+    dispatch({type: 'commodity/changePosPhase', payload: {activeTabKey, lastPhase: POS_PHASE.LIST, targetPhase: POS_PHASE.CUSTOMER}});
     return;
   }
   if (!selectedList || (Array.isArray(selectedList) && selectedList.length === 0)) { return; }

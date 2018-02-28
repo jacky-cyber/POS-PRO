@@ -3,6 +3,7 @@ import classNames from 'classnames/bind';
 import { Card, Row, Col, Divider, Tag } from 'antd';
 import { connect } from 'dva';
 import styles from './index.less';
+import { CUSTOMER_TYPE } from '../../../constant'
 
 const cx = classNames.bind(styles);
 
@@ -16,13 +17,13 @@ class SelectedGoods extends PureComponent {
   handleClick = (key) => {
     this.props.dispatch({ type: 'commodity/toggleSelectedGoods', payload: key });
   }
-  generateSelectedListNode = (selectedList, activeSelectedKey) => (
+  generateSelectedListNode = (selectedList, activeSelectedKey, customerType) => (
     selectedList.map((item) => {
       const className = cx({
         card: true,
         selected: item.Key === activeSelectedKey,
       });
-      const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.RetailPrice;
+      const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.RealPrice;
       const count = item.Count;
       const discount = item.Discount;
       const price = unitPrice * count * (discount || 100) / 100;
@@ -47,14 +48,14 @@ class SelectedGoods extends PureComponent {
             </Col>
           </Row>
           <Row style={{ paddingLeft: 12 }}>
-            <Col span={18}>
+            <Col span={24}>
               <span>
                 数量：{count}
               </span>
               <Divider type="vertical" className={styles.divider} />
               <span>单价：</span>
               <span className={(item.NewUnitPrice || item.NewUnitPrice === 0) ? styles.deletedText : null}>
-                {item.RetailPrice}
+                {item.RealPrice}
               </span>
               {
                 (item.NewUnitPrice || item.NewUnitPrice === 0) ? (
@@ -67,7 +68,13 @@ class SelectedGoods extends PureComponent {
                   : null
               }
             </Col>
-            <Col span={6} style={{ textAlign: 'right'}}>
+            <Col span={24} style={{ textAlign: 'right'}}>
+            {
+                (customerType) ? (
+                  <Tag color="#f0dc00">{CUSTOMER_TYPE.filter(item => item.value === customerType)[0].label}会员</Tag>
+                )
+                  : null
+            }
             {
                 (item.SaleType || item.SaleType === 0) ? (
                   <Tag color="#87d068">{saleTypeLabelMapping[saleType]}</Tag>
@@ -97,13 +104,14 @@ class SelectedGoods extends PureComponent {
     const currentOrder = orders.filter(item => item.key === activeTabKey)[0];
     const activeSelectedKey = currentOrder && currentOrder.activeSelectedKey;
     const selectedList = currentOrder && currentOrder.selectedList;
+    const customerType = currentOrder.customer && currentOrder.customer.memberType || null
     if (!selectedList || (Array.isArray(selectedList) && selectedList.length === 0)) {
       return <div>购物车是空的</div>;
     }
     if (Array.isArray(selectedList) && selectedList.length > 0) {
       return (
         <div className={styles.selectedGoodsWrapper}>
-          {this.generateSelectedListNode(selectedList, activeSelectedKey)}
+          {this.generateSelectedListNode(selectedList, activeSelectedKey, customerType)}
           <Card
             bordered={false}
             bodyStyle={{ padding: '3px 15px 10px 15px' }}

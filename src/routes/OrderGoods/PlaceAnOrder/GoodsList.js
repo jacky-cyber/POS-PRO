@@ -13,11 +13,11 @@ export default class GoodsList extends PureComponent {
       },
       {
         title: '英文名',
-        dataIndex: 'EnglishName',
+        dataIndex: 'EN',
       },
       {
         title: '中文名',
-        dataIndex: 'Name',
+        dataIndex: 'CN',
       },
       {
         title: '规格',
@@ -27,12 +27,12 @@ export default class GoodsList extends PureComponent {
         title: '订货数量',
         dataIndex: 'Count',
         render: (text, record, index) => (
-          <InputNumber defaultValue={0} min={0} max={record.Storage || 0} onChange={value => countChangeHandler(value, record)} />
+          <InputNumber defaultValue={0} min={0} max={record.Stock || 0} onChange={value => countChangeHandler(value, record)} />
         ),
       },
       {
         title: '库存量',
-        dataIndex: 'Storage',
+        dataIndex: 'Stock',
       },
     ];
 
@@ -41,7 +41,7 @@ export default class GoodsList extends PureComponent {
       <div>
         <SearchSelect />
         <Table
-          rowKey={record => record.key}
+          rowKey={record => record.Sku}
           columns={columns}
           dataSource={goodsList}
         />

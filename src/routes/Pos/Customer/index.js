@@ -1,12 +1,13 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva'
-import { Tabs, Button, Badge, Row, Col, Icon, Table, Input, Divider, Form, Select } from 'antd'
+import { Tabs, Button, Badge, Row, Col, Icon, Table, Input, Divider, Form, Select, Modal } from 'antd'
 import styles from './index.less'
 import MessageItem from './MessageItem.js'
 import { routerRedux } from 'dva/router';
 import SwitchableFormItem from '../../../components/SwitchableItem/SwitchableFormItem';
 import classNames from 'classnames'
 import TypeSelect from './TypeSelect'
+import { POS_PHASE } from '../../../constant'
 
 const { TabPane } = Tabs
 const FormItem = Form.Item;
@@ -77,7 +78,36 @@ export default class Customer extends PureComponent {
     this.props.dispatch({ type: 'commodity/getCustomer' })
   }
   handlePrevClick = () => {
-    this.props.dispatch(routerRedux.goBack())
+    const { order, activeTabKey } = this.props
+    const { lastPhase } = order
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: POS_PHASE.CUSTOMER, targetPhase: lastPhase } });
+  }
+  selectHandler = () => {
+    const { tempRowData } = this.state
+    if (this.state.tempRowData.ID) {
+      const customer = {
+        memberID: tempRowData.ID,
+        memberName: tempRowData.Name,
+        memberAddress: tempRowData.Address,
+        memberEmail: tempRowData.Email,
+        memberPhone: tempRowData.Phone,
+        memberType: tempRowData.Type,
+        memberScore: tempRowData.Score,
+        memberCardNumber: tempRowData.CardNumber
+      }
+      console.log('customer', customer)
+      this.props.dispatch({ type: 'commodity/changeCustomer', payload: customer })
+    } else {
+      this.props.dispatch({ type: 'commodity/changeCustomer', payload: {} })
+    }
+  }
+  cancelHandler = () => {
+    this.setState({
+      activeIndex: null,
+      tempRowData: {},
+      showCustomerMessage: false,
+      showAddCustomerForm: false,
+    })
   }
   validate = (bool) => {
     this.setState({
@@ -96,7 +126,7 @@ export default class Customer extends PureComponent {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
-        this.props.dispatch({type: 'commodity/submitCustomer', payload: values})
+        this.props.dispatch({ type: 'commodity/submitCustomer', payload: values })
         this.setState({
           showCustomerMessage: false,
           showAddCustomerForm: false,
@@ -109,9 +139,8 @@ export default class Customer extends PureComponent {
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         const newValues = { ...values, ID: this.state.tempRowData.ID }
-        this.props.dispatch({type: 'commodity/updateCustomer', payload: newValues})
+        this.props.dispatch({ type: 'commodity/updateCustomer', payload: newValues })
         this.setState({
-          showCustomerMessage: false,
           isEdit: false,
         })
       }
@@ -123,9 +152,19 @@ export default class Customer extends PureComponent {
       showCustomerMessage: false,
       isEdit: true,
       tempRowData: {},
+      activeIndex: null,
     })
   }
   hideAddCustomerForm = () => {
+    this.setState({
+      showAddCustomerForm: false,
+      showCustomerMessage: false,
+      isEdit: false,
+      activeIndex: null,
+    })
+    this.props.form.resetFields()
+  }
+  hideCustomerForm = () => {
     this.setState({
       showAddCustomerForm: false,
       showCustomerMessage: false,
@@ -150,17 +189,19 @@ export default class Customer extends PureComponent {
     };
   }
   deleteCustomerHandler = () => {
-    const {ID} = this.state.tempRowData
+    const { ID } = this.state.tempRowData
     if (ID) {
-    this.props.dispatch({type: 'commodity/deleteCustomer', payload: ID})
+      this.props.dispatch({ type: 'commodity/deleteCustomer', payload: ID })
     }
     this.setState({
       isEdit: false,
       showCustomerMessage: false,
+      activeIndex: null,
+      tempRowData: {},
     })
   }
   searchHandler = (value) => {
-    this.props.dispatch({type: 'commodity/getCustomer', payload: value})
+    this.props.dispatch({ type: 'commodity/getCustomer', payload: value })
   }
   toEditHandler = () => {
     this.setState({
@@ -172,6 +213,7 @@ export default class Customer extends PureComponent {
     const { totalPrice } = this.props.order
     const { getFieldDecorator, resetFields, } = form
     const { showAddCustomerForm, showCustomerMessage, tempRowData, isEdit, activeIndex, } = this.state
+    console.log('tempRowData', tempRowData)
     const nameRow = cx({
       [styles.nameRow]: showCustomerMessage && !isEdit,
     })
@@ -183,13 +225,13 @@ export default class Customer extends PureComponent {
       >
         <Row gutter={16} className={nameRow}>
           <Col lg={12} sm={24} >
-            <FormItem label={fieldLabels.name} { ...formItemLayout }>
+            <FormItem label={fieldLabels.name} {...formItemLayout}>
               {getFieldDecorator('name', {
                 rules: [{ required: true, message: '请输入客户名' }],
                 initialValue: tempRowData['Name'],
               })(
                 <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
-                )}
+              )}
             </FormItem>
           </Col>
           {
@@ -210,69 +252,73 @@ export default class Customer extends PureComponent {
           {
             showCustomerMessage && (
               <Col lg={12} sm={24} pull={1} className={styles.submitFormItem}>
-              {
-                isEdit ? (
-                <FormItem>
-                  <Button  shape="circle" onClick={() => this.updateHandler()}>
-                    <Icon type="save" />
-                  </Button>
-                </FormItem>
-                )
-                  :
-                  (
-                <FormItem>
-                  <Button shape="circle" onClick={() => this.toEditHandler()}>
-                    <Icon type="edit" />
-                  </Button>
-                  <Divider type="vertical" />
-                  <Button shape="circle" loading={loading} onClick={() => this.deleteCustomerHandler()} >
-                    <Icon type="delete" />
-                  </Button>
-                </FormItem>
-                )
-              }
+                {
+                  isEdit ? (
+                    <FormItem>
+                      <Button shape="circle" onClick={() => this.hideCustomerForm()}>
+                        <Icon type="minus-circle" />
+                      </Button>
+                      <Divider type="vertical" />
+                      <Button shape="circle" onClick={() => this.updateHandler()}>
+                        <Icon type="save" />
+                      </Button>
+                    </FormItem>
+                  )
+                    :
+                    (
+                      <FormItem>
+                        <Button shape="circle" onClick={() => this.toEditHandler()}>
+                          <Icon type="edit" />
+                        </Button>
+                        <Divider type="vertical" />
+                        <Button shape="circle" loading={loading} onClick={() => this.deleteCustomerHandler()} >
+                          <Icon type="delete" />
+                        </Button>
+                      </FormItem>
+                    )
+                }
               </Col>
             )
           }
         </Row>
         <Row gutter={16}>
           <Col lg={12} sm={24} >
-            <FormItem label={fieldLabels.address} { ...formItemLayout }>
+            <FormItem label={fieldLabels.address} {...formItemLayout}>
               {getFieldDecorator('address', {
                 rules: [{ required: true, message: '请输入地址' }],
                 initialValue: tempRowData['Address'],
               })(
                 <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
-                )}
+              )}
             </FormItem>
           </Col>
           <Col lg={12} sm={24}>
-            <FormItem label={fieldLabels.phone} { ...formItemLayout }>
+            <FormItem label={fieldLabels.phone} {...formItemLayout}>
               {getFieldDecorator('phone', {
                 rules: [{ required: true, message: '请输入电话' }],
                 initialValue: tempRowData['Phone'],
               })(
                 <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
-                )}
+              )}
             </FormItem>
           </Col>
           <Col lg={12} sm={24} >
-            <FormItem label={fieldLabels.type} { ...formItemLayout }>
+            <FormItem label={fieldLabels.type} {...formItemLayout}>
               {getFieldDecorator('type', {
                 rules: [{ required: true, message: '请选择会员类型' }],
                 initialValue: tempRowData['Type'],
               })(
                 <SwitchableFormItem FormItemElement={TypeSelect} editable={isEdit} />
-                )}
+              )}
             </FormItem>
           </Col>
           <Col lg={12} sm={24}>
-            <FormItem label={fieldLabels.email} { ...formItemLayout }>
+            <FormItem label={fieldLabels.email} {...formItemLayout}>
               {getFieldDecorator('email', {
                 initialValue: tempRowData['Email'],
               })(
                 <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
-                )}
+              )}
             </FormItem>
           </Col>
         </Row>
@@ -302,13 +348,20 @@ export default class Customer extends PureComponent {
             </Button>
           </Col>
           <Col style={{ textAlign: 'right' }}>
-            <Button>
+          {
+            activeIndex !== null &&
+          <Button onClick={this.cancelHandler}>取消选择</Button>
+          }
+          <Divider type="vertical" />
+            <Button
+             onClick={this.selectHandler}
+             >
               确认
                         </Button>
           </Col>
         </Row>
         <div className={styles.displayArea}>
-          { (showCustomerMessage || showAddCustomerForm) && customerForm}
+          {(showCustomerMessage || showAddCustomerForm) && customerForm}
         </div>
         <div className={styles.customerTable}>
           <Table

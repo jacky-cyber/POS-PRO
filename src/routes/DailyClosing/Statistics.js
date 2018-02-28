@@ -327,13 +327,12 @@ export default class TableList extends PureComponent {
 
 
     return (
-      <PageHeaderLayout title="调拨单列表">
+      <PageHeaderLayout title="订单统计">
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListForm}>
               {this.renderForm()}
             </div>
-            <Button type="primary" onClick={this.addHandler}>新建调拨单</Button>
             <Table
               onChange={this.handleStandardTableChange}
               rowKey={record => record.key}

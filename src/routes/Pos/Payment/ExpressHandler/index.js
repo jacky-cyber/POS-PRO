@@ -19,7 +19,7 @@ const fieldLabels = {
 
 @Form.create()
 
-export default class ShippingHandler extends PureComponent {
+export default class ExpressHandler extends PureComponent {
   checkExpressData = (rule, value, callback) => {
     const { Name, InvoiceNo } = value[0]
     if (Name && InvoiceNo) {

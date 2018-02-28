@@ -1,6 +1,7 @@
+
 import React, { PureComponent } from 'react';
 import { Table, Button, message, Popconfirm, Divider } from 'antd';
-import styles from './index.less';
+import styles from './TableForm.less';
 import PropTypes from 'prop-types';
 
 
@@ -123,6 +124,18 @@ export default class TableForm extends PureComponent {
   generateRenderComponent = (columnItem, text, record) => {
     if (record.editable) {
       const Editable = columnItem.renderWhenEditable
+      if (record.isNew) {
+        const props = columnItem.propsWhenEditableAndNew || {}
+        return (
+        <Editable
+          value={text}
+          onChange={e => this.handleFieldChange(e, columnItem['dataIndex'], record.ID)}
+          onKeyPress={e => this.handleKeyPress(e, record.ID)}
+          placeholder={columnItem['title']}
+          { ...props }
+        />
+        )
+      }
       const props = columnItem.propsWhenEditable || {}
       return (
         <Editable
@@ -263,7 +276,12 @@ export default class TableForm extends PureComponent {
   saveRow(key) {
     this.clickedCancel = true
     const target = this.getRowByKey(key)
-    const dataIndexArray = this.state.columns.filter(item => item.dataIndex !== 'action').map(item => item.dataIndex)
+    let dataIndexArray = []
+    if (target.isNew) {
+    console.log(dataIndexArray)
+    } else {
+    dataIndexArray = this.state.columns.filter(item => (item.dataIndex !== 'action' && item.dataIndex !== 'Password') ).map(item => item.dataIndex)
+    }
     let isShowMessage = false
     dataIndexArray.forEach(item => {
       if (!target[item]) { isShowMessage = true }

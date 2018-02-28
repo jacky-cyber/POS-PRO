@@ -17,10 +17,10 @@ export default class SaleHander extends PureComponent {
         return <ExpressHandler priceListNode={priceListNode} />
       }
       case SALE_TYPE.SHIPPING: {
-        return <ShippingHandler />
+        return <ShippingHandler priceListNode={priceListNode} />
       }
       default: {
-        return <LocalHandler />
+        return <LocalHandler priceListNode={priceListNode} />
       }
     }
   }

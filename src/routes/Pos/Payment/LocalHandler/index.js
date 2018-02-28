@@ -87,16 +87,13 @@ export default class LocalHandler extends PureComponent {
     //   );
     // };
 
-    const priceListNode = (
-      <div></div>
-
-    )
+    const { priceListNode } = this.props
 
     return (
       <div>
-        <FooterToolbar style={{ width: '100%' }}>
+        <FooterToolbar style={{ width: '100%' }} extra={priceListNode} >
           {/* {getErrorInfo()} */}
-          <Button type="primary" onClick={this.submitHandler} extra={priceListNode} >
+          <Button type="primary" onClick={this.submitHandler} >
             提交
           </Button>
         </FooterToolbar>

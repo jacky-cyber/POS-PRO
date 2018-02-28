@@ -59,7 +59,7 @@ export default class GlobalHeader extends PureComponent {
       <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
         <Menu.Item disabled><Icon type="user" />个人中心</Menu.Item>
         <Menu.Item disabled><Icon type="setting" />设置</Menu.Item>
-        <Menu.Item key="triggerError"><Icon type="close-circle" />触发报错</Menu.Item>
+        {/* <Menu.Item key="triggerError"><Icon type="close-circle" />触发报错</Menu.Item> */}
         <Menu.Divider />
         <Menu.Item key="logout"><Icon type="logout" />退出登录</Menu.Item>
       </Menu>
@@ -94,7 +94,7 @@ export default class GlobalHeader extends PureComponent {
               console.log('enter', value); // eslint-disable-line
             }}
           />
-          <Tooltip title="使用文档">
+          {/* <Tooltip title="使用文档">
             <a
               target="_blank"
               href="http://pro.ant.design/docs/getting-started"
@@ -103,7 +103,7 @@ export default class GlobalHeader extends PureComponent {
             >
               <Icon type="question-circle-o" />
             </a >
-          </Tooltip>
+          </Tooltip> */}
           <NoticeIcon
             className={styles.action}
             count={currentUser.notifyCount}

@@ -26,11 +26,27 @@ export default class PlaceAnOrder extends PureComponent {
     expandForm: false,
     selectedRows: [],
     formValues: {},
+    departmentId: '',
   };
 
   componentDidMount() {
     const { dispatch } = this.props;
     dispatch({ type: 'orderGoods/fetchGoodsList' })
+  }
+  submitHandler = () => {
+    const detail = this.state.goodsOrderedList.map(item => ({
+      ProductName: item.EN,
+      Number: item.Count,
+      Sku: item.Sku,
+    }))
+    const value = {
+      ShopName: 'xxx',
+      DepartmentID: this.state.departmentId,
+      Detail: detail
+    }
+    const valueJson = JSON.stringify(value)
+    console.log('valueJson', valueJson)
+    this.props.dispatch({type: 'orderGoods/addOrder', payload: valueJson})
   }
 
   componentWillReceiveProps(nextProps) {
@@ -239,6 +255,7 @@ export default class PlaceAnOrder extends PureComponent {
     return this.state.expandForm ? this.renderAdvancedForm() : this.renderSimpleForm();
   }
   countChangeHandler(value, record) {
+    console.log(value, record)
     const { goodsOrderedList } = this.state
     let newList = []
     const tempItem = goodsOrderedList.filter(item => item.Sku === record.Sku)[0]
@@ -259,7 +276,7 @@ export default class PlaceAnOrder extends PureComponent {
 
   render() {
     const { goodsList, isGetGoodsListLoading, } = this.props;
-    const { modalVisible } = this.state
+    const { modalVisible, departmentId } = this.state
 
     const columns = [
       {
@@ -268,11 +285,11 @@ export default class PlaceAnOrder extends PureComponent {
       },
       {
         title: '英文名',
-        dataIndex: 'EnglishName',
+        dataIndex: 'EN',
       },
       {
         title: '中文名',
-        dataIndex: 'Name',
+        dataIndex: 'CN',
       },
       {
         title: '规格',
@@ -282,12 +299,12 @@ export default class PlaceAnOrder extends PureComponent {
         title: '订货数量',
         dataIndex: 'Count',
         render: (text, record, index) => (
-          <InputNumber value={text} min={0} max={record.Storage || 0} onChange={(value) => this.countChangeHandler(value, record)} />
+          <InputNumber value={text} min={0} max={record.Stock|| 0} onChange={(value) => this.countChangeHandler(value, record)} />
         )
       },
       {
         title: '库存量',
-        dataIndex: 'Storage',
+        dataIndex: 'Stock',
       },
     ];
 
@@ -313,9 +330,21 @@ export default class PlaceAnOrder extends PureComponent {
                 countChangeHandler={this.countChangeHandler.bind(this)}
               />
             </Modal>
+            <Select
+             onChange={value => { this.setState({departmentId: value})}}
+             style={{width: 300}}
+             placeholder="暂时选择部门，必须"
+             >
+              <Option value={999}>加盟店</Option>
+              <Option value={111}>随意</Option>
+            </Select>
+            <Button
+            type="primary"
+            onClick={this.submitHandler}
+            >发起订货</Button>
             <Table
               onChange={this.handleStandardTableChange}
-              rowKey={record => record.key}
+              rowKey={record => record.Sku}
               columns={columns}
               dataSource={this.state.goodsOrderedList}
               pagination={null}
