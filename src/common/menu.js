@@ -4,10 +4,12 @@ const menuData = [{
   name: 'POS系统',
   icon: 'shopping-cart',
   path: 'pos',
+  id: 'pos',
 }, {
   name: '快递管理',
   icon: 'rocket',
   path: 'express',
+  id: 'express',
 }, {
   name: '日结管理',
   icon: 'line-chart',

@@ -1,8 +1,10 @@
 
 import React, { PureComponent } from 'react';
-import { Table, Button, message, Popconfirm, Divider } from 'antd';
+import { Table, Button, message, Popconfirm, Divider, Select } from 'antd';
 import styles from './TableForm.less';
 import PropTypes from 'prop-types';
+
+const { Option } = Select
 
 
 
@@ -126,6 +128,20 @@ export default class TableForm extends PureComponent {
       const Editable = columnItem.renderWhenEditable
       if (record.isNew) {
         const props = columnItem.propsWhenEditableAndNew || {}
+        if (columnItem.dataIndex === 'Authority') {
+          return (
+            <Select
+              value={text}
+              onChange={e => this.handleFieldChange(e, columnItem['dataIndex'], record.ID)}
+              placeholder={columnItem['title']}
+              mode="multiple"
+              style={{width: 300}}
+            >
+              <Option value="pos">POS</Option>
+              <Option value="express">快递管理</Option>
+            </Select>
+          )
+        }
         return (
         <Editable
           value={text}
@@ -137,6 +153,20 @@ export default class TableForm extends PureComponent {
         )
       }
       const props = columnItem.propsWhenEditable || {}
+        if (columnItem.dataIndex === 'Authority') {
+          return (
+            <Select
+              value={text}
+              onChange={e => this.handleFieldChange(e, columnItem['dataIndex'], record.ID)}
+              placeholder={columnItem['title']}
+              mode="multiple"
+              style={{width: 300}}
+            >
+              <Option value="pos">POS</Option>
+              <Option value="express">快递管理</Option>
+            </Select>
+          )
+        }
       return (
         <Editable
           value={text}
@@ -278,9 +308,9 @@ export default class TableForm extends PureComponent {
     const target = this.getRowByKey(key)
     let dataIndexArray = []
     if (target.isNew) {
-    console.log(dataIndexArray)
+      console.log(dataIndexArray)
     } else {
-    dataIndexArray = this.state.columns.filter(item => (item.dataIndex !== 'action' && item.dataIndex !== 'Password') ).map(item => item.dataIndex)
+      dataIndexArray = this.state.columns.filter(item => (item.dataIndex !== 'action' && item.dataIndex !== 'Password')).map(item => item.dataIndex)
     }
     let isShowMessage = false
     dataIndexArray.forEach(item => {

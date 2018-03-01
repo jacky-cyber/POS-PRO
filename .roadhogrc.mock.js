@@ -22,10 +22,10 @@ const proxy = {
       },
     },
     $body: {
-      name: 'Serati Ma',
+      name: 'admin',
       avatar: 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
       userid: '00000001',
-      notifyCount: 12,
+      notifyCount: 5,
     },
   },
   'GET /api/getGoodsToOrder': mockjs.mock({

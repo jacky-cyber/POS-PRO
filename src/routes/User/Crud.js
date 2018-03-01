@@ -1,8 +1,9 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Row, Col, Card, Form, Input, Select, Icon, Button, Dropdown, Menu, InputNumber, DatePicker, Modal, message, Table } from 'antd';
+import { Row, Col, Card, Form, Input,  Icon, Button, Dropdown, Menu, InputNumber, DatePicker, Modal, message, Table } from 'antd';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import TableForm from './TableForm'
+
 
 const FormItem = Form.Item;
 
@@ -11,7 +12,7 @@ const FormItem = Form.Item;
   loading: state.loading.effects['user/getAll'],
 }))
 @Form.create()
-export default class ExpressComponent extends PureComponent {
+export default class UserCrud extends PureComponent {
   componentDidMount() {
     this.props.dispatch({type: 'user/getAll'})
   }
@@ -55,7 +56,7 @@ export default class ExpressComponent extends PureComponent {
     },{
       title: '权限',
       dataIndex: 'Authority',
-      renderWhenEditable: Input,
+      renderWhenEditable: null,
       renderWhenUnEditable: null,
     },{
       title: '操作',
