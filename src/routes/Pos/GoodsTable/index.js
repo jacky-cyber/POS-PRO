@@ -131,8 +131,8 @@ class GoodsTable extends PureComponent {
       columns: [
         {
           title: '商品名',
-          dataIndex: 'Name',
-          key: 'name',
+          dataIndex: 'CN',
+          key: 'CN',
           onHeaderCell: (columns) => {
             const index = this.state.columns.findIndex(item => item.key === columns.key)
             return {
@@ -142,9 +142,9 @@ class GoodsTable extends PureComponent {
           },
         },
         {
-          title: '单价',
-          dataIndex: 'UnitPrice',
-          key: 'unitPrice',
+          title: '零售价',
+          dataIndex: 'RetailPrice',
+          key: 'RetailPrice',
           onHeaderCell: (columns) => {
             const index = this.state.columns.findIndex(item => item.key === columns.key)
             return {
@@ -215,9 +215,11 @@ class GoodsTable extends PureComponent {
   }
   render() {
     const { commodity, dispatch } = this.props
+    const { currentOrderGoodsList } = commodity
+    console.log(currentOrderGoodsList)
     const view = this.props.location && this.props.location.pathname.replace('/pos/', '')
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
-    const { content, display } = currentOrder
+    const { display } = currentOrder
     let displayTable = cx({
       [styles.trigger]: true,
       [styles.activeTrigger]: view === 'table'
@@ -302,7 +304,7 @@ class GoodsTable extends PureComponent {
             <div>可以拖拽表头进行排序</div>
             <Table
               bordered
-              dataSource={content}
+              dataSource={currentOrderGoodsList}
               columns={this.state.columns}
               components={this.components}
               rowKey={record => record.Key}

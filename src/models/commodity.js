@@ -667,7 +667,7 @@ export default {
             shopName: '澳西卡',
           },
           avoidDuplicationIndex: 0,
-          targetPhase: POS_PHASE.LIST,
+          targetPhase: POS_PHASE.TABLE,
           lastPhase: POS_PHASE.LIST,
           totalWeight: 0,
         },

@@ -246,7 +246,7 @@ class PosLayout extends PureComponent {
                 activeKey={activeTabKey}
                 type="card"
               >
-                <TabPane tab={<span>111</span>} key="leftHeader" />
+                <TabPane tab={<span>POS</span>} key="leftHeader" />
                 {
                   orders.map(orderItem => (
                     <TabPane tab={createTabTitle(orderItem.title, orderItem.type, orderItem.key, orderItem.currentTime)} key={orderItem.key}>
