@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Table, Card, Collapse, Layout, Icon, Button } from 'antd'
+import { Table, Card, Collapse, Layout, Icon, Button, InputNumber, Divider } from 'antd'
 import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
@@ -11,7 +11,8 @@ import classNames from 'classnames'
 import ChooseCalculator from '../../../components/Calculator/Choose/'
 import SelectedGoods from '../../../components/List/SelectedGoods/'
 import HeaderSearch from '../../../components/HeaderSearch';
-import styles from './index.less'
+import styles from './index.less';
+import { POS_PHASE } from '../../../constant';
 
 
 const { Panel } = Collapse
@@ -121,13 +122,18 @@ HeaderCell = DropTarget('column', columnTarget, (connect, monitor) => ({
     initialClientOffset: monitor.getInitialClientOffset(),
   }))(HeaderCell)
   );
-@connect(state => ({ commodity: state.commodity }))
+@connect(state => ({
+  commodity: state.commodity,
+  loading: state.loading.effects['commodity/getStoreSaleGoods'] || state.loading.effects['commodity/getMilkPowderGoods'] || state.loading.effects['commodity/getStoreSaleGoods'],
+ }))
 
 class GoodsTable extends PureComponent {
   constructor(props) {
     super(props)
     this.state = {
       display: false,
+      content: [],
+      filteredContent: [],
       columns: [
         {
           title: '商品名',
@@ -153,11 +159,57 @@ class GoodsTable extends PureComponent {
             }
           },
         },
+        {
+          title: '真实价格',
+          dataIndex: 'RealPrice',
+          key: 'RealPrice',
+          onHeaderCell: (columns) => {
+            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            return {
+              index,
+              moveColumn: this.moveColumn,
+            }
+          },
+        },
+        {
+          title: '数量',
+          dataIndex: 'Count',
+          key: 'Count',
+          render: (text, record, index) => {
+            return (
+                <InputNumber size="small" value={text} min={0} onChange={(value) => this.countChangeHandler(value, record)} />
+            )
+          }
+        },
+        {
+          title: '操作',
+          dataIndex: 'Add',
+          key: 'Add',
+          render: (text, record, index) => {
+            return (
+                <Button
+                  type="primary"
+                  size="small"
+                  className={styles.addButton}
+                  icon="shopping-cart"
+                  shape="circle"
+                  onClick={() => props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: record.Key, count: record.Count }})}
+                />
+            )
+          },
+          onHeaderCell: (columns) => {
+            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            return {
+              index,
+              moveColumn: this.moveColumn,
+            }
+          },
+        },
       ],
       tagList: [
         {
           title: '商品名',
-          dataIndex: 'Name',
+          dataIndex: 'CN',
           key: 'Name',
           onHeaderCell: (columns) => {
             const index = this.state.columns.findIndex(item => item.key === columns.key)
@@ -168,9 +220,42 @@ class GoodsTable extends PureComponent {
           },
         },
         {
-          title: '单价',
-          dataIndex: 'UnitPrice',
-          key: 'UnitPrice',
+          title: '零售价',
+          dataIndex: 'RetailPrice',
+          key: 'RetailPrice',
+          onHeaderCell: (columns) => {
+            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            return {
+              index,
+              moveColumn: this.moveColumn,
+            }
+          },
+        },
+        {
+          title: '真实价格',
+          dataIndex: 'RealPrice',
+          key: 'RealPrice',
+          onHeaderCell: (columns) => {
+            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            return {
+              index,
+              moveColumn: this.moveColumn,
+            }
+          },
+        },
+        {
+          title: '操作',
+          dataIndex: 'Add',
+          key: 'Add',
+          render: (text, record, index) => {
+            return (
+            <Button
+               type="primary"
+               size="small"
+               className={styles.addButton}
+               >添加到购物车</Button>
+              )
+          },
           onHeaderCell: (columns) => {
             const index = this.state.columns.findIndex(item => item.key === columns.key)
             return {
@@ -180,6 +265,24 @@ class GoodsTable extends PureComponent {
           },
         },
       ]
+    }
+  }
+  countChangeHandler = (value, record) => {
+    const key = record.Key
+    const newContent = this.state.content.map(item => {
+      if (item.Key === key) {
+        return { ...item, Count: value }
+      }
+      return item
+    })
+    this.setState({content: newContent})
+  }
+
+
+  componentWillUpdate(nextProps) {
+    if (this.state.content.length === 0) {
+      console.log(nextProps.commodity.currentOrderGoodsList)
+      this.setState({content: nextProps.commodity.currentOrderGoodsList})
     }
   }
 
@@ -213,20 +316,30 @@ class GoodsTable extends PureComponent {
     })
     this.setState({ columns: newColumns })
   }
+  clickTableHandler = (activeTabKey, currentPhase) => {
+   if (currentPhase === POS_PHASE.TABLE ) {
+     return
+   }
+   this.props.dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.TABLE } })
+  }
+  clickListHandler = (activeTabKey, currentPhase) => {
+   if (currentPhase === POS_PHASE.LIST ) {
+     return
+   }
+   this.props.dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } })
+  }
   render() {
-    const { commodity, dispatch } = this.props
-    const { currentOrderGoodsList } = commodity
-    console.log(currentOrderGoodsList)
-    const view = this.props.location && this.props.location.pathname.replace('/pos/', '')
+    const { commodity, dispatch, loading } = this.props
+    const { currentOrderGoodsList, activeTabKey } = commodity
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
-    const { display } = currentOrder
+    const { targetPhase: currentPhase } = currentOrder
     let displayTable = cx({
       [styles.trigger]: true,
-      [styles.activeTrigger]: view === 'table'
+      [styles.activeTrigger]: currentPhase === POS_PHASE.TABLE
     })
     let displayCardList = cx({
       [styles.trigger]: true,
-      [styles.activeTrigger]: view === 'list'
+      [styles.activeTrigger]: currentPhase === POS_PHASE.LIST
     })
     const defaultValue = this.state.tagList.map(item => item.dataIndex)
     const customPanelStyle = {
@@ -260,18 +373,14 @@ class GoodsTable extends PureComponent {
         <Content className={styles.rightContent}>
           <div className={styles.header}>
             <Icon
-              className={styles.trigger}
-              type="home"
+              className={displayTable}
+              type="profile"
+              onClick={() => this.clickTableHandler(activeTabKey, currentPhase)}
             />
             <Icon
               className={displayCardList}
               type="table"
-              onClick={() => { dispatch(routerRedux.push('/pos/list')) }}
-            />
-            <Icon
-              className={displayTable}
-              type="profile"
-              onClick={() => { dispatch(routerRedux.push('/pos/table')) }}
+              onClick={() => this.clickListHandler(activeTabKey, currentPhase)}
             />
             <a style={{ marginLeft: 8 }} onClick={this.toggleCollapse}>
               配置表格 <Icon type={this.state.display ? "up" : "down"} />
@@ -279,13 +388,18 @@ class GoodsTable extends PureComponent {
             <div className={styles.right}>
               <HeaderSearch
                 className={`${styles.action} ${styles.search}`}
-                placeholder="商品搜索"
-                dataSource={['搜索提示一', '搜索提示二', '搜索提示三']}
+                placeholder="商品条码搜索"
+                dataSource={this.state.filteredContent.map(item => (item.Key))}
                 onSearch={(value) => {
-                  console.log('input', value); // eslint-disable-line
+                  const filteredContent = this.state.content.filter(item => item.Barcode.includes(value))
+                  this.setState({filteredContent})
                 }}
                 onPressEnter={(value) => {
-                  console.log('enter', value); // eslint-disable-line
+                  const { filteredContent } = this.state
+                  if (filteredContent.length === 1) {
+                    const filteredItem = filteredContent[0]
+                    dispatch({type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 }})
+                  }
                 }}
               />
             </div>
@@ -299,15 +413,21 @@ class GoodsTable extends PureComponent {
               }
             </TagSelect>
           </div>
-          <div className={styles.tabHeader}></div>
+          <div className={styles.tabHeader}>
+          </div>
           <div className={styles.commodityListWrapper}>
             <div>可以拖拽表头进行排序</div>
             <Table
               bordered
-              dataSource={currentOrderGoodsList}
+              dataSource={this.state.content}
               columns={this.state.columns}
               components={this.components}
               rowKey={record => record.Key}
+              loading={loading}
+              size="small"
+              pagination={{
+                pageSize: 20,
+              }}
             />
           </div>
         </Content>

@@ -63,7 +63,6 @@ export default {
         RealPrice: getGoodsItemRealPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice)
       }))
       yield put({type: 'changeSelectedList', payload: {activeTabKey, newSelectedList}})
-      console.log('customerType', customerType, selectedList)
     },
     *addOrUpdateCacheOrder(action, { put, call }) {
       const { payload } = action
@@ -106,7 +105,7 @@ export default {
       })
       if (response.Status) {
         const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku }))
+        const payload = data.map(item => ({ ...item, Key: item.Sku, RealPrice: item.RetailPrice, }))
         yield put({ type: 'saveMilkPowderGoodsList', payload })
         yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload })
@@ -127,7 +126,7 @@ export default {
       })
       if (response.Status) {
         const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, SaleType: SALE_TYPE.LOCAL }))
+        const payload = data.map(item => ({ ...item, Key: item.Sku, SaleType: SALE_TYPE.LOCAL, RealPrice: item.RetailPrice, Count: 1, }))
         yield put({ type: 'saveStoreSaleGoodsList', payload })
         yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload })
@@ -148,7 +147,7 @@ export default {
       })
       if (response.Status) {
         const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku }))
+        const payload = data.map(item => ({ ...item, Key: item.Sku, RealPrice: item.RetailPrice, }))
         yield put({ type: 'saveStoreWholeSaleGoodsList', payload })
         yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload })
@@ -317,7 +316,7 @@ export default {
       });
       pagingData[current - 1] = newContent
       yield put({ type: 'changePaginationPagingData', payload: pagingData });
-      yield put({ type: 'addToSelectedList', payload: key });
+      yield put({ type: 'addToSelectedList', payload: { key, count: 1 } });
     },
     *clickPaymentMethodButton(action, { put, select }) {
       const paymentMethod = action.payload;
@@ -406,15 +405,14 @@ export default {
       yield put({ type: 'changeRealMoney', payload: realMoney });
     },
     *addToSelectedList(action, { put, select }) {
-      const selectedKey = action.payload;
+      const { key: selectedKey, count } = action.payload;
       const commodity = yield select(state => state.commodity);
-      const { orders, activeTabKey, pagination } = commodity
+      const { orders, activeTabKey, pagination, currentOrderGoodsList } = commodity
       const { pagingData, current } = pagination || {}
       const currentOrder = getCurrentOrder(commodity);
-      const { type, saleType, customer } = currentOrder
-      console.log(customer)
+      const { type, saleType, customer, targetPhase } = currentOrder
       const customerType = customer.memberType || null
-      const currentGoodsList = pagingData[current - 1]
+      const currentGoodsList = targetPhase === POS_PHASE.TABLE ? currentOrderGoodsList :  pagingData[current - 1]
       const { selectedList } = currentOrder;
       let { avoidDuplicationIndex } = currentOrder;
       const selectedItem = currentGoodsList.filter(item => (item.Key === selectedKey))[0];
@@ -422,7 +420,7 @@ export default {
       function addNewToSelectedList(selectedItem, selectedList) {
         const newSelectedItem = {
           ...selectedItem,
-          Count: 1,
+          Count: count || 1,
           CalculateType: 'count',
           RealPrice: getGoodsItemRealPrice(type, saleType, customerType, selectedItem.RetailPrice, selectedItem.PlatinumPrice, selectedItem.DiamondPrice, selectedItem.VIPPrice, selectedItem.SVIPPrice),
         };
@@ -446,7 +444,7 @@ export default {
               isLocked = true;
               return { ...item, Key: `avoidDuplication-${avoidDuplicationIndex}-${item.Key}` };
             }
-            return { ...item, Count: item.Count - 0 + 1, CacheCount: null };
+            return { ...item, Count: item.Count - 0 + ( count || 0 ), CacheCount: null };
           }
           return item;
         });
@@ -668,7 +666,7 @@ export default {
           },
           avoidDuplicationIndex: 0,
           targetPhase: POS_PHASE.TABLE,
-          lastPhase: POS_PHASE.LIST,
+          lastPhase: POS_PHASE.TABLE,
           totalWeight: 0,
         },
       ];

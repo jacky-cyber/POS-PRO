@@ -8,7 +8,7 @@ import styles from './index.less';
 import classNames from 'classnames';
 import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
-import { POS_TAB_TYPE, SALE_TYPE } from '../../../constant';
+import { POS_TAB_TYPE, SALE_TYPE, POS_PHASE } from '../../../constant';
 
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
@@ -23,23 +23,34 @@ export default class GoodsList extends PureComponent {
   paginationChangeHandler = (page, pageSize) => {
     this.props.dispatch({type: 'commodity/changePaginationCurrent', payload: page})
   }
+  clickTableHandler = (activeTabKey, currentPhase) => {
+   if (currentPhase === POS_PHASE.TABLE ) {
+     return
+   }
+   this.props.dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.TABLE } })
+  }
+  clickListHandler = (activeTabKey, currentPhase) => {
+   if (currentPhase === POS_PHASE.LIST ) {
+     return
+   }
+   this.props.dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } })
+  }
   render() {
     const { commodity, dispatch } = this.props;
-    const { pagination } = commodity || {}
+    const { pagination, activeTabKey } = commodity || {}
     const { pagingData, pageSize, total, current } = pagination || {}
     const goodsList = pagingData[current - 1]
-    const view = this.props.location && this.props.location.pathname.replace('/pos/', '');
     const { commonLoading } = commodity
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
-    const { display, saleType, type } = currentOrder;
-    const displayTable = cx({
+    const { display, saleType, type, targetPhase: currentPhase } = currentOrder;
+    let displayTable = cx({
       [styles.trigger]: true,
-      [styles.activeTrigger]: view === 'table',
-    });
-    const displayCardList = cx({
+      [styles.activeTrigger]: currentPhase === POS_PHASE.TABLE
+    })
+    let displayCardList = cx({
       [styles.trigger]: true,
-      [styles.activeTrigger]: view === 'list',
-    });
+      [styles.activeTrigger]: currentPhase === POS_PHASE.LIST
+    })
     return (
       <Layout>
         <Sider
@@ -61,20 +72,15 @@ export default class GoodsList extends PureComponent {
           <div className={styles.header}>
             <div>
               <Icon
-                className={styles.trigger}
-                type="home"
+                className={displayTable}
+                type="profile"
+                onClick={() => this.clickTableHandler(activeTabKey, currentPhase)}
               />
               <Icon
                 className={displayCardList}
                 type="table"
-                onClick={() => { dispatch(routerRedux.push('/pos/list')); }}
+                onClick={() => this.clickListHandler(activeTabKey, currentPhase)}
               />
-              <Icon
-                className={displayTable}
-                type="profile"
-                onClick={() => { dispatch(routerRedux.push('/pos/table')); }}
-              />
-
               {
                 type === POS_TAB_TYPE.STORESALE && (
 

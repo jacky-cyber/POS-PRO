@@ -213,11 +213,11 @@ class PosLayout extends PureComponent {
     );
     const generatePosLayoutContent = () => {
       switch (currentOrder.targetPhase) {
-        case POS_PHASE.LIST: {
-          return <GoodsList />
-        }
         case POS_PHASE.TABLE: {
           return <GoodsTable />
+        }
+        case POS_PHASE.LIST: {
+          return <GoodsList />
         }
         case POS_PHASE.PAY: {
           return <Payment />
