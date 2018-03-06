@@ -3,6 +3,7 @@ import React, { PureComponent } from 'react';
 import { Table, Button, message, Popconfirm, Divider, Select } from 'antd';
 import styles from './TableForm.less';
 import PropTypes from 'prop-types';
+import { getMenuData } from '../../common/menu';
 
 const { Option } = Select
 
@@ -137,8 +138,14 @@ export default class TableForm extends PureComponent {
               mode="multiple"
               style={{width: 300}}
             >
-              <Option value="pos">POS</Option>
+            {
+            getMenuData().map(item => (
+              <Option value={item.id} key={item.id}>{item.name}</Option>
+            ))
+            }
+              {/* <Option value="pos">POS</Option>
               <Option value="express">快递管理</Option>
+              <Option value="express">快递管理</Option> */}
             </Select>
           )
         }
@@ -162,8 +169,11 @@ export default class TableForm extends PureComponent {
               mode="multiple"
               style={{width: 300}}
             >
-              <Option value="pos">POS</Option>
-              <Option value="express">快递管理</Option>
+            {
+            getMenuData().map(item => (
+              <Option value={item.id} key={item.id}>{item.name}</Option>
+            ))
+            }
             </Select>
           )
         }

@@ -170,9 +170,9 @@ function unitPriceHandler(dispatch, buttonName, activeTabKey, selectedList, sele
 export default function calculate(commodity, dispatch, buttonName) {
   const { activeTabKey } = commodity;
   const currentOrder = commodity.orders.filter(item => (item.key === activeTabKey))[0];
-  const { selectedList, lastPhase } = currentOrder;
+  const { selectedList, targetPhase: currentPhase } = currentOrder;
   if (buttonName === 'customer') {
-    dispatch({type: 'commodity/changePosPhase', payload: {activeTabKey, lastPhase: POS_PHASE.LIST, targetPhase: POS_PHASE.CUSTOMER}});
+    dispatch({type: 'commodity/changePosPhase', payload: {activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.CUSTOMER}});
     return;
   }
   if (!selectedList || (Array.isArray(selectedList) && selectedList.length === 0)) { return; }

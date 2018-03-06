@@ -1,16 +1,25 @@
-
 @import "~antd/lib/style/themes/default.less";
+
 /*  */
+
+
+.optionCount {
+  color: @primary-6;
+}
+
 .leftContent {
     height: calc(100vh - 235px - 48px) !important;
     overflow: auto;
 }
+
 .calculator {
     height: 235px;
 }
+
 .rightContent {
     padding-left: 440px;
 }
+
 .commodityListWrapper {
     padding: 10px;
     /* margin: 0 auto;  */
@@ -81,6 +90,7 @@
         transform: scale(150, 150);
     }
 }
+
 .sider {
     background-color: #fff;
     height: 100vh;
@@ -90,7 +100,7 @@
     top: 0;
     padding-top: 48px;
     z-index: 10;
-    :global(.ant-layout-sider-children) {
+     :global(.ant-layout-sider-children) {
         display: flex;
         flex-direction: column;
     }
@@ -104,39 +114,21 @@
     position: relative;
     height: 48px;
 }
+
 .tabHeader {
     padding: 0 12px 0 0;
     /* background: #fff; */
     box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
     position: relative;
     height: 36px;
-}
-.trigger {
-    font-size: 20px;
-    height: 100%;
-    line-height: 48px;
-    cursor: pointer;
-    transition: all .3s;
-    padding: 0 12px;
-    &:hover {
-        background: @primary-1;
-    }
-}
-.activeTrigger {
-    background: @primary-1;
-}
-
-.right {
-    float: right;
-    height: 100%;
     .action {
         cursor: pointer;
         padding: 0 12px;
         display: inline-block;
         transition: all .3s;
         height: 100%;
-        line-height: 48px;
-        > i {
+        line-height: 36px;
+        >i {
             font-size: 16px;
             vertical-align: middle;
         }
@@ -153,6 +145,51 @@
         }
     }
 }
+
+.trigger {
+    font-size: 20px;
+    height: 100%;
+    line-height: 48px;
+    cursor: pointer;
+    transition: all .3s;
+    padding: 0 12px;
+    &:hover {
+        background: @primary-1;
+    }
+}
+
+.activeTrigger {
+    background: @primary-1;
+}
+
+.right {
+    float: right;
+    height: 100%;
+    .action {
+        cursor: pointer;
+        padding: 0 12px;
+        display: inline-block;
+        transition: all .3s;
+        height: 100%;
+        line-height: 48px;
+        >i {
+            font-size: 16px;
+            vertical-align: middle;
+        }
+        &:global(.ant-popover-open),
+        &:hover {
+            background: @primary-1;
+        }
+    }
+    .search {
+        padding: 0;
+        margin: 0 12px;
+        &:hover {
+            background: transparent;
+        }
+    }
+}
+
 .tagSelectShow {
     background-color: #fff;
     padding-left: 20px;
@@ -161,6 +198,7 @@
     overflow: hidden;
     transition: max-height .8s;
 }
+
 .tagSelectHide {
     background-color: #fff;
     padding-left: 20px;
@@ -171,5 +209,5 @@
 }
 
 .addButton {
-  font-size: 12px !important;
+    font-size: 12px !important;
 }

@@ -4,16 +4,17 @@ const menuData = [{
   name: 'POS系统',
   icon: 'shopping-cart',
   path: 'pos',
-  id: 'pos',
+  ID: 'pos',
 }, {
   name: '快递管理',
   icon: 'rocket',
   path: 'express',
-  id: 'express',
+  ID: 'express',
 }, {
   name: '日结管理',
   icon: 'line-chart',
   path: 'dailyClosing',
+  ID: 'dailyClosing',
   children: [{
     name: '数据统计',
     path: 'statistics',
@@ -25,6 +26,7 @@ const menuData = [{
   name: '订货管理',
   icon: 'shop',
   path: 'orderGoods',
+  ID: 'orderGoods',
   children: [
     {
       name: '发起订货',
@@ -39,11 +41,13 @@ const menuData = [{
   name: '历史订单',
   icon: 'exception',
   path: 'historyOrders',
+  ID: 'historyOrders',
 },
 {
   name: '用户管理',
   icon: 'user',
   path: 'userManagement',
+  ID: 'userManagement',
   children: [
     {
       name: '账号管理',
@@ -54,7 +58,8 @@ const menuData = [{
 {
   name: '销售分析',
   icon: 'area-chart',
-  path: 'analysis',
+  path: 'saleAanalysis',
+  ID: 'saleAanalysis',
 },
 //  {
 //   name: 'dashboard',

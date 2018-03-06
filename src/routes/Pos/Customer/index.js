@@ -83,6 +83,8 @@ export default class Customer extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: POS_PHASE.CUSTOMER, targetPhase: lastPhase } });
   }
   selectHandler = () => {
+    const { order, activeTabKey } = this.props
+    const { lastPhase } = order
     const { tempRowData } = this.state
     if (this.state.tempRowData.ID) {
       const customer = {
@@ -95,11 +97,11 @@ export default class Customer extends PureComponent {
         memberScore: tempRowData.Score,
         memberCardNumber: tempRowData.CardNumber
       }
-      console.log('customer', customer)
       this.props.dispatch({ type: 'commodity/changeCustomer', payload: customer })
     } else {
       this.props.dispatch({ type: 'commodity/changeCustomer', payload: {} })
     }
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: POS_PHASE.CUSTOMER, targetPhase: lastPhase } });
   }
   cancelHandler = () => {
     this.setState({
@@ -167,9 +169,9 @@ export default class Customer extends PureComponent {
   hideCustomerForm = () => {
     this.setState({
       showAddCustomerForm: false,
-      showCustomerMessage: false,
+      showCustomerMessage: true,
       isEdit: false,
-      activeIndex: null,
+      // activeIndex: null,
     })
     this.props.form.resetFields()
   }
@@ -213,7 +215,6 @@ export default class Customer extends PureComponent {
     const { totalPrice } = this.props.order
     const { getFieldDecorator, resetFields, } = form
     const { showAddCustomerForm, showCustomerMessage, tempRowData, isEdit, activeIndex, } = this.state
-    console.log('tempRowData', tempRowData)
     const nameRow = cx({
       [styles.nameRow]: showCustomerMessage && !isEdit,
     })
@@ -370,6 +371,7 @@ export default class Customer extends PureComponent {
             rowKey={record => record.ID}
             loading={loading}
             dataSource={customerList}
+            size="small"
             onRow={this.rowClickHandler}
             rowClassName={(record, index) => {
               if (index === activeIndex) {
