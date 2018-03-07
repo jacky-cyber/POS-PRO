@@ -186,9 +186,9 @@ console.log('authority', authority)
 
 const newMenuData = menuData.map(item => {
   if (authority.includes(item.ID)) {
-    return { ...item, authority: ['user']}
+    return { ...item, authority: ['admin', 'user']}
   }
-  return item
+  return { ...item, authority: ['admin']}
 })
 console.log('newMenuData', newMenuData)
 
@@ -210,4 +210,4 @@ function formatter(data, parentPath = '/', parentAuthority) {
   });
 }
 
-export const getMenuData = () => formatter(menuData);
+export const getMenuData = () => formatter(newMenuData);

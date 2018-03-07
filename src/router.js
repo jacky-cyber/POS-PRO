@@ -30,8 +30,8 @@ function RouterConfig({ history, app }) {
             path="/pos"
             render={props => <PosLayout {...props} />}
             // authority={['admin', 'user']}
-            authority={['admin']}
-            redirectPath="/user/login"
+            authority={['user']}
+            redirectPath="/exception/403"
           />
           {/* <Route
             path="/pos"
@@ -41,7 +41,7 @@ function RouterConfig({ history, app }) {
             path="/"
             render={props => <BasicLayout {...props} />}
             // authority={['admin', 'user']}
-            authority={['admin']}
+            authority={['admin', 'user']}
             redirectPath="/user/login"
           />
         </Switch>
