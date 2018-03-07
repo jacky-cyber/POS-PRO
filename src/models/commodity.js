@@ -105,7 +105,7 @@ export default {
       })
       if (response.Status) {
         const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, RealPrice: item.RetailPrice, }))
+        const payload = data.map(item => ({ ...item, Key: item.Sku, RealPrice: item.RetailPrice, Count: 1 }))
         yield put({ type: 'saveMilkPowderGoodsList', payload })
         yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload })
@@ -147,7 +147,7 @@ export default {
       })
       if (response.Status) {
         const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, RealPrice: item.RetailPrice, }))
+        const payload = data.map(item => ({ ...item, Key: item.Sku, RealPrice: item.RetailPrice, Count: 1 }))
         yield put({ type: 'saveStoreWholeSaleGoodsList', payload })
         yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload })
@@ -413,6 +413,7 @@ export default {
       const { type, saleType, customer, targetPhase } = currentOrder
       const customerType = customer.memberType || null
       const currentGoodsList = targetPhase === POS_PHASE.TABLE ? currentOrderGoodsList :  pagingData[current - 1]
+      console.log('currentGoodsList', currentGoodsList, selectedKey)
       const { selectedList } = currentOrder;
       let { avoidDuplicationIndex } = currentOrder;
       const selectedItem = currentGoodsList.filter(item => (item.Key === selectedKey))[0];

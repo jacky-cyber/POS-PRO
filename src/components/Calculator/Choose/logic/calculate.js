@@ -195,7 +195,7 @@ export default function calculate(commodity, dispatch, buttonName) {
     const currentOrderJson = JSON.stringify(currentOrder)
     dispatch({type: 'commodity/addOrUpdateCacheOrder', payload: { ID, order: currentOrderJson }})
     const targetPhase = POS_PHASE.PAY
-    dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase }})
+    dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase }})
     // dispatch(routerRedux.push('/pos/payment'));
     return;
   }

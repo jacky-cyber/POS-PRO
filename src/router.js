@@ -26,14 +26,22 @@ function RouterConfig({ history, app }) {
             path="/user"
             component={UserLayout}
           />
-          <Route
+          <AuthorizedRoute
+            path="/pos"
+            render={props => <PosLayout {...props} />}
+            // authority={['admin', 'user']}
+            authority={['admin']}
+            redirectPath="/user/login"
+          />
+          {/* <Route
             path="/pos"
             component={PosLayout}
-          />
+          /> */}
           <AuthorizedRoute
             path="/"
             render={props => <BasicLayout {...props} />}
-            authority={['admin', 'user']}
+            // authority={['admin', 'user']}
+            authority={['admin']}
             redirectPath="/user/login"
           />
         </Switch>

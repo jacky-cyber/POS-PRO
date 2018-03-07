@@ -155,6 +155,7 @@ export async function getHistoryOrders({ PayTime, MemberID, pagination}) {
   let options = {
     body: `PayTime=${PayTime}&MemberID=${MemberID || -1}&PageSize=${pagination.pageSize}&PageNum=${pagination.current}`
   }
+  console.log('options', options)
   return request(`${DOMAIN}/Order/getOrder`, options)
 }
 export async function getHistoryOrderDetails(ID) {

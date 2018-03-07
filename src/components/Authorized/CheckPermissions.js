@@ -27,6 +27,7 @@ const checkPermissions = (authority, currentAuthority, target, Exception) => {
   // 数组处理
   if (Array.isArray(authority)) {
     if (authority.indexOf(currentAuthority) >= 0) {
+  console.log(authority, currentAuthority, target, Exception)
       return target;
     }
     return Exception;

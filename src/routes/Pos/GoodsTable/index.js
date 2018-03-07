@@ -305,31 +305,33 @@ class GoodsTable extends PureComponent {
   componentWillReceiveProps(nextProps) {
     const { commodity } = nextProps
     const { currentOrderGoodsList=[], activeTabKey } = commodity
-    if (Array.isArray(currentOrderGoodsList) && currentOrderGoodsList.length > 0 && this.state.content.length === 0) {
+    if (Array.isArray(currentOrderGoodsList) && currentOrderGoodsList.length > 0 && currentOrderGoodsList.length !== this.props.commodity.currentOrderGoodsList.length) {
       this.setState({ content: nextProps.commodity.currentOrderGoodsList })
     }
  }
   componentDidMount() {
-    const { commodity } = this.props
-    const { currentOrderGoodsList=[], activeTabKey } = commodity
-    const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
-    const { customer={} } = currentOrder
-    const { memberType } = customer
-    if (this.state.content.length === 0) {
-      this.setState({content: this.props.commodity.currentOrderGoodsList})
-    }
-    if (memberType) {
-      const newColumns = this.state.columns.map(item => {
-        if (item.dataIndex === 'RealPrice') {
-          return { ...item, title: `真实价格-${getCustomerText(memberType)}会员`}
-        }
-        return item
-      })
-      this.setState({
-        columns: newColumns,
-        tagList: newColumns,
-      })
-    }
+    console.log('DidMount')
+    // const { commodity } = this.props
+    // const { currentOrderGoodsList=[], activeTabKey } = commodity
+    // const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
+    // const { customer={} } = currentOrder
+    // const { memberType } = customer
+    // if (this.state.content.length === 0) {
+    //   console.log('content', this.props.commodity.currentOrderGoodsList)
+    //   this.setState({content: this.props.commodity.currentOrderGoodsList})
+    // }
+    // if (memberType) {
+    //   const newColumns = this.state.columns.map(item => {
+    //     if (item.dataIndex === 'RealPrice') {
+    //       return { ...item, title: `真实价格-${getCustomerText(memberType)}会员`}
+    //     }
+    //     return item
+    //   })
+    //   this.setState({
+    //     columns: newColumns,
+    //     tagList: newColumns,
+    //   })
+    // }
   }
 
   toggleCollapse = () => {

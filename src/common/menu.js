@@ -1,4 +1,7 @@
 import { isUrl } from '../utils/utils';
+import Cookies from 'js-cookie';
+
+    Cookies.set('authority', ['pos', 'express'], { expires: 7, path: '' })
 
 const menuData = [{
   name: 'POS系统',
@@ -177,6 +180,17 @@ const menuData = [{
 //   }],
 // }
 ];
+
+const authority = Cookies.getJSON('authority') || []
+console.log('authority', authority)
+
+const newMenuData = menuData.map(item => {
+  if (authority.includes(item.ID)) {
+    return { ...item, authority: ['user']}
+  }
+  return item
+})
+console.log('newMenuData', newMenuData)
 
 function formatter(data, parentPath = '/', parentAuthority) {
   return data.map((item) => {
