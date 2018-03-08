@@ -30,7 +30,7 @@ function RouterConfig({ history, app }) {
             path="/pos"
             render={props => <PosLayout {...props} />}
             // authority={['admin', 'user']}
-            authority={['user']}
+            authority={['admin', 'user']}
             redirectPath="/exception/403"
           />
           {/* <Route

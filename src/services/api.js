@@ -2,11 +2,20 @@ import { stringify } from 'qs';
 import request from '../utils/request';
 import { DOMAIN } from '../constant';
 
+// 登陆
+
+export async function login(payload) {
+  const { userName, password } = payload
+  let options = {
+    body: `Username=${userName}&Password=${password}`
+  }
+  return request(`${DOMAIN}/SysUser/Login`, options)
+}
 
 
 // 客户管理的增删改查
 
-export async function submitCustomer(formValue) {
+export async function submitCustomer(payload={}) {
   let options = {
     body: `Name=${formValue.name}&Address=${formValue.address}&Email=${formValue.email}&Phone=${formValue.phone}&CardNumber=${formValue.CardNumber}&Type=${formValue.type}&Score=${formValue.score}`
   }
@@ -118,6 +127,7 @@ export async function addOrUpdateUser({ Username, Password, DepartmentID, ShopNa
   let options = {
     body: `Username=${Username || ''}&Password=${Password || ''}&DepartmentID=${DepartmentID || ''}&ShopName=${ShopName || ''}&Authority=${Authority || ''}`,
   }
+  console.log(options)
   return request(`${DOMAIN}/SysUser/AddOrUpdate`, options)
 }
 

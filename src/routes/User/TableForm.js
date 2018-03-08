@@ -140,7 +140,7 @@ export default class TableForm extends PureComponent {
             >
             {
             getMenuData().map(item => (
-              <Option value={item.id} key={item.id}>{item.name}</Option>
+              <Option value={item.ID} key={item.ID}>{item.name}</Option>
             ))
             }
               {/* <Option value="pos">POS</Option>
@@ -171,7 +171,7 @@ export default class TableForm extends PureComponent {
             >
             {
             getMenuData().map(item => (
-              <Option value={item.id} key={item.id}>{item.name}</Option>
+              <Option value={item.ID} key={item.ID}>{item.name}</Option>
             ))
             }
             </Select>

@@ -1,7 +1,7 @@
 import { isUrl } from '../utils/utils';
 import Cookies from 'js-cookie';
 
-    Cookies.set('authority', ['pos', 'express'], { expires: 7, path: '' })
+    // Cookies.set('authority', ['pos', 'express'], { expires: 7, path: '' })
 
 const menuData = [{
   name: 'POS系统',
