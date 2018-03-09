@@ -6,6 +6,12 @@ import { DOMAIN } from '../constant';
 
 
 const codeMessage = {
+  // 本地后台代码
+  100: 'token已过期，请重新登陆',
+  101: '记录日志失败',
+  102: '用户名密码错误',
+  0: '后台网络不通',
+  // 通用代码
   200: '服务器成功返回请求的数据。',
   201: '新建或修改数据成功。',
   202: '一个请求已经进入后台排队（异步任务）。',
@@ -33,6 +39,21 @@ function checkStatus(response) {
   });
   const error = new Error(errortext);
   error.name = response.status;
+  error.response = response;
+  throw error;
+}
+function checkAgain(responseJson) {
+  const { Message, Result, Status } = responseJson
+  if (Status === 1) {
+  return responseJson
+  }
+  const errortext = codeMessage[Status] || Message;
+  notification.error({
+    message: `请求错误 ${Status}: ${Message}`,
+    description: errortext,
+  });
+  const error = new Error(errortext);
+  error.name = Status;
   error.response = response;
   throw error;
 }
@@ -116,6 +137,7 @@ export default function request(url, options={}) {
     return fetch(url, newOptions)
       .then(checkStatus)
       .then(response => response.json())
+      .then(checkAgain)
       .catch((error) => {
         if (error.code) {
           notification.error({
