@@ -205,13 +205,10 @@ export const getRouterData = (app) => {
     // Regular match item name
     // eg.  router /user/:id === /user/chen
     const pathRegexp = pathToRegexp(path);
-    // console.log('path', path)
-    // console.log('menuData', Object.keys(menuData))
     const menuKey = Object.keys(menuData).find(key => pathRegexp.test(`${key}`));
     let menuItem = {};
     // If menuKey is not empty
     if (menuKey) {
-      // console.log('menuKey', menuKey)
       menuItem = menuData[menuKey];
     }
     let router = routerConfig[path];

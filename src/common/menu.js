@@ -181,16 +181,21 @@ const menuData = [{
 // }
 ];
 
-const authority = Cookies.getJSON('authority') || []
-console.log('authority', authority)
+const getAuthority = () => (Cookies.getJSON('authority') || [])
 
-const newMenuData = menuData.map(item => {
-  if (authority.includes(item.ID)) {
+// const newMenuData = menuData.map(item => {
+//   if (authority.includes(item.ID)) {
+//     return { ...item, authority: ['admin', 'user']}
+//   }
+//   return { ...item, authority: ['admin']}
+// })
+
+const getNewMenuData = () => ( menuData.map(item => {
+  if (getAuthority().includes(item.ID)) {
     return { ...item, authority: ['admin', 'user']}
   }
   return { ...item, authority: ['admin']}
-})
-console.log('newMenuData', newMenuData)
+}))
 
 function formatter(data, parentPath = '/', parentAuthority) {
   return data.map((item) => {
@@ -210,4 +215,4 @@ function formatter(data, parentPath = '/', parentAuthority) {
   });
 }
 
-export const getMenuData = () => formatter(newMenuData);
+export const getMenuData = () => formatter(getNewMenuData());

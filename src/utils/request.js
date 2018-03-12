@@ -1,8 +1,9 @@
 import fetch from 'dva/fetch';
-import { notification } from 'antd';
+import { notification, message } from 'antd';
 import { routerRedux } from 'dva/router';
 import store from '../index';
 import { DOMAIN } from '../constant';
+import Cookies from 'js-cookie';
 
 
 const codeMessage = {
@@ -43,19 +44,21 @@ function checkStatus(response) {
   throw error;
 }
 function checkAgain(responseJson) {
-  const { Message, Result, Status } = responseJson
-  if (Status === 1) {
-  return responseJson
+  if (responseJson) {
+    const { Message, Result, Status } = responseJson
+    if (Status === 1) {
+      return responseJson
+    }
+    const errortext = codeMessage[Status] || Message;
+    notification.error({
+      message: `请求错误 ${Status}: ${Message}`,
+      description: errortext,
+    });
+    const error = new Error(errortext);
+    error.name = Status;
+    error.response = responseJson;
+    throw error;
   }
-  const errortext = codeMessage[Status] || Message;
-  notification.error({
-    message: `请求错误 ${Status}: ${Message}`,
-    description: errortext,
-  });
-  const error = new Error(errortext);
-  error.name = Status;
-  error.response = response;
-  throw error;
 }
 
 /**
@@ -118,11 +121,12 @@ function checkAgain(responseJson) {
 //       }
 //     });
 // }
-export default function request(url, options={}) {
+export default function request(url, options = {}) {
   if (url.includes(DOMAIN)) {
     const defaultOptions = {
       // credentials: 'include',
     };
+    const token = Cookies
     let initBody = `Token=!QAZ@WSX12345&SysUserID=administrator`
     const tempOptions = { ...defaultOptions, ...options };
     const newOptions = {
@@ -139,6 +143,43 @@ export default function request(url, options={}) {
       .then(response => response.json())
       .then(checkAgain)
       .catch((error) => {
+        const { dispatch } = store;
+        const status = error.name;
+        if (status === 100) {
+          dispatch({
+            type: 'login/logout',
+          });
+          return;
+        }
+        if (status === 101) {
+          dispatch({
+            type: 'login/logout',
+          })
+          return;
+        }
+        if (status === 102) {
+          dispatch({
+            type: 'login/logoutUnRedirect',
+          });
+          return;
+        }
+        if (status === 401) {
+          dispatch({
+            type: 'login/logout',
+          });
+          return;
+        }
+        if (status === 403) {
+          dispatch(routerRedux.push('/exception/403'));
+          return;
+        }
+        if (status <= 504 && status >= 500) {
+          dispatch(routerRedux.push('/exception/500'));
+          return;
+        }
+        if (status >= 404 && status < 422) {
+          dispatch(routerRedux.push('/exception/404'));
+        }
         if (error.code) {
           notification.error({
             message: error.name,

@@ -31,11 +31,16 @@ export const getMeunMatcheys = (flatMenuKeys, path) => {
 export default class SiderMenu extends PureComponent {
   constructor(props) {
     super(props);
-    this.menus = props.menuData;
+    console.log(props.menuData)
+    // this.menus = props.menuData;
     this.flatMenuKeys = this.getFlatMenuKeys(props.menuData);
     this.state = {
       openKeys: this.getDefaultCollapsedSubMenus(props),
+      menus: props.menuData,
     };
+  }
+  componentDidMount() {
+    this.setState({menus: this.props.menuData})
   }
   componentWillReceiveProps(nextProps) {
     if (nextProps.location.pathname !== this.props.location.pathname) {
@@ -43,6 +48,8 @@ export default class SiderMenu extends PureComponent {
         openKeys: this.getDefaultCollapsedSubMenus(nextProps),
       });
     }
+    // console.log('nextProps', nextProps)
+    // this.setState({menus: nextProps.menuData})
   }
   /**
    * Convert pathname to openKeys
@@ -179,7 +186,7 @@ export default class SiderMenu extends PureComponent {
   };
   handleOpenChange = (openKeys) => {
     const lastOpenKey = openKeys[openKeys.length - 1];
-    const isMainMenu = this.menus.some(
+    const isMainMenu = this.state.menus.some(
       item =>
         lastOpenKey && (item.key === lastOpenKey || item.path === lastOpenKey),
     );
@@ -226,7 +233,7 @@ export default class SiderMenu extends PureComponent {
           selectedKeys={selectedKeys}
           style={{ padding: '16px 0', width: '100%' }}
         >
-          {this.getNavMenuItems(this.menus)}
+          {this.getNavMenuItems(this.state.menus)}
         </Menu>
       </Sider>
     );

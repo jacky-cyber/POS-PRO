@@ -4,6 +4,7 @@ import { setAuthority } from '../utils/authority';
 import { reloadAuthorized } from '../utils/Authorized';
 import Cookies from 'js-cookie';
 import { message } from 'antd';
+import { getMenuData } from '../common/menu'
 
 export default {
   namespace: 'login',
@@ -27,15 +28,21 @@ export default {
     // },
     *login({ payload }, { put, call }) {
       const response = yield call(login, payload)
-      console.log('response', response)
-      yield put({
-        type: 'changeLoginStatus',
-        payload: {
-          status: response.Status,
-          currentAuthority: 'user',
-        },
-      });
-      if (response.Status === 1) {
+      if (response) {
+        const { Result={} } = response
+        const { Data={} } = Result
+        Cookies.set('currentUser', Data, { expires: 1, path: '' })
+        yield put({
+          type: 'user/saveCurrentUser',
+          payload: Data,
+        })
+        yield put({
+          type: 'changeLoginStatus',
+          payload: {
+            status: response.Status,
+            currentAuthority: 'user',
+          },
+        });
         let authority = response.Result.Data.Authority
         const generateAuthority = (authority) => {
           if (typeof authority === 'string') {
@@ -47,11 +54,52 @@ export default {
           }
         }
         const routerAuthority = generateAuthority(authority)
-        Cookies.set('authority', routerAuthority, { expires: 7, path: '' })
+        Cookies.set('authority', routerAuthority, { expires: 1, path: '' })
+        reloadAuthorized()
+        getMenuData()
         yield put(routerRedux.push('/'));
-      } else {
-        Cookies.remove('suthority', { path: '' })
-        message.error('用户名或密码错误')
+      }
+    },
+    *logoutUnRedirect(_, { put, select }) {
+      try {
+        // get location pathname
+        // const urlParams = new URL(window.location.href);
+        // const pathname = yield select(state => state.routing.location.pathname);
+        // add the parameters in the url
+        // urlParams.searchParams.set('redirect', pathname);
+        // window.history.replaceState(null, 'login', urlParams.href);
+      } finally {
+        yield put({
+          type: 'changeLoginStatus',
+          payload: {
+            status: false,
+            currentAuthority: 'guest',
+          },
+        });
+        reloadAuthorized();
+        yield put(routerRedux.push('/user/login'));
+        Cookies.remove('authority', { path: '' })
+      }
+    },
+    *logout(_, { put, select }) {
+      try {
+        // get location pathname
+        const urlParams = new URL(window.location.href);
+        const pathname = yield select(state => state.routing.location.pathname);
+        // add the parameters in the url
+        urlParams.searchParams.set('redirect', pathname);
+        window.history.replaceState(null, 'login', urlParams.href);
+      } finally {
+        yield put({
+          type: 'changeLoginStatus',
+          payload: {
+            status: false,
+            currentAuthority: 'guest',
+          },
+        });
+        reloadAuthorized();
+        yield put(routerRedux.push('/user/login'));
+        Cookies.remove('authority', { path: '' })
       }
     },
     // *logout(_, { put, select }) {
@@ -74,26 +122,6 @@ export default {
     //     yield put(routerRedux.push('/user/login'));
     //   }
     // },
-    *logout(_, { put, select }) {
-      try {
-        // get location pathname
-        // const urlParams = new URL(window.location.href);
-        // const pathname = yield select(state => state.routing.location.pathname);
-        // add the parameters in the url
-        // urlParams.searchParams.set('redirect', pathname);
-        // window.history.replaceState(null, 'login', urlParams.href);
-      } finally {
-        yield put({
-          type: 'changeLoginStatus',
-          payload: {
-            status: false,
-            currentAuthority: 'guest',
-          },
-        });
-        // reloadAuthorized();
-        yield put(routerRedux.push('/user/login'));
-      }
-    },
   },
 
   reducers: {
@@ -106,4 +134,4 @@ export default {
       };
     },
   },
-};
+}
