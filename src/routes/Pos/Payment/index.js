@@ -17,6 +17,32 @@ const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 const { Description } = DescriptionList
 
+const dataSource = [{
+  key: '1',
+  name: '胡彦斌',
+  age: 32,
+  address: '西湖区湖底公园1号'
+}, {
+  key: '2',
+  name: '胡彦祖',
+  age: 42,
+  address: '西湖区湖底公园1号'
+}];
+
+const columns = [{
+  title: '姓名',
+  dataIndex: 'name',
+  key: 'name',
+}, {
+  title: '年龄',
+  dataIndex: 'age',
+  key: 'age',
+}, {
+  title: '住址',
+  dataIndex: 'address',
+  key: 'address',
+}];
+
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
   activeTabKey: state.commodity.activeTabKey,
@@ -76,6 +102,22 @@ export default class Payment extends PureComponent {
     }
     return (
       <div className={styles.paymentLayout}>
+        <Print
+          ref="printForm"
+          title="门店出口/邮寄/代发"
+        >
+        <div style={{display: 'none'}}>
+            <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
+              <Table dataSource={dataSource} columns={columns} />
+              <div className={styles.printHide}>111</div>
+            </div>
+          {/* <div style={{color: 'red', width: '80mm', border: '1px solid red'}}>
+            <p style={{color: 'red', width: '80mm', border: '1px solid red'}}>first </p>
+            <p className="green">second </p>
+            <p className="pink">third </p>
+          </div> */}
+        </div>
+        </Print>
         {/* <div>left</div> */}
         <div className={styles.paymentWrapper}>
           <Row
@@ -94,7 +136,7 @@ export default class Payment extends PureComponent {
               >确认
               </Button>
               <Button
-                disabled={totalPrice === 0 || totalPrice !== realMoney - changeMoney}
+                // disabled={totalPrice === 0 || totalPrice !== realMoney - changeMoney}
                 onClick={() => {
                   this.refs.printForm.onPrint();
                 }}

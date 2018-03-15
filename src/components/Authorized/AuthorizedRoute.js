@@ -23,8 +23,9 @@ class AuthorizedRoute extends React.Component {
       >
         <Route
           {...rest}
-          render={props =>
-            (Component ? <Component {...props} /> : render(props))
+          render={props => {
+            return (Component ? <Component {...props} /> : render(props))
+          }
           }
         />
       </Authorized>

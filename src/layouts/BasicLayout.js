@@ -16,6 +16,8 @@ import Authorized from '../utils/Authorized';
 import { getMenuData } from '../common/menu';
 import logo from '../assets/logo.svg';
 import Cookies from 'js-cookie';
+import { getRouterData } from '../common/router';
+import { app } from '../index';
 
 const { Content, Header, Footer } = Layout;
 const { AuthorizedRoute } = Authorized;
@@ -72,6 +74,7 @@ class BasicLayout extends React.PureComponent {
   }
   state = {
     isMobile,
+    routerData: getRouterData(app),
   };
   getChildContext() {
     const { location, routerData } = this.props;
@@ -86,7 +89,13 @@ class BasicLayout extends React.PureComponent {
         isMobile: mobile,
       });
     });
-    // this.props.dispatch({
+    const currentUser = Cookies.getJSON('currentUser') || []
+    if (currentUser.ID) {
+      this.props.dispatch({type: 'user/saveCurrentUser', payload: currentUser})
+    } else {
+      this.props.dispatch({type: 'login/logout'})
+    }
+    // this.props.dispatch({.default
     //   type: 'user/fetchCurrent',
     // });
   }
@@ -148,8 +157,9 @@ class BasicLayout extends React.PureComponent {
   }
   render() {
     const {
-      currentUser, collapsed, fetchingNotices, notices, routerData, match, location,
+      currentUser, collapsed, fetchingNotices, notices,  match, location,
     } = this.props;
+    const { routerData } = this.state
     const bashRedirect = this.getBashRedirect();
     const layout = (
       <Layout>

@@ -6,11 +6,12 @@ import ShippingHandler from '../ShippingHandler';
 import LocalHandler from '../LocalHandler/';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import { SALE_TYPE } from '../../../../constant';
+import styles from './index.less';
 
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 
-export default class SaleHander extends PureComponent {
+export default class SaleHandler extends PureComponent {
   generateSaleTypeContent = (saleType, priceListNode) => {
     switch(saleType) {
       case SALE_TYPE.EXPRESS: {
@@ -33,7 +34,7 @@ export default class SaleHander extends PureComponent {
       <div style={{width: '100%'}}>
         {
           priceList.map(item => (
-            <Col span={6}> <span>{item.title}:</span> <span>{item.value}</span> </Col>
+            <Col span={6} key={item.title}> <span>{item.title}:</span> <span>{item.value}</span> </Col>
           ))
         }
       </div>
@@ -59,10 +60,9 @@ export default class SaleHander extends PureComponent {
         <Print
           ref="printForm"
           title="门店出口/邮寄/代发"
-          style={{ display: 'none' }}
         >
           <div>
-            <p className="red">first </p>
+            <p className={styles.printHide}>first </p>
             <p className="green">second </p>
             <p className="pink">third </p>
           </div>

@@ -13,6 +13,7 @@ dynamic.setDefaultLoadingComponent(() => {
   return <Spin size="large" className={styles.globalSpin} />;
 });
 
+// function RouterConfig({ history, app }) {
 function RouterConfig({ history, app }) {
   const routerData = getRouterData(app);
   const UserLayout = routerData['/user'].component;
@@ -39,7 +40,9 @@ function RouterConfig({ history, app }) {
           /> */}
           <AuthorizedRoute
             path="/"
-            render={props => <BasicLayout {...props} />}
+            render={props => {
+             return <BasicLayout {...props} />
+          }}
             // authority={['admin', 'user']}
             authority={['admin', 'user']}
             redirectPath="/user/login"

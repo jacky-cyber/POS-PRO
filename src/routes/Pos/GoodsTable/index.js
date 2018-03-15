@@ -13,6 +13,7 @@ import SelectedGoods from '../../../components/List/SelectedGoods/'
 import HeaderSearch from '../../../components/HeaderSearch';
 import styles from './index.less';
 import { POS_PHASE, CUSTOMER_TYPE } from '../../../constant';
+import Mousetrap from 'mousetrap';
 
 
 const { Panel } = Collapse
@@ -306,11 +307,11 @@ class GoodsTable extends PureComponent {
     const { commodity } = nextProps
     const { currentOrderGoodsList=[], activeTabKey } = commodity
     if (Array.isArray(currentOrderGoodsList) && currentOrderGoodsList.length > 0 && currentOrderGoodsList.length !== this.props.commodity.currentOrderGoodsList.length) {
+      console.log(nextProps.commodity.currentOrderGoodsList)
       this.setState({ content: nextProps.commodity.currentOrderGoodsList })
     }
  }
   componentDidMount() {
-    console.log('DidMount')
     // const { commodity } = this.props
     // const { currentOrderGoodsList=[], activeTabKey } = commodity
     // const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]

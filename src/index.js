@@ -12,7 +12,7 @@ import './rollbar';
 
 import './index.less';
 // 1. Initialize
-const app = dva({
+export const app = dva({
   history: createHistory(),
 });
 

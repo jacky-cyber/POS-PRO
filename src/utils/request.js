@@ -47,6 +47,8 @@ function checkAgain(responseJson) {
   if (responseJson) {
     const { Message, Result, Status } = responseJson
     if (Status === 1) {
+      Cookies.set('token', responseJson.Result.Token || '', { expires: 1, path: '' })
+      Cookies.set('sysUserID', responseJson.Result.SysUserID || '', { expires: 1, path: '' })
       return responseJson
     }
     const errortext = codeMessage[Status] || Message;
@@ -126,8 +128,10 @@ export default function request(url, options = {}) {
     const defaultOptions = {
       // credentials: 'include',
     };
-    const token = Cookies
-    let initBody = `Token=!QAZ@WSX12345&SysUserID=administrator`
+    const token = Cookies.get('token') || ''
+    const sysUserID = Cookies.get('sysUserID') || ''
+    // let initBody = `Token=!QAZ@WSX12345&SysUserID=administrator`
+    let initBody = `Token=${token}&SysUserID=${sysUserID}`
     const tempOptions = { ...defaultOptions, ...options };
     const newOptions = {
       ...tempOptions,

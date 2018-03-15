@@ -5,6 +5,9 @@ import { reloadAuthorized } from '../utils/Authorized';
 import Cookies from 'js-cookie';
 import { message } from 'antd';
 import { getMenuData } from '../common/menu'
+import { app } from '../index'
+import { getRouterData } from '../common/router';
+import createLoading from 'dva-loading';
 
 export default {
   namespace: 'login',
@@ -56,8 +59,11 @@ export default {
         const routerAuthority = generateAuthority(authority)
         Cookies.set('authority', routerAuthority, { expires: 1, path: '' })
         reloadAuthorized()
-        getMenuData()
+        // getMenuData()
+        // window.location.reload()
         yield put(routerRedux.push('/'));
+        app.router(require('../router').default);
+        getRouterData(app)
       }
     },
     *logoutUnRedirect(_, { put, select }) {
