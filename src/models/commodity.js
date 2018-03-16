@@ -748,7 +748,8 @@ export default {
       const { activeSelectedKey } = currentOrder;
       const newSelectedList = selectedList.map((item) => {
         if (item.Key === activeSelectedKey) {
-          return { ...item, CalculateType: calculateType, CacheCount: null, CacheDiscount: null, CacheUnitPrice: null };
+          // return { ...item, CalculateType: calculateType, CacheCount: null, CacheDiscount: null, CacheUnitPrice: null };
+          return { ...item, CalculateType: calculateType, };
         }
         return item;
       });

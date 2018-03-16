@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Input, Icon, AutoComplete } from 'antd';
 import classNames from 'classnames';
 import styles from './index.less';
+import Mousetrap from 'mousetrap';
 
 export default class HeaderSearch extends PureComponent {
   static defaultProps = {
@@ -27,6 +28,12 @@ export default class HeaderSearch extends PureComponent {
   };
   componentWillUnmount() {
     clearTimeout(this.timeout);
+  }
+  componentDidMount() {
+    Mousetrap.bind('alt+s', () => {
+        this.enterSearchMode()
+      })
+    window.addEventListener('keyup', (e) => {if(e.keyCode === 27) this.leaveSearchMode()} )
   }
   onKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -54,6 +61,7 @@ export default class HeaderSearch extends PureComponent {
       searchMode: false,
       value: '',
     });
+    this.input.blur()
   }
   render() {
     const { className, placeholder, ...restProps } = this.props;

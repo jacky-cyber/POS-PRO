@@ -92,11 +92,31 @@ const namePad = [
   },
 ]
 
+const actionPad = [
+  {
+    key: 'customer',
+    label: '客户',
+    keyboard: 'v',
+  },
+  {
+    key: 'payment',
+    label: '付款',
+    keyboard: 'enter',
+  }
+]
+
 
 class ChooseCalculator extends PureComponent {
   button = []
   componentDidMount() {
     namePad.forEach(item => {
+      Mousetrap.bind(item.keyboard, () => {
+        this.button[item.key].querySelector('button').blur()
+        this.button[item.key].querySelector('button').focus()
+        this.button[item.key].querySelector('button').click()
+      })
+    })
+    actionPad.forEach(item => {
       Mousetrap.bind(item.keyboard, () => {
         this.button[item.key].querySelector('button').blur()
         this.button[item.key].querySelector('button').focus()
@@ -129,8 +149,20 @@ class ChooseCalculator extends PureComponent {
       default:
         return (
           <div>
-            <Cbutton name="customer" clickHandler={this.clickHandler}>客户</Cbutton>
-            <Cbutton name="payment" clickHandler={this.clickHandler}>付款</Cbutton>
+            {
+              actionPad.map(item => (
+                <Cbutton
+                  key={item.key}
+                  name={item.key}
+                  clickHandler={this.clickHandler}
+                  ref={node => (this.button[item.key] = ReactDOM.findDOMNode(node))}
+                >
+                  {item.label}
+                   </Cbutton>
+              ))
+            }
+            {/* <Cbutton name="customer" clickHandler={this.clickHandler}>客户</Cbutton>
+            <Cbutton name="payment" clickHandler={this.clickHandler}>付款</Cbutton> */}
           </div>
         );
     }

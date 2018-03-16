@@ -81,13 +81,13 @@ function countHandler(dispatch, buttonName, activeTabKey, selectedList, selected
     let filterIndex;
     let tempActiveKey;
     if (selectedItem.Count !== 0) {
-      newSelectedList = selectedList.map((item) => {
-        if (item.Key === activeSelectedKey) {
-          return { ...item, CacheCount: null, Count: 0 };
-        }
-        return item;
-      });
-    } else {
+    //   newSelectedList = selectedList.map((item) => {
+    //     if (item.Key === activeSelectedKey) {
+    //       return { ...item, CacheCount: null, Count: 0 };
+    //     }
+    //     return item;
+    //   });
+    // } else {
       newSelectedList = selectedList.filter((item, index) => {
         if (item.Key === selectedItem.Key) {
           filterIndex = index;
@@ -171,14 +171,17 @@ export default function calculate(commodity, dispatch, buttonName) {
   const { activeTabKey } = commodity;
   const currentOrder = commodity.orders.filter(item => (item.key === activeTabKey))[0];
   const { selectedList, targetPhase: currentPhase } = currentOrder;
+  // 跳转到选择客户界面
   if (buttonName === 'customer') {
     dispatch({type: 'commodity/changePosPhase', payload: {activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.CUSTOMER}});
     return;
   }
+  // 如果购物车里面没东西，直接 return
   if (!selectedList || (Array.isArray(selectedList) && selectedList.length === 0)) { return; }
   const { activeSelectedKey } = currentOrder;
   const selectedItem = currentOrder.selectedList.filter(item => (item.Key === activeSelectedKey))[0];
   const calculateType = selectedItem.CalculateType;
+  // 切换不同的计算状态
   if (buttonName === 'count' || buttonName === 'discount' || buttonName === 'unitPrice') {
     if (selectedItem.CalculateType === buttonName) { return; }
     dispatch({ type: 'commodity/changeCalculateType', payload: buttonName });
@@ -199,12 +202,15 @@ export default function calculate(commodity, dispatch, buttonName) {
     // dispatch(routerRedux.push('/pos/payment'));
     return;
   }
+  // 数量计算逻辑
   if (calculateType === 'count') {
     countHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
   }
+  // 折扣计算逻辑
   if (calculateType === 'discount') {
     discountHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
   }
+  // 单价计算逻辑
   if (calculateType === 'unitPrice') {
     unitPriceHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
   }

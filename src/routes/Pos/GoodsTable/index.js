@@ -28,7 +28,7 @@ let cx = classNames.bind(styles)
 
 function searchResult(value, count, includedBarcodeCount, includedSkuCount) {
   return [
-    <Option key={`${value}1`} value="all" text={`${value}`}>
+    <Option key={`${value}1`} value="" text={`${value}`}>
       条码等于 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{count}</span> 个
     </Option>,
     <Option key={`${value}2`} value="barcode" text=''>
@@ -378,11 +378,25 @@ class GoodsTable extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } })
   }
   selectHandler = (value) => {
-    if (value === 'barcode') {
+    if (value === '') {
+      this.pressEnterHandler(value)
+    } else if (value === 'barcode') {
       this.setState({content: this.state.includedBarcodeContent})
     } else if (value === 'sku') {
       this.setState({content: this.state.includedSkuContent})
     }
+  }
+  pressEnterHandler = (value) => {
+    this.setState({
+      value: '',
+      dataSource: [],
+    })
+    const { filteredContent } = this.state
+    if (filteredContent.length === 1) {
+      const filteredItem = filteredContent[0]
+      this.props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 } })
+    }
+
   }
   clearSearchHandler = () => {
     this.setState({content: this.props.commodity.currentOrderGoodsList})
