@@ -3,7 +3,7 @@ import moment from 'moment';
 import { fetchCommodityList, fetchCustomerList, submitCustomer, getCustomer, deleteCustomer, updateCustomer, getMilkPowderGoods, addOrUpdateCacheOrder, fetchWaybill, submitOrder, getStoreSaleGoods, getStoreWholeSaleGoods, addOrUpdateDailyClosing } from '../services/api';
 import { message } from 'antd';
 import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from '../constant'
-import { calculateExpressOrShippingCost, getGoodsItemRealPrice } from '../utils/utils';
+import { calculateExpressOrShippingCost, getGoodsItemCustomerPrice, keepTwoDecimals } from '../utils/utils';
 
 function getCurrentOrder(state) {
   return state.orders.filter(item => item.key === state.activeTabKey)[0];
@@ -54,15 +54,19 @@ export default {
       const { payload } = action
       yield put ({type: 'saveCurrentCustomer', payload })
       const commodity = yield select(state => state.commodity);
-      const { activeTabKey } = commodity
+      const { activeTabKey, currentOrderGoodsList } = commodity
       const currentOrder = getCurrentOrder(commodity);
       const { customer={}, selectedList, type, saleType } = currentOrder
       const customerType = customer.memberType
       const newSelectedList = selectedList.map(item => ({
         ...item,
-        RealPrice: getGoodsItemRealPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice)
+        CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice)
+      }))
+      const newCurrentOrderGoodsList = currentOrderGoodsList.map(item => ({
+        ...item, CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice)
       }))
       yield put({type: 'changeSelectedList', payload: {activeTabKey, newSelectedList}})
+      yield put({ type: 'changeCurrentOrderGoodsList', payload: newCurrentOrderGoodsList })
     },
     *addOrUpdateCacheOrder(action, { put, call }) {
       const { payload } = action
@@ -105,7 +109,7 @@ export default {
       })
       if (response.Status) {
         const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, RealPrice: item.RetailPrice, Count: 1 }))
+        const payload = data.map(item => ({ ...item, Key: item.Sku, CustomerPrice: item.RetailPrice, Count: 1 }))
         yield put({ type: 'saveMilkPowderGoodsList', payload })
         yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload })
@@ -126,7 +130,7 @@ export default {
       })
       if (response.Status) {
         const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, SaleType: SALE_TYPE.LOCAL, RealPrice: item.RetailPrice, Count: 1, }))
+        const payload = data.map(item => ({ ...item, Key: item.Sku, SaleType: SALE_TYPE.LOCAL, CustomerPrice: item.RetailPrice, Count: 1, }))
         yield put({ type: 'saveStoreSaleGoodsList', payload })
         yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload })
@@ -147,7 +151,7 @@ export default {
       })
       if (response.Status) {
         const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, RealPrice: item.RetailPrice, Count: 1 }))
+        const payload = data.map(item => ({ ...item, Key: item.Sku, CustomerPrice: item.RetailPrice, Count: 1 }))
         yield put({ type: 'saveStoreWholeSaleGoodsList', payload })
         yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload })
@@ -356,14 +360,14 @@ export default {
       const currentItem = paymentData.filter((item, index) => index === activePaymentDataIndex)[0];
       function generateDemand(prevDemand, prevCash) {
         if (prevDemand > prevCash) {
-          return prevDemand - prevCash;
+          return keepTwoDecimals(prevDemand - prevCash);
         } else {
           return 0;
         }
       }
       function generateGiveChange(demand, cash) {
         if (cash > demand) {
-          return cash - demand;
+          return keepTwoDecimals(cash - demand);
         } else {
           return 0;
         }
@@ -413,7 +417,6 @@ export default {
       const { type, saleType, customer, targetPhase } = currentOrder
       const customerType = customer.memberType || null
       const currentGoodsList = targetPhase === POS_PHASE.TABLE ? currentOrderGoodsList :  pagingData[current - 1]
-      console.log('currentGoodsList', currentGoodsList, selectedKey)
       const { selectedList } = currentOrder;
       let { avoidDuplicationIndex } = currentOrder;
       const selectedItem = currentGoodsList.filter(item => (item.Key === selectedKey))[0];
@@ -423,7 +426,8 @@ export default {
           ...selectedItem,
           Count: count || 1,
           CalculateType: 'count',
-          RealPrice: getGoodsItemRealPrice(type, saleType, customerType, selectedItem.RetailPrice, selectedItem.PlatinumPrice, selectedItem.DiamondPrice, selectedItem.VIPPrice, selectedItem.SVIPPrice),
+          // RealPrice: getGoodsItemRealPrice(type, saleType, customerType, selectedItem.RetailPrice, selectedItem.PlatinumPrice, selectedItem.DiamondPrice, selectedItem.VIPPrice, selectedItem.SVIPPrice),
+          SaleType: saleType,
         };
         return [...selectedList, newSelectedItem];
       }
@@ -459,24 +463,25 @@ export default {
     },
     *changeSelectedList(action, { put, select }) {
       const { activeTabKey, newSelectedList } = action.payload;
-      yield put({ type: 'changeSelectedItem', payload: { activeTabKey, newSelectedList } });
       const { orders } = yield select(state => state.commodity);
       const currentOrder = orders.filter(item => (item.key === activeTabKey))[0];
-      const selectedList = currentOrder.selectedList;
+      const { wholeDiscount } = currentOrder
       let goodsPrice = 0;
       let originPrice = 0;
       let totalWeight = 0;
-      selectedList.forEach((item) => {
-        const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.RealPrice
+      const latestSelectedList = newSelectedList.map((item) => {
+        const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.CustomerPrice
         const retailPrice = item.RetailPrice
         const count = item.Count;
         const discount = item.Discount;
         const weight = item.Weight
-        const price = unitPrice * count * (discount || 100) / 100;
+        const price = unitPrice * count * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
         goodsPrice += price;
         originPrice += retailPrice * count
         totalWeight += weight * count
+        return {...item, RealPrice: price}
       });
+      yield put({ type: 'changeSelectedItem', payload: { activeTabKey, latestSelectedList } });
       yield put({ type: 'changeGoodsPrice', payload: goodsPrice });
       yield put({ type: 'changeOriginPrice', payload: originPrice })
       yield put({ type: 'changeTotalWeight', payload: totalWeight })
@@ -565,16 +570,34 @@ export default {
         yield put({ type: 'changeExpressDataAndSumCost', payload: [] })
         yield put({ type: 'changeShippingDataAndSumCost', payload: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0, }] })
       }
-      const { orders, activeTabKey } = yield select(state => state.commodity);
+      const { orders, activeTabKey, currentOrderGoodsList } = yield select(state => state.commodity);
       const currentOrder = orders.filter(item => (item.key === activeTabKey))[0];
       const { selectedList, type, customer } = currentOrder;
       const customerType = customer.memberType
       const newSelectedList = selectedList.map(item => ({
         ...item,
         SaleType: saleType,
-        RealPrice: getGoodsItemRealPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
+        CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
       }));
+      const newCurrentOrderGoodsList = currentOrderGoodsList.map(item => ({
+        ...item, CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
+      }))
+      yield put({ type: 'changeCurrentOrderGoodsList', payload: newCurrentOrderGoodsList})
       yield put({ type: 'changeSaleType', payload: saleType });
+      yield put({ type: 'changeSelectedList', payload: { activeTabKey, newSelectedList } });
+    },
+    *changeWholeDiscountInput(action, { put, select }) {
+      const wholeDiscount = action.payload
+      if (typeof wholeDiscount !== 'number' || wholeDiscount > 100 || wholeDiscount < 0) { return }
+      const commodity = yield select(state => state.commodity);
+      const { activeTabKey } = commodity
+      const currentOrder = getCurrentOrder(commodity);
+      const { selectedList } = currentOrder
+      const newSelectedList = selectedList.map(item => ({
+        ...item,
+        WholeDiscount: wholeDiscount,
+      }))
+      yield put({ type: 'changeWholeDiscount', payload: wholeDiscount })
       yield put({ type: 'changeSelectedList', payload: { activeTabKey, newSelectedList } });
     },
     *clickAddBoxButton(action, { put, select }) {
@@ -669,6 +692,7 @@ export default {
           targetPhase: POS_PHASE.TABLE,
           lastPhase: POS_PHASE.TABLE,
           totalWeight: 0,
+          wholeDiscount: 100,
         },
       ];
       const activeTabKey = `orders-${count}`;
@@ -711,7 +735,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeGoodsPrice(state, action) {
-      const goodsPrice = action.payload;
+      const goodsPrice = keepTwoDecimals(action.payload)
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key && item.key === activeTabKey) {
@@ -721,7 +745,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeOriginPrice(state, action) {
-      const originPrice = action.payload;
+      const originPrice = keepTwoDecimals(action.payload)
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key && item.key === activeTabKey) {
@@ -731,7 +755,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeTotalWeight(state, action) {
-      const totalWeight = action.payload;
+      const totalWeight = keepTwoDecimals(action.payload)
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key && item.key === activeTabKey) {
@@ -762,10 +786,10 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeSelectedItem(state, action) {
-      const { activeTabKey, newSelectedList } = action.payload;
+      const { activeTabKey, latestSelectedList } = action.payload;
       const newOrders = state.orders.map((item) => {
         if (item.key && item.key === activeTabKey) {
-          return { ...item, selectedList: newSelectedList };
+          return { ...item, selectedList: latestSelectedList };
         }
         return item;
       });
@@ -861,7 +885,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeExpressCost(state, action) {
-      const expressCost = action.payload;
+      const expressCost = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
@@ -872,7 +896,8 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeShippingCost(state, action) {
-      const shippingCost = action.payload;
+      console.log('shippingCost', action.payload)
+      const shippingCost = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
@@ -894,7 +919,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeTotalPrice(state, action) {
-      const totalPrice = action.payload;
+      const totalPrice = keepTwoDecimals(action.payload)
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
@@ -905,7 +930,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeChangeMoney(state, action) {
-      const changeMoney = action.payload;
+      const changeMoney = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
@@ -916,7 +941,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeRealMoney(state, action) {
-      const realMoney = action.payload;
+      const realMoney = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
@@ -1003,6 +1028,17 @@ export default {
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
           return { ...item, customer };
+        }
+        return item;
+      });
+      return { ...state, orders: newOrders };
+    },
+    changeWholeDiscount(state, action) {
+      const wholeDiscount = action.payload
+      const { activeTabKey } = state;
+      const newOrders = state.orders.map((item) => {
+        if (item.key === activeTabKey) {
+          return { ...item, wholeDiscount };
         }
         return item;
       });

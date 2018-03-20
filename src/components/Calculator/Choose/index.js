@@ -9,7 +9,7 @@ import isNumber from '../isNumber';
 
 import ReactDOM from 'react-dom';
 
-const namePad = [
+const numPad = [
   {
     key: '1',
     label: '1',
@@ -88,7 +88,7 @@ const namePad = [
   {
     key: 'del',
     label: 'del',
-    keyboard: 'backspace',
+    keyboard: 'del',
   },
 ]
 
@@ -109,7 +109,7 @@ const actionPad = [
 class ChooseCalculator extends PureComponent {
   button = []
   componentDidMount() {
-    namePad.forEach(item => {
+    numPad.forEach(item => {
       Mousetrap.bind(item.keyboard, () => {
         this.button[item.key].querySelector('button').blur()
         this.button[item.key].querySelector('button').focus()
@@ -133,6 +133,12 @@ class ChooseCalculator extends PureComponent {
     //   Mousetrap.bind('d', () => calculate(this.props.commodity, this.props.dispatch, 'discount'))
   }
   componentWillUnmount() {
+    numPad.forEach(item => {
+      Mousetrap.unbind(item.keyboard)
+    })
+    actionPad.forEach(item => {
+      Mousetrap.unbind(item.keyboard)
+    })
   }
   clickHandler = (buttonName) => {
     calculate(this.props.commodity, this.props.dispatch, buttonName);
@@ -183,7 +189,7 @@ class ChooseCalculator extends PureComponent {
         </div>
         <div className={styles.numPad}>
           {
-            namePad.map(item => {
+            numPad.map(item => {
               if (isNumber(item.key)) {
                 return <Cbutton
                   key={item.key}

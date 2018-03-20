@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
-import { Button, Badge, Row, Col, Icon, Table, Radio, List, Card, Divider } from 'antd';
+import { Button, Badge, Row, Col, Icon, Table, Radio, List, Card, Divider, Layout } from 'antd';
 import styles from './index.less';
 import Pay from './Pay';
 import ExpressHandler from '../ExpressHandler';
@@ -11,11 +11,24 @@ import MilkPowderHandler from './MilkPowderHandler/';
 import StoreSaleHandler from './StoreSaleHandler';
 import StoreWholeSaleHandler from './StoreWholeSaleHandler/'
 import DescriptionList from '../../../components/DescriptionList';
+import SelectedGoods from '../../../components/List/SelectedGoods/';
 // import WareHouse from './WareHouse';
 
+const { Header, Sider, Content } = Layout;
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 const { Description } = DescriptionList
+const saleTypeLabelMapping = {
+  1: '本地',
+  2: '邮寄',
+  3: '代发',
+}
+
+const typeLabelMapping = {
+  1: '门店销售',
+  2: '奶粉/生鲜',
+  3: '批发',
+}
 
 const dataSource = [{
   key: '1',
@@ -53,6 +66,12 @@ export default class Payment extends PureComponent {
     this.state = {
       isConfirmEnable: false,
     };
+  }
+  componentDidMount() {
+    Mousetrap.bind('v', () => {this.selectCustomerHandler()})
+  }
+  componentWillUnmount() {
+    Mousetrap.unbind('v')
   }
   handlePrevClick = () => {
     // this.props.dispatch(routerRedux.goBack());
@@ -101,6 +120,18 @@ export default class Payment extends PureComponent {
       }
     }
     return (
+      <Layout>
+        <Sider
+          width={440}
+          className={styles.sider}
+        >
+          <Content
+            className={styles.leftContent}
+          >
+            <SelectedGoods />
+          </Content>
+        </Sider>
+        <Content>
       <div className={styles.paymentLayout}>
         <Print
           ref="printForm"
@@ -111,16 +142,10 @@ export default class Payment extends PureComponent {
               <Table dataSource={dataSource} columns={columns} />
               <div className={styles.printHide}>111</div>
             </div>
-          {/* <div style={{color: 'red', width: '80mm', border: '1px solid red'}}>
-            <p style={{color: 'red', width: '80mm', border: '1px solid red'}}>first </p>
-            <p className="green">second </p>
-            <p className="pink">third </p>
-          </div> */}
         </div>
         </Print>
-        {/* <div>left</div> */}
         <div className={styles.paymentWrapper}>
-          <Row
+          {/* <Row
             type="flex"
             className={styles.header}
             justify="space-between"
@@ -144,11 +169,13 @@ export default class Payment extends PureComponent {
                 打印
               </Button>
             </Col>
-          </Row>
+          </Row> */}
           <Card title="订单信息" style={{ marginBottom: 24 }} extra={<a onClick={this.selectCustomerHandler}>选择或新建客户</a>}>
             <DescriptionList size="small"  title="基本信息">
               <Description term="订单号">{ID}</Description>
-              <Description term="订单类型">门店销售/本地</Description>
+              <Description term="订单类型">
+              {typeLabelMapping[type]}{saleType ? `/${saleTypeLabelMapping[saleType]}` : null}
+              </Description>
               <Description term="下单时间">{createTime}</Description>
             </DescriptionList>
             <Divider style={{ margin: '16px 0' }} />
@@ -181,6 +208,9 @@ export default class Payment extends PureComponent {
           </Card>
         </div>
       </div>
+
+        </Content>
+      </Layout>
     );
   }
 }

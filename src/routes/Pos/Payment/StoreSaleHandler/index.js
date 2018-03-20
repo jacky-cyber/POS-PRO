@@ -57,7 +57,7 @@ export default class SaleHandler extends PureComponent {
     )
     return (
       <div>
-        <Print
+        {/* <Print
           ref="printForm"
           title="门店出口/邮寄/代发"
         >
@@ -66,7 +66,7 @@ export default class SaleHandler extends PureComponent {
             <p className="green">second </p>
             <p className="pink">third </p>
           </div>
-        </Print>
+        </Print> */}
         <Card title={title} bordered={false} style={{marginBottom: 24}}>
         {
           this.generateSaleTypeContent(saleType, priceListNode)

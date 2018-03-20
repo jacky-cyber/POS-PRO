@@ -3,9 +3,107 @@ import styles from './index.less';
 import { connect } from 'dva';
 import Cbutton from '../Cbutton';
 import calculate from './logic/calculate';
+import isNumber from '../isNumber';
+import ReactDOM from 'react-dom';
+import Mousetrap from 'mousetrap';
+
+const numPad = [
+  {
+    key: '1',
+    label: '1',
+    keyboard: '1',
+  },
+  {
+    key: '2',
+    label: '2',
+    keyboard: '2',
+  },
+  {
+    key: '3',
+    label: '3',
+    keyboard: '3',
+  },
+  {
+    key: 'plusTen',
+    label: '+10',
+  },
+  {
+    key: '4',
+    label: '4',
+    keyboard: '4',
+  },
+  {
+    key: '5',
+    label: '5',
+    keyboard: '5',
+  },
+  {
+    key: '6',
+    label: '6',
+    keyboard: '6',
+  },
+  {
+    key: 'plusTwenty',
+    label: '+20',
+  },
+  {
+    key: '7',
+    label: '7',
+    keyboard: '7',
+  },
+  {
+    key: '8',
+    label: '8',
+    keyboard: '8',
+  },
+  {
+    key: '9',
+    label: '9',
+    keyboard: '9',
+  },
+  {
+    key: 'plusFifty',
+    label: '+50',
+  },
+  {
+    key: 'clear',
+    label: '清除',
+    keyboard: 'c',
+  },
+  {
+    key: '0',
+    label: '0',
+    keyboard: '0',
+  },
+  {
+    key: '.',
+    label: '.',
+    keyboard: '.',
+  },
+  {
+    key: 'del',
+    label: 'del',
+    keyboard: 'del',
+  },
+]
 
 
 class PaymentCalculator extends PureComponent {
+  button = []
+  componentDidMount() {
+    numPad.forEach(item => {
+      item.keyboard && Mousetrap.bind(item.keyboard, () => {
+        this.button[item.key].querySelector('button').blur()
+        this.button[item.key].querySelector('button').focus()
+        this.button[item.key].querySelector('button').click()
+      })
+    })
+  }
+  componentWillUnmount() {
+    numPad.forEach(item => {
+      item.keyboard && Mousetrap.unbind(item.keyboard)
+    })
+  }
   clickHandler = (buttonName) => {
     calculate(this.props.commodity, this.props.dispatch, buttonName);
   }
@@ -15,7 +113,31 @@ class PaymentCalculator extends PureComponent {
     return (
       <div className={styles.calcWrapper}>
         <div className={styles.numPad}>
-          <Cbutton name="1" clickHandler={this.clickHandler} >1</Cbutton>
+          {
+            numPad.map(item => {
+              if (isNumber(item.key)) {
+                return <Cbutton
+                  key={item.key}
+                  name={item.key}
+                  clickHandler={this.clickHandler}
+                  ref={node => (this.button[item.key] = ReactDOM.findDOMNode(node))}
+                >
+                  {item.label}
+                </Cbutton>
+              } else {
+                return <Cbutton
+                  key={item.key}
+                  datatype="string"
+                  name={item.key}
+                  clickHandler={this.clickHandler}
+                  ref={node => (this.button[item.key] = ReactDOM.findDOMNode(node))}
+                >
+                  {item.label}
+                </Cbutton>
+              }
+            })
+          }
+          {/* <Cbutton name="1" clickHandler={this.clickHandler} >1</Cbutton>
           <Cbutton name="2" clickHandler={this.clickHandler}>2</Cbutton>
           <Cbutton name="3" clickHandler={this.clickHandler}>3</Cbutton>
           <Cbutton name="+10" datatype="string" clickHandler={this.clickHandler} >+10</Cbutton>
@@ -30,7 +152,7 @@ class PaymentCalculator extends PureComponent {
           <Cbutton name="clear" clickHandler={this.clickHandler}>c</Cbutton>
           <Cbutton name="0" clickHandler={this.clickHandler}>0</Cbutton>
           <Cbutton name="." clickHandler={this.clickHandler}>.</Cbutton>
-          <Cbutton name="del" datatype="string" clickHandler={this.clickHandler}>del</Cbutton>
+          <Cbutton name="del" datatype="string" clickHandler={this.clickHandler}>del</Cbutton> */}
         </div>
       </div>
     );

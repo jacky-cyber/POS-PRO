@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Table, Card, Collapse, Layout, Icon, Button, InputNumber, Divider, Select } from 'antd'
+import { Table, Card, Collapse, Layout, Icon, Button, InputNumber, Divider, Select, Radio } from 'antd'
 import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
@@ -12,10 +12,12 @@ import ChooseCalculator from '../../../components/Calculator/Choose/'
 import SelectedGoods from '../../../components/List/SelectedGoods/'
 import HeaderSearch from '../../../components/HeaderSearch';
 import styles from './index.less';
-import { POS_PHASE, CUSTOMER_TYPE } from '../../../constant';
+import { POS_TAB_TYPE, POS_PHASE, CUSTOMER_TYPE, SALE_TYPE } from '../../../constant';
 import Mousetrap from 'mousetrap';
 
 
+const RadioButton = Radio.Button;
+const RadioGroup = Radio.Group;
 const { Panel } = Collapse
 const { Header, Sider, Content } = Layout;
 const { Option } = Select
@@ -192,8 +194,8 @@ class GoodsTable extends PureComponent {
         },
         {
           title: `真实价格`,
-          dataIndex: 'RealPrice',
-          key: 'RealPrice',
+          dataIndex: 'CustomerPrice',
+          key: 'CustomerPrice',
           onHeaderCell: (columns) => {
             const index = this.state.columns.findIndex(item => item.key === columns.key)
             return {
@@ -306,33 +308,29 @@ class GoodsTable extends PureComponent {
   componentWillReceiveProps(nextProps) {
     const { commodity } = nextProps
     const { currentOrderGoodsList=[], activeTabKey } = commodity
-    if (Array.isArray(currentOrderGoodsList) && currentOrderGoodsList.length > 0 && currentOrderGoodsList.length !== this.props.commodity.currentOrderGoodsList.length) {
-      console.log(nextProps.commodity.currentOrderGoodsList)
+    // if (Array.isArray(currentOrderGoodsList) && currentOrderGoodsList.length > 0 && currentOrderGoodsList.length !== this.props.commodity.currentOrderGoodsList.length) {
       this.setState({ content: nextProps.commodity.currentOrderGoodsList })
-    }
+    // }
  }
   componentDidMount() {
-    // const { commodity } = this.props
-    // const { currentOrderGoodsList=[], activeTabKey } = commodity
-    // const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
-    // const { customer={} } = currentOrder
-    // const { memberType } = customer
-    // if (this.state.content.length === 0) {
-    //   console.log('content', this.props.commodity.currentOrderGoodsList)
-    //   this.setState({content: this.props.commodity.currentOrderGoodsList})
-    // }
-    // if (memberType) {
-    //   const newColumns = this.state.columns.map(item => {
-    //     if (item.dataIndex === 'RealPrice') {
-    //       return { ...item, title: `真实价格-${getCustomerText(memberType)}会员`}
-    //     }
-    //     return item
-    //   })
-    //   this.setState({
-    //     columns: newColumns,
-    //     tagList: newColumns,
-    //   })
-    // }
+    const { commodity } = this.props
+    const { currentOrderGoodsList=[], activeTabKey } = commodity
+    const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
+    const { customer={} } = currentOrder
+    const { memberType } = customer
+      this.setState({ content: this.props.commodity.currentOrderGoodsList })
+    if (memberType) {
+      const newColumns = this.state.columns.map(item => {
+        if (item.dataIndex === 'CustomerPrice') {
+          return { ...item, title: `真实价格-${getCustomerText(memberType)}会员`}
+        }
+        return item
+      })
+      this.setState({
+        columns: newColumns,
+        tagList: newColumns,
+      })
+    }
   }
 
   toggleCollapse = () => {
@@ -406,7 +404,7 @@ class GoodsTable extends PureComponent {
     const { filteredContent, includedBarcodeContent, value, dataSource } = this.state
     const { currentOrderGoodsList, activeTabKey } = commodity
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
-    const { targetPhase: currentPhase } = currentOrder
+    const { targetPhase: currentPhase, saleType, type } = currentOrder
     let displayTable = cx({
       [styles.trigger]: true,
       [styles.activeTrigger]: currentPhase === POS_PHASE.TABLE
@@ -459,6 +457,20 @@ class GoodsTable extends PureComponent {
             <a style={{ marginLeft: 8 }} onClick={this.toggleCollapse}>
               配置表格 <Icon type={this.state.display ? "up" : "down"} />
             </a>
+              {
+                type === POS_TAB_TYPE.STORESALE && (
+
+                  <RadioGroup
+                    value={saleType}
+                    onChange={e => dispatch({ type: 'commodity/clickChangeSaleTypeButton', payload: e.target.value })}
+                    style={{ marginLeft: 24 }}
+                  >
+                    <RadioButton value={SALE_TYPE.LOCAL}>本地</RadioButton>
+                    <RadioButton value={SALE_TYPE.EXPRESS}>邮寄</RadioButton>
+                    <RadioButton value={SALE_TYPE.SHIPPING}>代发</RadioButton>
+                  </RadioGroup>
+                )
+              }
             {/* <div className={styles.right}>
               <HeaderSearch
                 className={`${styles.action} ${styles.search}`}

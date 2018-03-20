@@ -1,9 +1,36 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover } from 'antd'
+import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd'
 import { connect } from 'dva';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import styles from './index.less'
+import Print from 'rc-print';
+import { POS_PHASE } from '../../../../constant'
 
+const dataSource = [{
+  key: '1',
+  name: '胡彦斌',
+  age: 32,
+  address: '西湖区湖底公园1号'
+}, {
+  key: '2',
+  name: '胡彦祖',
+  age: 42,
+  address: '西湖区湖底公园1号'
+}];
+
+const columns = [{
+  title: '姓名',
+  dataIndex: 'name',
+  key: 'name',
+}, {
+  title: '年龄',
+  dataIndex: 'age',
+  key: 'age',
+}, {
+  title: '住址',
+  dataIndex: 'address',
+  key: 'address',
+}];
 
 
 @connect(state => ({
@@ -14,7 +41,15 @@ import styles from './index.less'
 
 @Form.create()
 
+
+
 export default class LocalHandler extends PureComponent {
+  prevHandler = () => {
+    const activeTabKey = this.props.activeTabKey
+    const lastPhase = POS_PHASE.PAY
+    const targetPhase = POS_PHASE.TABLE
+    this.props.dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase }})
+  }
   submitHandler = () => {
     const { ID } = this.props.order
     const { selectedList, expressData, shippingData, ...restOrder } = this.props.order
@@ -40,59 +75,30 @@ export default class LocalHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/submitOrder', payload })
   }
   render() {
-    // console.log(222)
-    // const { form, order, dispatch } = this.props;
-    // const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
-    // const { expressData } = order || []
-    // const newExpressData = expressData.map(item => ({
-    //   ...item, Name: item.Name.Name
-    // }))
-    // const errors = getFieldsError();
-    // const getErrorInfo = () => {
-    //   const errorCount = Object.keys(errors).filter(key => errors[key]).length;
-    //   if (!errors || errorCount === 0) {
-    //     return null;
-    //   }
-    //   const scrollToField = (fieldKey) => {
-    //     const labelNode = document.querySelector(`label[for="${fieldKey}"]`);
-    //     if (labelNode) {
-    //       labelNode.scrollIntoView(true);
-    //     }
-    //   };
-    //   const errorList = Object.keys(errors).map((key) => {
-    //     if (!errors[key]) {
-    //       return null;
-    //     }
-    //     return (
-    //       <li key={key} className={styles.errorListItem} onClick={() => scrollToField(key)}>
-    //         <Icon type="cross-circle-o" className={styles.errorIcon} />
-    //         <div className={styles.errorMessage}>{errors[key][0]}</div>
-    //         <div className={styles.errorField}>{fieldLabels[key]}</div>
-    //       </li>
-    //     );
-    //   });
-    //   return (
-    //     <span className={styles.errorIcon}>
-    //       <Popover
-    //         title="表单校验信息"
-    //         content={errorList}
-    //         overlayClassName={styles.errorPopover}
-    //         trigger="click"
-    //         getPopupContainer={trigger => trigger.parentNode}
-    //       >
-    //         <Icon type="exclamation-circle" />
-    //       </Popover>
-    //       {errorCount}
-    //     </span>
-    //   );
-    // };
-
     const { priceListNode } = this.props
 
     return (
       <div>
+        <Print
+          ref="printForm"
+          title="门店出口/邮寄/代发"
+        >
+        <div style={{display: 'none'}}>
+            <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
+              <Table dataSource={dataSource} columns={columns} />
+              <div className={styles.printHide}>111</div>
+            </div>
+        </div>
+        </Print>
         <FooterToolbar style={{ width: '100%' }} extra={priceListNode} >
-          {/* {getErrorInfo()} */}
+          <Button onClick={this.prevHandler}>返回</Button>
+          <Button
+            onClick={() => {
+              this.refs.printForm.onPrint();
+            }}
+          >
+            打印
+              </Button>
           <Button type="primary" onClick={this.submitHandler} >
             提交
           </Button>

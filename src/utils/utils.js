@@ -1,44 +1,60 @@
 import moment from 'moment';
 import { POS_TAB_TYPE, SALE_TYPE } from '../constant';
 
-export function getGoodsItemRealPrice(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice) {
+export function keepTwoDecimals(val) {
+  if (val === 0) return 0
+  if (!val) return
+  return parseFloat(val).toFixed(2) - 0
+}
+
+export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice) {
   // console.log(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice)
   if (!customerType) {
-    return retailPrice
+    return keepTwoDecimals(retailPrice)
   }
-  let realPrice = 0
+  let customerPrice = 0
   if (type === POS_TAB_TYPE.STORESALE || type === POS_TAB_TYPE.MILKPOWDER) {
     if (saleType === SALE_TYPE.LOCAL || saleType === SALE_TYPE.EXPRESS) {
       switch (customerType) {
         case 1:
-          return reatilPrice
+          customerPrice = reatilPrice
+          break
         case 2:
-          return platinumPrice
+          customerPrice = platinumPrice
+          break
         case 3:
-          return diamondPrice
+          customerPrice = diamondPrice
+          break
         case 4:
-          return SVVIPPrice
+          customerPrice = SVVIPPrice
+          break
         default:
-          return retailPrice
+          customerPrice = retailPrice
+          break
       }
     } else if (saleType === SALE_TYPE.SHIPPING) {
       switch (customerType) {
         case 1:
-          return reatilPrice
+          customerPrice = reatilPrice
+          break
         case 2:
-          return platinumPrice
+          customerPrice = platinumPrice
+          break
         case 3:
-          return VIPPrice
+          customerPrice = VIPPrice
+          break
         case 4:
-          return SVVIPPrice
+          customerPrice = SVVIPPrice
+          break
         default:
-          return retailPrice
+          customerPrice = retailPrice
+          break
       }
     } else if (!saleType) {
-      return retailPrice
+      customerPrice = retailPrice
     }
   }
-  return realPrice
+  return keepTwoDecimals(customerPrice)
 }
 
 export function calculateExpressOrShippingCost(unitPrice, weight, weightedWeight) {
