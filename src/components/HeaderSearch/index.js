@@ -28,12 +28,17 @@ export default class HeaderSearch extends PureComponent {
   };
   componentWillUnmount() {
     clearTimeout(this.timeout);
+    Mousetrap.unbind('alt+s')
+    // window.removeEventListener('keyup', this.listen.bind(this));
   }
+  // listen(e) {
+  //   if (e.keyCode === 27) this.leaveSearchMode()
+  // }
   componentDidMount() {
     Mousetrap.bind('alt+s', () => {
         this.enterSearchMode()
       })
-    window.addEventListener('keyup', (e) => {if(e.keyCode === 27) this.leaveSearchMode()} )
+    // window.addEventListener('keyup', this.listen.bind(this))
   }
   onKeyDown = (e) => {
     if (e.key === 'Enter') {

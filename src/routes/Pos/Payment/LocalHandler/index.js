@@ -5,6 +5,7 @@ import FooterToolbar from '../../../../components/FooterToolbar';
 import styles from './index.less'
 import Print from 'rc-print';
 import { POS_PHASE } from '../../../../constant'
+import Mousetrap from 'mousetrap';
 
 const dataSource = [{
   key: '1',
@@ -32,10 +33,13 @@ const columns = [{
   key: 'address',
 }];
 
+const keyboardMapping = ['backspace', 'p', 'enter']
+
 
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
   activeTabKey: state.commodity.activeTabKey,
+  submitLoading: state.loading.effects['commodity/submitOrder'],
 }))
 
 
@@ -44,11 +48,24 @@ const columns = [{
 
 
 export default class LocalHandler extends PureComponent {
+  componentDidMount() {
+    Mousetrap.bind('backspace', () => this.prevHandler())
+    Mousetrap.bind('p', () => this.printHandler())
+    Mousetrap.bind('enter', () => this.submitHandler())
+  }
+  componentWillUnmount() {
+    keyboardMapping.forEach(item => {
+      Mousetrap.unbind(item)
+    })
+  }
+  printHandler = () => {
+    this.refs.printForm.onPrint();
+  }
   prevHandler = () => {
     const activeTabKey = this.props.activeTabKey
     const lastPhase = POS_PHASE.PAY
     const targetPhase = POS_PHASE.TABLE
-    this.props.dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase }})
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } })
   }
   submitHandler = () => {
     const { ID } = this.props.order
@@ -75,7 +92,7 @@ export default class LocalHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/submitOrder', payload })
   }
   render() {
-    const { priceListNode } = this.props
+    const { priceListNode, submitLoading } = this.props
 
     return (
       <div>
@@ -83,23 +100,25 @@ export default class LocalHandler extends PureComponent {
           ref="printForm"
           title="门店出口/邮寄/代发"
         >
-        <div style={{display: 'none'}}>
+          <div style={{ display: 'none' }}>
             <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
               <Table dataSource={dataSource} columns={columns} />
-              <div className={styles.printHide}>111</div>
             </div>
-        </div>
+          </div>
         </Print>
-        <FooterToolbar style={{ width: '100%' }} extra={priceListNode} >
+        {/* <FooterToolbar style={{ width: '100%', paddingLeft: 440, }} extra={priceListNode} > */}
+        <FooterToolbar style={{ width: '100%', paddingLeft: 440, }}>
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
-            onClick={() => {
-              this.refs.printForm.onPrint();
-            }}
+            onClick={this.printHandler}
           >
             打印
               </Button>
-          <Button type="primary" onClick={this.submitHandler} >
+          <Button
+            type="primary"
+            onClick={this.submitHandler}
+            loading={submitLoading}
+          >
             提交
           </Button>
         </FooterToolbar>

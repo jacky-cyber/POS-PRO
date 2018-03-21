@@ -1,10 +1,13 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover } from 'antd'
+import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd'
 import { connect } from 'dva';
 import TableForm from './TableForm';
 import CascaderInFormItem from '../MilkPowderHandler/CascaderInFormItem';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import styles from './index.less'
+import Print from 'rc-print';
+import { POS_PHASE } from '../../../../constant'
+import Mousetrap from 'mousetrap';
 
 
 const fieldLabels = {
@@ -19,17 +22,66 @@ const fieldLabels = {
 };
 
 
+const dataSource = [{
+  key: '1',
+  name: '胡彦斌',
+  age: 32,
+  address: '西湖区湖底公园1号'
+}, {
+  key: '2',
+  name: '胡彦祖',
+  age: 42,
+  address: '西湖区湖底公园1号'
+}];
+
+const columns = [{
+  title: '姓名',
+  dataIndex: 'name',
+  key: 'name',
+}, {
+  title: '年龄',
+  dataIndex: 'age',
+  key: 'age',
+}, {
+  title: '住址',
+  dataIndex: 'address',
+  key: 'address',
+}];
+
+const keyboardMapping = ['backspace', 'p', 'enter']
+
+
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
   activeTabKey: state.commodity.activeTabKey,
   express: state.express,
   loading: state.commodity.commonLoading,
+  submitLoading: state.loading.effects['commodity/submitOrder'],
 }))
 
 
 @Form.create()
 
 export default class ShippingHandler extends PureComponent {
+  componentDidMount() {
+    Mousetrap.bind('backspace', () => this.prevHandler())
+    Mousetrap.bind('p', () => this.printHandler())
+    Mousetrap.bind('enter', () => this.validate())
+  }
+  componentWillUnmount() {
+    keyboardMapping.forEach(item => {
+      Mousetrap.unbind(item)
+    })
+  }
+  printHandler = () => {
+    this.refs.printForm.onPrint();
+  }
+  prevHandler = () => {
+    const activeTabKey = this.props.activeTabKey
+    const lastPhase = POS_PHASE.PAY
+    const targetPhase = POS_PHASE.TABLE
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } })
+  }
   checkShippingData = (rule, value, callback) => {
     console.log(value)
     const { Name } = value[0]
@@ -71,7 +123,7 @@ export default class ShippingHandler extends PureComponent {
       });
   }
   render() {
-    const { form, order, dispatch, loading, priceListNode } = this.props;
+    const { form, order, dispatch, loading, priceListNode, submitLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
     const { shippingData } = order || []
     // const newShippingData = shippingData.map(item => ({
@@ -121,7 +173,17 @@ export default class ShippingHandler extends PureComponent {
 
     return (
       <div>
-        <Card title="包裹管理" bordered={false} style={{marginBottom: 24}} >
+        <Print
+          ref="printForm"
+          title="门店出口/邮寄/代发"
+        >
+          <div style={{ display: 'none' }}>
+            <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
+              <Table dataSource={dataSource} columns={columns} />
+            </div>
+          </div>
+        </Print>
+        <Card title="代发包裹管理" bordered={false} style={{marginBottom: 24}} >
             {getFieldDecorator('shippingData', {
               initialValue: shippingData,
               rules: [{ validator: this.checkShippingData }]
@@ -202,9 +264,20 @@ export default class ShippingHandler extends PureComponent {
             </Row>
           </Form>
         </Card>
+        {/* <FooterToolbar style={{ width: '100%' }} extra={priceListNode}> */}
         <FooterToolbar style={{ width: '100%' }} extra={priceListNode}>
           {getErrorInfo()}
-          <Button type="primary" onClick={this.validate}  loading={loading} >
+          <Button onClick={this.prevHandler}>返回</Button>
+          <Button
+            onClick={this.printHandler}
+          >
+            打印
+              </Button>
+          <Button
+            type="primary"
+            onClick={this.validate}
+            loading={submitLoading}
+          >
             提交
           </Button>
         </FooterToolbar>

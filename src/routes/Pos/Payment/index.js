@@ -96,8 +96,9 @@ export default class Payment extends PureComponent {
     const { memberName, memberAddress, memberEmail, memberPhone, memberType, memberScore, memberCardNumber, memberID } = customer || {}
     const priceList = [
       { title: '商品金额', value: goodsPrice },
-      { title: '直邮金额', value: expressCost },
-      { title: '代发金额', value: shippingCost },
+      { title: '快递金额', value: expressCost || shippingCost },
+      // { title: '直邮金额', value: expressCost },
+      // { title: '代发金额', value: shippingCost },
       { title: '应收金额', value: totalPrice },
       { title: '实收金额', value: realMoney },
       { title: '找零金额', value: changeMoney },
@@ -121,6 +122,20 @@ export default class Payment extends PureComponent {
     }
     return (
       <Layout>
+        {/* <Sider
+          width={440}
+          className={styles.sider}
+        >
+          <Content
+            className={styles.leftContent}
+          >
+            <SelectedGoods />
+          </Content>
+          <div
+            className={styles.calculator}
+          >
+          </div>
+        </Sider> */}
         <Sider
           width={440}
           className={styles.sider}
@@ -130,6 +145,14 @@ export default class Payment extends PureComponent {
           >
             <SelectedGoods />
           </Content>
+          <div
+            className={styles.priceList}
+          >
+          <List
+          dataSource={priceList}
+          renderItem={item => (<List.Item className={styles.item}>{item.title}： {item.value}</List.Item>)}
+           />
+          </div>
         </Sider>
         <Content>
       <div className={styles.paymentLayout}>
@@ -179,7 +202,6 @@ export default class Payment extends PureComponent {
               <Description term="下单时间">{createTime}</Description>
             </DescriptionList>
             <Divider style={{ margin: '16px 0' }} />
-            {/* <Card type="inner" title="多层级信息组"> */}
             <DescriptionList size="small" title="会员信息">
             {
               memberID ?
@@ -196,7 +218,6 @@ export default class Payment extends PureComponent {
                 <Description>无会员信息</Description>
             }
             </DescriptionList>
-            {/* </Card> */}
 
           </Card>
           {generateContent(priceList)}

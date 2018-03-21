@@ -31,7 +31,8 @@ export default class TableForm extends PureComponent {
     });
     }
     const shippingData = newData.map(item => ({
-      ...item, RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
+      ...item,
+       RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
     }))
     // const setFieldsValueCallabck = this.props.from.setFieldsValue
     this.props.dispatch({ type: 'commodity/changeShippingDataAndSumCost', payload: shippingData })

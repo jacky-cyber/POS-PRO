@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, message, Popconfirm, Divider, Input, InputNumber } from 'antd';
+import { Table, Button, message, Popconfirm, Divider, Input, InputNumber, Popover, Icon } from 'antd';
 import styles from './index.less';
-import SearchableSelect from '../../../../components/SearchableSelect'
+import SearchableSelect from '../ShippingHandler/SearchableSelect'
 import { calculateExpressOrShippingCost } from '../../../../utils/utils';
 
 export default class TableForm extends PureComponent {
@@ -20,22 +20,54 @@ export default class TableForm extends PureComponent {
   }
 
   handleFieldChange = (e, fieldName, key) => {
+    const { setFieldsValue, express } = this.props
+    const { expressList = [] } = express
     const data = this.props.value
     const value = e && (e.target ? e.target.value : e);
-    const newData = data.map(item => {
-      if (item.ID === key) {
-        return { ...item, [fieldName]: value };
-      }
-      return item;
-    });
-    const shippingData = newData.map(item => ({
-      ...item, RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ), Name: {Name: item.Name, ID: item.Name}
-    }))
-    // const setFieldsValueCallabck = this.props.from.setFieldsValue
-    this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: shippingData })
+    let newData = []
+    if (fieldName === 'Name') {
+      const Name = value.Name
+      const UnitPrice = value.Price
+      newData = data.map(item => {
+        if (item.ID === key) {
+          return {
+            ...item,
+            Name,
+            UnitPrice,
+          }
+        }
+      })
+      const expressData = newData.map(item => ({
+        ...item,
+        RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
+      }))
+      const expressDataToForm = newData.map(item => ({
+        ...item,
+        RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
+        Name: value.ID,
+      }))
+      this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData })
+      setFieldsValue({ expressData: expressDataToForm })
+    } else {
+      newData = data.map(item => {
+        if (item.ID === key) {
+          return { ...item, [fieldName]: value };
+        }
+        return item;
+      });
+      const expressData = newData.map(item => ({
+        ...item,
+        RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
+      }))
+      this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData })
+      setFieldsValue({ expressData: expressData })
+    }
   }
   render() {
-    const { value, dispatch } = this.props;
+    const { value, dispatch, express } = this.props;
+    const { expressList = [], loading } = express
+    const getCompany = () => dispatch({ type: 'express/getCompany' })
+    const content = "包裹与商品的总重量不足 1kg 时，快递金额为该快递公司的单价，超过 1kg 时快递金额 = 总重量 * 快递单价"
     const columns = [{
       title: '包裹序号',
       dataIndex: 'BoxIndex',
@@ -43,7 +75,18 @@ export default class TableForm extends PureComponent {
     }, {
       title: '快递公司',
       dataIndex: 'Name',
-      render: (text, record) => <Input value={text} onChange={e => this.handleFieldChange(e, 'Name', record.ID)} />,
+      // render: (text, record) => <Input value={text} onChange={e => this.handleFieldChange(e, 'Name', record.ID)} />,
+      render: (text, record) => (
+        <SearchableSelect
+          fetchData={getCompany}
+          onChange={e => this.handleFieldChange(e, 'Name', record.ID)}
+          data={expressList}
+          label='Name'
+          value={text}
+          dispatch={dispatch}
+          disabled={loading}
+        />
+      ),
     }, {
       title: '重量',
       dataIndex: 'Weight',
@@ -52,10 +95,10 @@ export default class TableForm extends PureComponent {
       title: '加权重量',
       dataIndex: 'WeightedWeight',
       render: (text, record) => <InputNumber value={text} min={0} precision={2} onChange={e => this.handleFieldChange(e, 'WeightedWeight', record.ID)} />,
-    },{
+    }, {
       title: '运单号',
       dataIndex: 'InvoiceNo',
-      render: (text, record) => <InputNumber value={text} min={0}  onChange={e => this.handleFieldChange(e, 'InvoiceNo', record.ID)} />,
+      render: (text, record) => <InputNumber value={text} min={0} onChange={e => this.handleFieldChange(e, 'InvoiceNo', record.ID)} />,
     }, {
       title: '快递单价',
       dataIndex: 'UnitPrice',
@@ -63,6 +106,14 @@ export default class TableForm extends PureComponent {
     }, {
       title: '包裹快递金额',
       dataIndex: 'RealPrice',
+      render: (text, record) => (
+        <span>{text}
+          <Popover title="包裹快递金额规则" content={content} trigger="hover" placement="top">
+            <Divider type="vertical" />
+            <Icon type="question-circle-o" />
+          </Popover>
+        </span>
+      )
     }, {
       title: '操作',
       dataIndex: 'action',
@@ -90,6 +141,7 @@ export default class TableForm extends PureComponent {
             return record.editable ? styles.editable : '';
           }}
           rowKey={record => record.ID}
+          size="small"
         />
       </div>
     );

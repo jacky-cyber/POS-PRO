@@ -130,6 +130,7 @@ class SelectedGoods extends PureComponent {
                   value={wholeDiscount}
                   min={0}
                   max={100}
+                  step={5}
                   precision={0}
                   formatter={value => `${value}%`}
                   parser={value => value.replace('%', '')}

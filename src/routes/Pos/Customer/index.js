@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva'
-import { Tabs, Button, Badge, Row, Col, Icon, Table, Input, Divider, Form, Select, Modal } from 'antd'
+import { Tabs, Button, Badge, Row, Col, Icon, Table, Input, Divider, Form, Select, Modal, InputNumber } from 'antd'
 import styles from './index.less'
 import MessageItem from './MessageItem.js'
 import { routerRedux } from 'dva/router';
@@ -8,12 +8,15 @@ import SwitchableFormItem from '../../../components/SwitchableItem/SwitchableFor
 import classNames from 'classnames'
 import TypeSelect from './TypeSelect'
 import { POS_PHASE } from '../../../constant'
+import Mousetrap from 'mousetrap';
 
 const { TabPane } = Tabs
 const FormItem = Form.Item;
 const { Option } = Select
 
 const cx = classNames.bind(styles)
+
+const keyboardMapping = ['backspace', 'enter']
 
 const fieldLabels = {
   name: '客户名',
@@ -22,6 +25,7 @@ const fieldLabels = {
   phone: '电话',
   number: '会员卡号',
   type: '会员类型',
+  discount: '会员折扣',
 };
 
 const columns = [
@@ -48,6 +52,10 @@ const columns = [
   {
     title: '电话',
     dataIndex: 'PhoneNumber',
+  },
+  {
+    title: '折扣',
+    dataIndex: 'Discount',
   }
 ]
 
@@ -55,6 +63,7 @@ const formItemLayout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 16 },
 }
+
 
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
@@ -75,9 +84,16 @@ export default class Customer extends PureComponent {
     }
   }
   componentDidMount() {
+    Mousetrap.bind('backspace', () => this.prevHandler())
+    Mousetrap.bind('enter', () => this.selectHandler())
     this.props.dispatch({ type: 'commodity/getCustomer' })
   }
-  handlePrevClick = () => {
+  componentWillUnmount() {
+    keyboardMapping.forEach(item => {
+      Mousetrap.unbind(item)
+    })
+  }
+  prevHandler = () => {
     const { order, activeTabKey } = this.props
     const { lastPhase } = order
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: POS_PHASE.CUSTOMER, targetPhase: lastPhase } });
@@ -86,21 +102,22 @@ export default class Customer extends PureComponent {
     const { order, activeTabKey } = this.props
     const { lastPhase } = order
     const { tempRowData } = this.state
-    if (this.state.tempRowData.ID) {
+    // if (this.state.tempRowData.ID) {
       const customer = {
-        memberID: tempRowData.ID,
-        memberName: tempRowData.Name,
-        memberAddress: tempRowData.Address,
-        memberEmail: tempRowData.Email,
-        memberPhone: tempRowData.Phone,
-        memberType: tempRowData.Type,
-        memberScore: tempRowData.Score,
-        memberCardNumber: tempRowData.CardNumber
+        memberID: tempRowData.ID || '',
+        memberName: tempRowData.Name || '',
+        memberAddress: tempRowData.Address || '',
+        memberEmail: tempRowData.Email || '',
+        memberPhone: tempRowData.Phone || '',
+        memberType: tempRowData.Type || '',
+        memberScore: tempRowData.Score || '',
+        memberCardNumber: tempRowData.CardNumber || '',
+        memberDiscount: tempRowData.Discount || '',
       }
       this.props.dispatch({ type: 'commodity/changeCustomer', payload: customer })
-    } else {
-      this.props.dispatch({ type: 'commodity/changeCustomer', payload: {} })
-    }
+    // } else {
+    //   this.props.dispatch({ type: 'commodity/changeCustomer', payload: {} })
+    // }
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: POS_PHASE.CUSTOMER, targetPhase: lastPhase } });
   }
   cancelHandler = () => {
@@ -125,7 +142,7 @@ export default class Customer extends PureComponent {
     });
   }
   submitHandler = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         this.props.dispatch({ type: 'commodity/submitCustomer', payload: values })
@@ -322,6 +339,24 @@ export default class Customer extends PureComponent {
               )}
             </FormItem>
           </Col>
+          <Col lg={12} sm={24}>
+            <FormItem label={fieldLabels.discount} {...formItemLayout}>
+              {getFieldDecorator('discount', {
+                initialValue: tempRowData['Discount'],
+              })(
+                  <SwitchableFormItem
+                      FormItemElement={InputNumber}
+                      editable={isEdit}
+                      min={0}
+                      max={100}
+                      step={5}
+                      precision={0}
+                      formatter={value => `${value}%`}
+                      parser={value => value.replace('%', '')}
+                  />
+              )}
+            </FormItem>
+          </Col>
         </Row>
       </Form>
     )
@@ -334,7 +369,7 @@ export default class Customer extends PureComponent {
           align="middle"
         >
           <Col>
-            <Button onClick={this.handlePrevClick}>回退</Button>
+            <Button onClick={this.prevHandler}>回退</Button>
           </Col>
           <Col style={{ textAlign: 'center' }}>
             <Input.Search

@@ -52,6 +52,7 @@ export default {
     },
     *changeCustomer(action, { put, select }) {
       const { payload } = action
+      console.log('customer', payload)
       yield put ({type: 'saveCurrentCustomer', payload })
       const commodity = yield select(state => state.commodity);
       const { activeTabKey, currentOrderGoodsList } = commodity
@@ -261,7 +262,7 @@ export default {
         payload: false,
       })
     },
-    *submitOrder(action, { call, put }) {
+    *submitOrder(action, { call, put, select }) {
       const { payload } = action
       yield put({
         type: 'changeCommonLoading',
@@ -271,6 +272,10 @@ export default {
         const response = yield call(submitOrder, payload)
         if (response.Status) {
           message.success('提交成功')
+          const commodity = yield select(state => state.commodity);
+          const { activeTabKey } = commodity
+          yield put({ type: 'clickAddTabButton', payload: POS_TAB_TYPE.STORESALE });
+          // yield put({ type: 'removeTab', payload: activeTabKey});
         } else {
           message.error('提交失败')
         }
@@ -476,10 +481,11 @@ export default {
         const discount = item.Discount;
         const weight = item.Weight
         const price = unitPrice * count * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
+        const realPrice = unitPrice * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
         goodsPrice += price;
         originPrice += retailPrice * count
         totalWeight += weight * count
-        return {...item, RealPrice: price}
+        return {...item, RealPrice: realPrice}
       });
       yield put({ type: 'changeSelectedItem', payload: { activeTabKey, latestSelectedList } });
       yield put({ type: 'changeGoodsPrice', payload: goodsPrice });
@@ -540,9 +546,11 @@ export default {
     *clickRemoveButton(action, { put, select }) {
       const currentIndex = action.payload;
       const commodity = yield select(state => state.commodity);
+      const removeKey = commodity.activeTabKey
+      const currentOrder = getCurrentOrder(commodity);
       const { orders } = commodity;
       let activeTabKey;
-      yield put({ type: 'removeTab' });
+      yield put({ type: 'removeTab', payload: removeKey });
       // case1: panes 数量大于 1 且 activeOrders 不是最后一个
       if (orders.length > 1 && currentIndex !== orders.length - 1) {
         activeTabKey = orders[currentIndex + 1].key;
@@ -606,7 +614,7 @@ export default {
       const { expressData, expressDataIndex } = currentOrder;
       const newMember = {
         ID: `NEW_BOX_ID_${expressDataIndex}`,
-        Name: { Name: '', ID: '' },
+        Name: '',
         Weight: 0,
         WeightedWeight: 0.3,
         UnitPrice: 0,
@@ -683,7 +691,17 @@ export default {
           currentTime,
           createTime,
           saleType: tabType === POS_TAB_TYPE.STORESALE ? SALE_TYPE.LOCAL : null,
-          customer: {},
+          customer: {
+            memberID: '',
+            memberName: '',
+            memberAddress: '',
+            memberEmail: '',
+            memberPhone: '',
+            memberType: '',
+            memberScore: '',
+            memberCardNumber: '',
+            memberDiscount: '',
+          },
           shop: {
             departmentID: '1',
             shopName: '澳西卡',
@@ -699,7 +717,7 @@ export default {
       return { ...state, orders, activeTabKey, newTabIndex: count };
     },
     removeTab(state, action) {
-      const { activeTabKey } = state;
+      const activeTabKey  = action.payload;
       const orders = state.orders.filter(item => item.key !== activeTabKey);
       if (orders.length > 0) {
         return { ...state, orders };
@@ -896,7 +914,6 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeShippingCost(state, action) {
-      console.log('shippingCost', action.payload)
       const shippingCost = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {

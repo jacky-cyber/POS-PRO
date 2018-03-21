@@ -18,6 +18,11 @@ export default class UserCrud extends PureComponent {
   }
   render() {
     const { userList, loading, form, dispatch } = this.props
+    const newUserList = userList.map(item => {
+      if (typeof item.Authority === 'string') {
+        return { ...item, Authority: item.Authority.split(',')}
+      } else { return item }
+    })
     const { getFieldDecorator } = form
     const onAddCompany = (value) => dispatch({type: 'user/addOrUpdate', payload: value})
     const onDeleteCompany = (ID) => {}
@@ -68,7 +73,7 @@ export default class UserCrud extends PureComponent {
       <PageHeaderLayout title="账号管理">
         <Card bordered={false}>
         {getFieldDecorator('members', {
-          initialValue: userList,
+          initialValue: newUserList,
         })(<TableForm
           columns={columns}
           onSubmit={onAddCompany}

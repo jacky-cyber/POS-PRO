@@ -1,32 +1,89 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover } from 'antd'
+import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd'
 import { connect } from 'dva';
 import TableForm from './TableForm';
 import FooterToolbar from '../../../../components/FooterToolbar';
+import { POS_PHASE } from '../../../../constant'
 import styles from './index.less'
+import Print from 'rc-print';
 
 
 const fieldLabels = {
   expressData: '邮寄包裹信息',
 };
 
+const keyboardMapping = ['backspace', 'p', 'enter']
+
+
+const dataSource = [{
+  key: '1',
+  name: '胡彦斌',
+  age: 32,
+  address: '西湖区湖底公园1号'
+}, {
+  key: '2',
+  name: '胡彦祖',
+  age: 42,
+  address: '西湖区湖底公园1号'
+}];
+
+const columns = [{
+  title: '姓名',
+  dataIndex: 'name',
+  key: 'name',
+}, {
+  title: '年龄',
+  dataIndex: 'age',
+  key: 'age',
+}, {
+  title: '住址',
+  dataIndex: 'address',
+  key: 'address',
+}];
 
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
   activeTabKey: state.commodity.activeTabKey,
+  express: state.express,
+  loading: state.commodity.commonLoading,
+  submitLoading: state.loading.effects['commodity/submitOrder'],
 }))
 
 
 @Form.create()
 
 export default class ExpressHandler extends PureComponent {
+  componentDidMount() {
+    Mousetrap.bind('backspace', () => this.prevHandler())
+    Mousetrap.bind('p', () => this.printHandler())
+    Mousetrap.bind('enter', () => this.validate())
+  }
+  componentWillUnmount() {
+    keyboardMapping.forEach(item => {
+      Mousetrap.unbind(item)
+    })
+  }
+  prevHandler = () => {
+    const activeTabKey = this.props.activeTabKey
+    const lastPhase = POS_PHASE.PAY
+    const targetPhase = POS_PHASE.TABLE
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } })
+  }
+  printHandler = () => {
+    this.refs.printForm.onPrint();
+  }
   checkExpressData = (rule, value, callback) => {
+    if (value[0]) {
     const { Name, InvoiceNo } = value[0]
     if (Name && InvoiceNo) {
       callback()
       return
     }
     callback('快递公司和运单号是必填的')
+    } else {
+      callback()
+      return
+    }
   }
   valueHandler = (values) => {
     const { ID } = this.props.order
@@ -46,7 +103,6 @@ export default class ExpressHandler extends PureComponent {
     }
     const newValues = { ...values, ...restOrder, waybill: selectedList, ...address }
     const valuesJson = JSON.stringify(newValues)
-    console.log('valuesJson', valuesJson)
     const payload = {
       orderID: ID,
       dataJson: valuesJson,
@@ -56,18 +112,14 @@ export default class ExpressHandler extends PureComponent {
   validate = () => {
       this.props.form.validateFieldsAndScroll((error, values) => {
         if (!error) {
-          console.log(values)
         this.valueHandler(values)
         }
       });
   }
   render() {
-    const { form, order, dispatch, priceListNode } = this.props;
+    const { form, order, dispatch, priceListNode, submitLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
     const { expressData } = order || []
-    const newExpressData = expressData.map(item => ({
-      ...item, Name: item.Name.Name
-    }))
     const errors = getFieldsError();
     const getErrorInfo = () => {
       const errorCount = Object.keys(errors).filter(key => errors[key]).length;
@@ -111,17 +163,40 @@ export default class ExpressHandler extends PureComponent {
 
     return (
       <div>
+        <Print
+          ref="printForm"
+          title="门店出口/邮寄/代发"
+        >
+          <div style={{ display: 'none' }}>
+            <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
+              <Table dataSource={dataSource} columns={columns} />
+            </div>
+          </div>
+        </Print>
         <Card title="邮寄包裹管理" bordered={false} style={{marginBottom: 24}} >
             {getFieldDecorator('expressData', {
-              initialValue: newExpressData,
+              initialValue: expressData,
               rules: [{ validator: this.checkExpressData }]
             })(
-              <TableForm dispatch={dispatch} />
+              <TableForm dispatch={dispatch} express={this.props.express} setFieldsValue={this.props.form.setFieldsValue} />
               )}
         </Card>
         <FooterToolbar style={{ width: '100%' }}  extra={priceListNode}>
           {getErrorInfo()}
-          <Button type="primary" onClick={this.validate} >
+          {/* <Button type="primary" onClick={this.validate} >
+            提交
+          </Button> */}
+          <Button onClick={this.prevHandler}>返回</Button>
+          <Button
+            onClick={this.printHandler}
+          >
+            打印
+              </Button>
+          <Button
+            type="primary"
+            onClick={this.validate}
+            loading={submitLoading}
+          >
             提交
           </Button>
         </FooterToolbar>

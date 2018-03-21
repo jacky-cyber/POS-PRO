@@ -123,14 +123,6 @@ class ChooseCalculator extends PureComponent {
         this.button[item.key].querySelector('button').click()
       })
     })
-    //   Mousetrap.bind('4', () => {
-    //     this.button4.querySelector('button').blur()
-    //   this.button4.querySelector('button').focus()
-    //   this.button4.querySelector('button').click()
-    //  }
-    // )
-    //   Mousetrap.bind('backspace', () => calculate(this.props.commodity, this.props.dispatch, 'del'))
-    //   Mousetrap.bind('d', () => calculate(this.props.commodity, this.props.dispatch, 'discount'))
   }
   componentWillUnmount() {
     numPad.forEach(item => {

@@ -11,6 +11,12 @@ const { Option } = Select;
 const { RangePicker } = DatePicker;
 const getValue = obj => Object.keys(obj).map(key => obj[key]).join(',');
 
+const saleTypeMapping = {
+  1: '本地',
+  2: '邮寄',
+  3: '代发',
+}
+
 @connect(state => ({
   rule: state.rule,
   orderList: state.historyOrders.orderList,
@@ -458,6 +464,7 @@ export default class TableList extends PureComponent {
       {
         title: '销售方式',
         dataIndex: 'SellType',
+        render: (text, record, index) => (<span>{text ? saleTypeMapping[text] : `/`}</span>)
       }
     ]
 

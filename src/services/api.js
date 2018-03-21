@@ -24,7 +24,7 @@ export async function submitCustomer(payload={}) {
 
 export async function getCustomer(params) {
   let options = {
-    body: `Params=${params}`,
+    body: `Params=${params || ''}`,
   }
   return request(`${DOMAIN}/Member/GetAll`, options)
 }
