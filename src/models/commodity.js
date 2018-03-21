@@ -52,7 +52,6 @@ export default {
     },
     *changeCustomer(action, { put, select }) {
       const { payload } = action
-      console.log('customer', payload)
       yield put ({type: 'saveCurrentCustomer', payload })
       const commodity = yield select(state => state.commodity);
       const { activeTabKey, currentOrderGoodsList } = commodity

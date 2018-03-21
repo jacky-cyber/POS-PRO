@@ -9,7 +9,7 @@ const generateOptions = (data = [], isSucceeded, label, init = {}) => {
     const newExtra = init && { ...init, [label]: `创造并编辑 ${init[label]}` }
     const array = (init && init[label]) ? [...data, newExtra] : data
     const options = array.map(item => {
-      return <Option value={item.ID} key={item.ID}> {item[label]} </Option>
+      return <Option value={item.ID || item.value} key={item.ID || item.value}> {item[label]} </Option>
     })
     return options
   } else {
@@ -51,11 +51,12 @@ export default class Searchable extends PureComponent {
     })
   }
   selectHandler = (value) => {
-    if (value.includes('create-')) {
+    if (typeof value === 'string' && value.includes('create-')) {
       this.toggleModal()
       this.setState({ cacheSearchString: value })
     } else {
-      const currentData = this.props.data.filter(item => item.ID === value)[0]
+      const currentData = this.props.data.filter(item => item.ID === value || item.value === value)[0]
+      console.log(currentData)
       this.props.onChange(currentData)
     }
   }

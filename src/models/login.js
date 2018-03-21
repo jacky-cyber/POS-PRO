@@ -58,9 +58,6 @@ export default {
         }
         const routerAuthority = generateAuthority(authority)
         Cookies.set('authority', routerAuthority, { expires: 1, path: '' })
-        Cookies.set('xxx', 'xxx', { expires: 1, path: '' })
-        console.log(Cookies.getJSON('authority'))
-        console.log(Cookies.get('xxx'))
         reloadAuthorized()
         // getMenuData()
         // window.location.reload()

@@ -4,10 +4,13 @@ import { Table, Button, message, Popconfirm, Divider, Select } from 'antd';
 import styles from './TableForm.less';
 import PropTypes from 'prop-types';
 import { getMenuData } from '../../common/menu';
+import SearchableSelect from '../Pos/Payment/ShippingHandler/SearchableSelect';
+import { DEPARTMENT } from '../../constant'
 
 const { Option } = Select
 
 
+const getDepartment = () => (DEPARTMENT)
 
 
 export default class TableForm extends PureComponent {
@@ -136,7 +139,7 @@ export default class TableForm extends PureComponent {
               onChange={e => this.handleFieldChange(e, columnItem['dataIndex'], record.ID)}
               placeholder={columnItem['title']}
               mode="multiple"
-              style={{width: 300}}
+              style={{minWidth: 300}}
             >
             {
             getMenuData().map(item => (
@@ -149,6 +152,19 @@ export default class TableForm extends PureComponent {
             </Select>
           )
         }
+         if (columnItem.dataIndex === 'DepartmentID') {
+           return (
+             <SearchableSelect
+               fetchData={getDepartment}
+               onChange={e => this.handleFieldChange(e, 'DepartmentID', record.ID)}
+               data={DEPARTMENT}
+               label='label'
+               value={text}
+               disabled={false}
+               style={{minWidth: 200}}
+         />
+           )
+         }
         return (
         <Editable
           value={text}
@@ -167,7 +183,7 @@ export default class TableForm extends PureComponent {
               onChange={e => this.handleFieldChange(e, columnItem['dataIndex'], record.ID)}
               placeholder={columnItem['title']}
               mode="multiple"
-              style={{width: 300}}
+              style={{minWidth: 300}}
             >
             {
             getMenuData().map(item => (
@@ -177,6 +193,19 @@ export default class TableForm extends PureComponent {
             </Select>
           )
         }
+         if (columnItem.dataIndex === 'DepartmentID') {
+           return (
+             <SearchableSelect
+               fetchData={getDepartment}
+               onChange={e => this.handleFieldChange(e, 'DepartmentID', record.ID)}
+               data={DEPARTMENT}
+               label='label'
+               value={text['value']}
+               disabled={false}
+               style={{minWidth: 200}}
+         />
+           )
+         }
       return (
         <Editable
           value={text}
@@ -187,7 +216,25 @@ export default class TableForm extends PureComponent {
         />
       )
     } else {
-      if (!columnItem.renderWhenUnEditable) { return text } else {
+      if (!columnItem.renderWhenUnEditable) {
+        if (columnItem.dataIndex === 'Authority') {
+          return (
+            <Select
+            disabled
+              value={text}
+              placeholder={columnItem['title']}
+              mode="multiple"
+            >
+            {
+            getMenuData().map(item => (
+              <Option value={item.ID} key={item.ID}>{item.name}</Option>
+            ))
+            }
+            </Select>
+          )
+        }
+         return text
+         } else {
         const UnEditable = columnItem.renderWhenUnEditable
         const props = columnItem.propsWhenUnEditable || {}
         return (
