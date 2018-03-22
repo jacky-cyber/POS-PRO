@@ -59,6 +59,7 @@ function checkAgain(responseJson) {
     const error = new Error(errortext);
     error.name = Status;
     error.response = responseJson;
+    console.log('error', error)
     throw error;
   }
 }
@@ -196,7 +197,8 @@ export default function request(url, options = {}) {
             description: error.message,
           });
         }
-        return error;
+        // return error;
+        return
       });
   } else {
     const defaultOptions = {

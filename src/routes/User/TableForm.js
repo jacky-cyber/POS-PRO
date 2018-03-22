@@ -59,7 +59,7 @@ export default class TableForm extends PureComponent {
               if (record.editable) {
                 if (record.isNew) {
                   return (
-                    <span>
+                    <span style={{minWidth: 100, display: 'inline-block'}}>
                       <a onClick={() => this.saveRow(record.ID)}>保存</a>
                       <Divider type="vertical" />
                       <Popconfirm title="是否要删除此行？" onConfirm={() => this.remove(record.ID)}>
@@ -69,7 +69,7 @@ export default class TableForm extends PureComponent {
                   );
                 }
                 return (
-                  <span>
+                  <span style={{minWidth: 100, display: 'inline-block'}}>
                     <a onClick={() => this.saveRow(record.ID)}>保存</a>
                     <Divider type="vertical" />
                     <a onClick={e => this.cancel(e, record.ID)}>取消</a>
@@ -77,7 +77,7 @@ export default class TableForm extends PureComponent {
                 );
               }
               return (
-                <span>
+                <span style={{minWidth: 100, display: 'inline-block'}}>
                   <a onClick={e => this.toggleEditableAfterBlur(e, record.ID)}>编辑</a>
                   <Divider type="vertical" />
                   <Popconfirm title="是否要删除此行？" onConfirm={() => this.remove(record.ID)}>
@@ -200,7 +200,7 @@ export default class TableForm extends PureComponent {
                onChange={e => this.handleFieldChange(e, 'DepartmentID', record.ID)}
                data={DEPARTMENT}
                label='label'
-               value={text['value']}
+               value={text}
                disabled={false}
                style={{minWidth: 200}}
          />
@@ -348,7 +348,14 @@ export default class TableForm extends PureComponent {
     const newData = [...this.state.data];
     const target = this.getRowByKey(key);
     if (target) {
-      target[fieldName] = e && (e.target ? e.target.value : e)
+      const value = e && (e.target ? e.target.value : e)
+      if (fieldName === 'DepartmentID') {
+        target['DepartmentID'] = value.value || ''
+        target['ShopName'] = value.label || ''
+        this.setState({ data: newData });
+        return
+      }
+      target[fieldName] = value
       this.setState({ data: newData });
     }
   }

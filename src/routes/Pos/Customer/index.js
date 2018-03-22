@@ -65,11 +65,12 @@ const formItemLayout = {
 }
 
 
-@connect(state => ({
-  order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
-  activeTabKey: state.commodity.activeTabKey,
-  loading: state.commodity.commonLoading,
-  customerList: state.commodity.customerList,
+@connect(({ commodity, loading }) => ({
+  order: commodity.orders.filter(item => item.key === commodity.activeTabKey)[0],
+  activeTabKey: commodity.activeTabKey,
+  customerList: commodity.customerList,
+  getLoading: loading.effects['commodity/getCustomer'],
+  submitLoading: loading.effects['commodity/submitCustomer'],
 }))
 @Form.create()
 export default class Customer extends PureComponent {
@@ -228,7 +229,7 @@ export default class Customer extends PureComponent {
     })
   }
   render() {
-    const { dispatch, form, loading, customerList } = this.props
+    const { dispatch, form, getLoading, submitLoading, customerList } = this.props
     const { totalPrice } = this.props.order
     const { getFieldDecorator, resetFields, } = form
     const { showAddCustomerForm, showCustomerMessage, tempRowData, isEdit, activeIndex, } = this.state
@@ -260,7 +261,7 @@ export default class Customer extends PureComponent {
                     <Icon type="minus-circle" />
                   </Button>
                   <Divider type="vertical" />
-                  <Button htmlType="submit" shape="circle" loading={loading} >
+                  <Button htmlType="submit" shape="circle" loading={submitLoading} >
                     <Icon type="save" />
                   </Button>
                 </FormItem>
@@ -289,7 +290,7 @@ export default class Customer extends PureComponent {
                           <Icon type="edit" />
                         </Button>
                         <Divider type="vertical" />
-                        <Button shape="circle" loading={loading} onClick={() => this.deleteCustomerHandler()} >
+                        <Button shape="circle" loading={submitLoading} onClick={() => this.deleteCustomerHandler()} >
                           <Icon type="delete" />
                         </Button>
                       </FormItem>
@@ -404,7 +405,7 @@ export default class Customer extends PureComponent {
             bordered
             columns={columns}
             rowKey={record => record.ID}
-            loading={loading}
+            loading={getLoading}
             dataSource={customerList}
             size="small"
             onRow={this.rowClickHandler}

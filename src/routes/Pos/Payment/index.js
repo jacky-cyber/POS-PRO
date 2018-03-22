@@ -92,7 +92,7 @@ export default class Payment extends PureComponent {
   }
   render() {
     const { dispatch } = this.props;
-    const { goodsPrice, expressCost, shippingCost, totalPrice, saleType, realMoney, changeMoney, type, ID, createTime, customer } = this.props.order;
+    const { goodsPrice, expressCost, shippingCost, totalPrice, saleType, receiveMoney, changeMoney, type, ID, createTime, customer } = this.props.order;
     const { memberName, memberAddress, memberEmail, memberPhone, memberType, memberScore, memberCardNumber, memberID } = customer || {}
     const priceList = [
       { title: '商品金额', value: goodsPrice },
@@ -100,7 +100,7 @@ export default class Payment extends PureComponent {
       // { title: '直邮金额', value: expressCost },
       // { title: '代发金额', value: shippingCost },
       { title: '应收金额', value: totalPrice },
-      { title: '实收金额', value: realMoney },
+      { title: '实收金额', value: receiveMoney },
       { title: '找零金额', value: changeMoney },
     ];
 

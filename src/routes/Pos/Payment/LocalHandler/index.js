@@ -92,7 +92,8 @@ export default class LocalHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/submitOrder', payload })
   }
   render() {
-    const { priceListNode, submitLoading } = this.props
+    const { priceListNode, submitLoading, order } = this.props
+    const { receiveMoney, totalPrice } = order
 
     return (
       <div>
@@ -118,6 +119,7 @@ export default class LocalHandler extends PureComponent {
             type="primary"
             onClick={this.submitHandler}
             loading={submitLoading}
+            disabled={!!(totalPrice - receiveMoney > 0)}
           >
             提交
           </Button>

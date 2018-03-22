@@ -45,7 +45,6 @@ const columns = [{
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
   activeTabKey: state.commodity.activeTabKey,
   express: state.express,
-  loading: state.commodity.commonLoading,
   submitLoading: state.loading.effects['commodity/submitOrder'],
 }))
 
@@ -101,8 +100,10 @@ export default class ExpressHandler extends PureComponent {
       },
       ReceiverDetailedAddress: "",
     }
+    console.log(restOrder)
     const newValues = { ...values, ...restOrder, waybill: selectedList, ...address }
     const valuesJson = JSON.stringify(newValues)
+    console.log(valuesJson)
     const payload = {
       orderID: ID,
       dataJson: valuesJson,
@@ -183,9 +184,6 @@ export default class ExpressHandler extends PureComponent {
         </Card>
         <FooterToolbar style={{ width: '100%' }}  extra={priceListNode}>
           {getErrorInfo()}
-          {/* <Button type="primary" onClick={this.validate} >
-            提交
-          </Button> */}
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
             onClick={this.printHandler}
