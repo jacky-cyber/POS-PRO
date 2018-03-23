@@ -30,9 +30,12 @@
             transform: scale(1, 1) translate(-50%);
             transform-origin: 50% 50%;
         }
-        &:focus:not(:active)::after {
+        &[dataClicked="true"]::after {
             animation: ripple 1s ease-out;
         }
+        // &:focus:not(:active)::after {
+        //     animation: ripple 1s ease-out;
+        // }
         &:hover {
             color: initial;
             background-color: @bg-color;

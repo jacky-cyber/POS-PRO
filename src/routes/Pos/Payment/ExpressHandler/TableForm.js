@@ -26,7 +26,6 @@ export default class TableForm extends PureComponent {
     const value = e && (e.target ? e.target.value : e);
     let newData = []
     if (fieldName === 'Name') {
-      console.log(111)
       const Name = { Name: value.Name, ID: value.ID }
       const UnitPrice = value.Price
       newData = data.map(item => {
@@ -42,14 +41,13 @@ export default class TableForm extends PureComponent {
         ...item,
         RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
       }))
-      const expressDataToForm = newData.map(item => ({
-        ...item,
-        RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
-        Name: value.ID,
-      }))
-      console.log('expressData', expressData)
+      // const expressDataToForm = newData.map(item => ({
+      //   ...item,
+      //   RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
+      //   Name: value.ID,
+      // }))
       this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData })
-      setFieldsValue({ expressData: expressDataToForm })
+      setFieldsValue({ expressData: expressData })
     } else {
       newData = data.map(item => {
         if (item.ID === key) {
@@ -67,7 +65,6 @@ export default class TableForm extends PureComponent {
   }
   render() {
     const { value, dispatch, express } = this.props;
-    console.log('value', value)
     const { expressList = [], loading } = express
     const getCompany = () => dispatch({ type: 'express/getCompany' })
     const content = "包裹与商品的总重量不足 1kg 时，快递金额为该快递公司的单价，超过 1kg 时快递金额 = 总重量 * 快递单价"
@@ -85,7 +82,7 @@ export default class TableForm extends PureComponent {
           onChange={e => this.handleFieldChange(e, 'Name', record.ID)}
           data={expressList}
           label='Name'
-          value={text}
+          value={text['ID']}
           dispatch={dispatch}
           disabled={loading}
         />

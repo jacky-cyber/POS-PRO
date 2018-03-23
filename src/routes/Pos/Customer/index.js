@@ -71,6 +71,7 @@ const formItemLayout = {
   customerList: commodity.customerList,
   getLoading: loading.effects['commodity/getCustomer'],
   submitLoading: loading.effects['commodity/submitCustomer'],
+  updateLoading: loading.effects['commodity/updateCustomer'],
 }))
 @Form.create()
 export default class Customer extends PureComponent {
@@ -146,6 +147,7 @@ export default class Customer extends PureComponent {
     // e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
+        console.log('values', values)
         this.props.dispatch({ type: 'commodity/submitCustomer', payload: values })
         this.setState({
           showCustomerMessage: false,

@@ -29,7 +29,7 @@ function numberHandler(oldCache, buttonName, activeTabKey, selectedList, activeS
   }
   const number = cache - 0;
   const newSelectedList = generateNewSelectedList(activeSelectedKey, selectedList, cache, number, type);
-  dispatch({ type: 'commodity/changeSelectedList', payload: { activeTabKey, newSelectedList } });
+  dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
 }
 
 function clearHandler(oldCache, activeTabKey, selectedList, activeSelectedKey, type, dispatch) {
@@ -38,7 +38,7 @@ function clearHandler(oldCache, activeTabKey, selectedList, activeSelectedKey, t
   let number = 0;
   if (type === 'unitPrice') { number = null; }
   const newSelectedList = generateNewSelectedList(activeSelectedKey, selectedList, cache, number, type);
-  dispatch({ type: 'commodity/changeSelectedList', payload: { activeTabKey, newSelectedList } });
+  dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
 }
 
 function dotHandler(oldCache, buttonName, activeTabKey, selectedList, activeSelectedKey, type, dispatch) {
@@ -53,7 +53,7 @@ function dotHandler(oldCache, buttonName, activeTabKey, selectedList, activeSele
     number = cache - 0;
   }
   const newSelectedList = generateNewSelectedList(activeSelectedKey, selectedList, cache, number, type);
-  dispatch({ type: 'commodity/changeSelectedList', payload: { activeTabKey, newSelectedList } });
+  dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
 }
 
 function delHandler(oldCache, buttonName, activeTabKey, selectedList, activeSelectedKey, type, dispatch) {
@@ -67,7 +67,7 @@ function delHandler(oldCache, buttonName, activeTabKey, selectedList, activeSele
     number = cache - 0;
   }
   const newSelectedList = generateNewSelectedList(activeSelectedKey, selectedList, cache, number, type);
-  dispatch({ type: 'commodity/changeSelectedList', payload: { activeTabKey, newSelectedList } });
+  dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
 }
 
 function countHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey) {
@@ -80,14 +80,6 @@ function countHandler(dispatch, buttonName, activeTabKey, selectedList, selected
   if (buttonName === 'clear') {
     let filterIndex;
     let tempActiveKey;
-    if (selectedItem.Count !== 0) {
-    //   newSelectedList = selectedList.map((item) => {
-    //     if (item.Key === activeSelectedKey) {
-    //       return { ...item, CacheCount: null, Count: 0 };
-    //     }
-    //     return item;
-    //   });
-    // } else {
       newSelectedList = selectedList.filter((item, index) => {
         if (item.Key === selectedItem.Key) {
           filterIndex = index;
@@ -106,8 +98,7 @@ function countHandler(dispatch, buttonName, activeTabKey, selectedList, selected
           return item;
         }
       });
-    }
-    dispatch({ type: 'commodity/changeSelectedList', payload: { activeTabKey, newSelectedList, activeSelectedKey } });
+    dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList, activeSelectedKey } });
     if (tempActiveKey !== undefined) {
       dispatch({ type: 'commodity/changeActiveSelectedKey', payload: tempActiveKey });
     }
@@ -141,7 +132,7 @@ function discountHandler(dispatch, buttonName, activeTabKey, selectedList, selec
       }
       return item;
     });
-    dispatch({ type: 'commodity/changeSelectedList', payload: { activeTabKey, newSelectedList } });
+    dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
   }
   if (buttonName === 'clear') {
     clearHandler(oldCacheDiscount, activeTabKey, selectedList, activeSelectedKey, 'discount', dispatch);

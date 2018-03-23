@@ -14,7 +14,8 @@ export default class Cbutton extends React.Component {
   }
 
   render() {
-      const { name, datatype, className } = this.props
+      const { name, datatype, className, dataClicked } = this.props
+
 
     return (
       <div>
@@ -23,6 +24,7 @@ export default class Cbutton extends React.Component {
           name={name}
           datatype={datatype}
           className={className}
+          dataclicked={dataClicked}
         >
             {this.props.children}
         </Button>

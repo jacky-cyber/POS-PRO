@@ -348,10 +348,10 @@ export default class TableForm extends PureComponent {
     const newData = [...this.state.data];
     const target = this.getRowByKey(key);
     if (target) {
-      const value = e && (e.target ? e.target.value : e)
+      const value = e.target ? e.target.value : e
       if (fieldName === 'DepartmentID') {
-        target['DepartmentID'] = value.value || ''
-        target['ShopName'] = value.label || ''
+        target['DepartmentID'] = value.value
+        target['ShopName'] = value.label
         this.setState({ data: newData });
         return
       }
@@ -377,8 +377,10 @@ export default class TableForm extends PureComponent {
       dataIndexArray = this.state.columns.filter(item => (item.dataIndex !== 'action' && item.dataIndex !== 'Password')).map(item => item.dataIndex)
     }
     let isShowMessage = false
+    console.log('target', target)
+    console.log('dataIndexArray', dataIndexArray)
     dataIndexArray.forEach(item => {
-      if (!target[item]) { isShowMessage = true }
+      if (!target[item] && target[item] !== 0) { isShowMessage = true }
     })
     if (isShowMessage) {
       message.error('请填写完整信息')

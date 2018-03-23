@@ -36,6 +36,7 @@ export const CUSTOMER_TYPE= [
 ]
 
 export const DEPARTMENT = [
+  { value: 0, label: '测试店铺' },
   { value: 2, label: '办公室' },
   { value: 3, label: '采购' },
   { value: 5, label: '仓库' },

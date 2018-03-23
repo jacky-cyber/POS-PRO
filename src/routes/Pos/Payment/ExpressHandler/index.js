@@ -120,7 +120,7 @@ export default class ExpressHandler extends PureComponent {
   render() {
     const { form, order, dispatch, priceListNode, submitLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
-    const { expressData } = order || []
+    const { expressData, receiveMoney, totalPrice } = order || []
     const errors = getFieldsError();
     const getErrorInfo = () => {
       const errorCount = Object.keys(errors).filter(key => errors[key]).length;
@@ -194,6 +194,7 @@ export default class ExpressHandler extends PureComponent {
             type="primary"
             onClick={this.validate}
             loading={submitLoading}
+            disabled={!!(totalPrice - receiveMoney > 0)}
           >
             提交
           </Button>

@@ -400,6 +400,7 @@ export default {
         };
         return [...selectedList, newSelectedItem];
       }
+      console.log('selectedList', selectedList)
       const index = selectedList.find(item => item.Key === selectedItem.Key);
       if (!index) {
         newSelectedList = addNewToSelectedList(selectedItem, selectedList);
@@ -579,7 +580,7 @@ export default {
       const { expressData, expressDataIndex } = currentOrder;
       const newMember = {
         ID: `NEW_BOX_ID_${expressDataIndex}`,
-        Name: '',
+        Name: { Name: '', ID: '' },
         Weight: 0,
         WeightedWeight: 0.3,
         UnitPrice: 0,

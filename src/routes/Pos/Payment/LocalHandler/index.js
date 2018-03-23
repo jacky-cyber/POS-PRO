@@ -6,6 +6,7 @@ import styles from './index.less'
 import Print from 'rc-print';
 import { POS_PHASE } from '../../../../constant'
 import Mousetrap from 'mousetrap';
+import ReactDOM from 'react-dom';
 
 const dataSource = [{
   key: '1',
@@ -51,7 +52,8 @@ export default class LocalHandler extends PureComponent {
   componentDidMount() {
     Mousetrap.bind('backspace', () => this.prevHandler())
     Mousetrap.bind('p', () => this.printHandler())
-    Mousetrap.bind('enter', () => this.submitHandler())
+    // Mousetrap.bind('enter', () => this.submitHandler())
+    Mousetrap.bind('enter', () => this.submitButton.click())
   }
   componentWillUnmount() {
     keyboardMapping.forEach(item => {
@@ -120,6 +122,8 @@ export default class LocalHandler extends PureComponent {
             onClick={this.submitHandler}
             loading={submitLoading}
             disabled={!!(totalPrice - receiveMoney > 0)}
+            // ref="submitButton"
+                  ref={node => (this.submitButton = ReactDOM.findDOMNode(node))}
           >
             提交
           </Button>

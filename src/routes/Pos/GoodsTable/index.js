@@ -313,6 +313,7 @@ class GoodsTable extends PureComponent {
     // }
  }
   componentDidMount() {
+    console.log('tabDidMount')
     const { commodity } = this.props
     const { currentOrderGoodsList=[], activeTabKey } = commodity
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
