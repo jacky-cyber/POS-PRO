@@ -186,7 +186,8 @@ export default function calculate(commodity, dispatch, buttonName) {
   }
   if (buttonName === 'payment') {
     const { ID='' } = currentOrder
-    const currentOrderJson = JSON.stringify(currentOrder)
+    const { chooseCalculatorButton, ...newCurrentOrder } = currentOrder
+    const currentOrderJson = JSON.stringify(newCurrentOrder)
     dispatch({type: 'commodity/addOrUpdateCacheOrder', payload: { ID, order: currentOrderJson }})
     const targetPhase = POS_PHASE.PAY
     dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase }})

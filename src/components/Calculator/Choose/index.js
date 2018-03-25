@@ -9,248 +9,264 @@ import isNumber from '../isNumber';
 
 import ReactDOM from 'react-dom';
 
-// const numPad = [
-//   {
-//     key: '1',
-//     label: '1',
-//     keyboard: '1',
-//   },
-//   {
-//     key: '2',
-//     label: '2',
-//     keyboard: '2',
-//   },
-//   {
-//     key: '3',
-//     label: '3',
-//     keyboard: '3',
-//   },
-//   {
-//     key: 'count',
-//     label: '数量',
-//     keyboard: 'q',
-//   },
-//   {
-//     key: '4',
-//     label: '4',
-//     keyboard: '4',
-//   },
-//   {
-//     key: '5',
-//     label: '5',
-//     keyboard: '5',
-//   },
-//   {
-//     key: '6',
-//     label: '6',
-//     keyboard: '6',
-//   },
-//   {
-//     key: 'discount',
-//     label: '折扣',
-//     keyboard: 'd',
-//   },
-//   {
-//     key: '7',
-//     label: '7',
-//     keyboard: '7',
-//   },
-//   {
-//     key: '8',
-//     label: '8',
-//     keyboard: '8',
-//   },
-//   {
-//     key: '9',
-//     label: '9',
-//     keyboard: '9',
-//   },
-//   {
-//     key: 'unitPrice',
-//     label: '价格',
-//     keyboard: 'p',
-//   },
-//   {
-//     key: 'clear',
-//     label: '清除',
-//     keyboard: 'c',
-//   },
-//   {
-//     key: '0',
-//     label: '0',
-//     keyboard: '0',
-//   },
-//   {
-//     key: '.',
-//     label: '.',
-//     keyboard: '.',
-//   },
-//   {
-//     key: 'del',
-//     label: 'del',
-//     keyboard: 'del',
-//   },
-// ]
+export const numPad = [
+  {
+    key: '1',
+    label: '1',
+    keyboard: '1',
+  },
+  {
+    key: '2',
+    label: '2',
+    keyboard: '2',
+  },
+  {
+    key: '3',
+    label: '3',
+    keyboard: '3',
+  },
+  {
+    key: 'count',
+    label: '数量',
+    keyboard: 'q',
+  },
+  {
+    key: '4',
+    label: '4',
+    keyboard: '4',
+  },
+  {
+    key: '5',
+    label: '5',
+    keyboard: '5',
+  },
+  {
+    key: '6',
+    label: '6',
+    keyboard: '6',
+  },
+  {
+    key: 'discount',
+    label: '折扣',
+    keyboard: 'd',
+  },
+  {
+    key: '7',
+    label: '7',
+    keyboard: '7',
+  },
+  {
+    key: '8',
+    label: '8',
+    keyboard: '8',
+  },
+  {
+    key: '9',
+    label: '9',
+    keyboard: '9',
+  },
+  {
+    key: 'unitPrice',
+    label: '价格',
+    keyboard: 'p',
+  },
+  {
+    key: 'clear',
+    label: '清除',
+    keyboard: 'c',
+  },
+  {
+    key: '0',
+    label: '0',
+    keyboard: '0',
+  },
+  {
+    key: '.',
+    label: '.',
+    keyboard: '.',
+  },
+  {
+    key: 'del',
+    label: 'del',
+    keyboard: 'del',
+  },
+]
 
-// const actionPad = [
-//   {
-//     key: 'customer',
-//     label: '客户',
-//     keyboard: 'v',
-//   },
-//   {
-//     key: 'payment',
-//     label: '付款',
-//     keyboard: 'enter',
-//   }
-// ]
+export const actionPad = [
+  {
+    key: 'customer',
+    label: '客户',
+    keyboard: 'v',
+  },
+  {
+    key: 'payment',
+    label: '付款',
+    keyboard: 'enter',
+  }
+]
 
 
 class ChooseCalculator extends PureComponent {
-  state = {
-    numPad: [
-      {
-        key: '1',
-        label: '1',
-        keyboard: '1',
-      },
-      {
-        key: '2',
-        label: '2',
-        keyboard: '2',
-      },
-      {
-        key: '3',
-        label: '3',
-        keyboard: '3',
-      },
-      {
-        key: 'count',
-        label: '数量',
-        keyboard: 'q',
-      },
-      {
-        key: '4',
-        label: '4',
-        keyboard: '4',
-      },
-      {
-        key: '5',
-        label: '5',
-        keyboard: '5',
-      },
-      {
-        key: '6',
-        label: '6',
-        keyboard: '6',
-      },
-      {
-        key: 'discount',
-        label: '折扣',
-        keyboard: 'd',
-      },
-      {
-        key: '7',
-        label: '7',
-        keyboard: '7',
-      },
-      {
-        key: '8',
-        label: '8',
-        keyboard: '8',
-      },
-      {
-        key: '9',
-        label: '9',
-        keyboard: '9',
-      },
-      {
-        key: 'unitPrice',
-        label: '价格',
-        keyboard: 'p',
-      },
-      {
-        key: 'clear',
-        label: '清除',
-        keyboard: 'c',
-      },
-      {
-        key: '0',
-        label: '0',
-        keyboard: '0',
-      },
-      {
-        key: '.',
-        label: '.',
-        keyboard: '.',
-      },
-      {
-        key: 'del',
-        label: 'del',
-        keyboard: 'del',
-      },
-    ],
-    actionPad: [
+  // state = {
+  //   numPad: [
+  //     {
+  //       key: '1',
+  //       label: '1',
+  //       keyboard: '1',
+  //     },
+  //     {
+  //       key: '2',
+  //       label: '2',
+  //       keyboard: '2',
+  //     },
+  //     {
+  //       key: '3',
+  //       label: '3',
+  //       keyboard: '3',
+  //     },
+  //     {
+  //       key: 'count',
+  //       label: '数量',
+  //       keyboard: 'q',
+  //     },
+  //     {
+  //       key: '4',
+  //       label: '4',
+  //       keyboard: '4',
+  //     },
+  //     {
+  //       key: '5',
+  //       label: '5',
+  //       keyboard: '5',
+  //     },
+  //     {
+  //       key: '6',
+  //       label: '6',
+  //       keyboard: '6',
+  //     },
+  //     {
+  //       key: 'discount',
+  //       label: '折扣',
+  //       keyboard: 'd',
+  //     },
+  //     {
+  //       key: '7',
+  //       label: '7',
+  //       keyboard: '7',
+  //     },
+  //     {
+  //       key: '8',
+  //       label: '8',
+  //       keyboard: '8',
+  //     },
+  //     {
+  //       key: '9',
+  //       label: '9',
+  //       keyboard: '9',
+  //     },
+  //     {
+  //       key: 'unitPrice',
+  //       label: '价格',
+  //       keyboard: 'p',
+  //     },
+  //     {
+  //       key: 'clear',
+  //       label: '清除',
+  //       keyboard: 'c',
+  //     },
+  //     {
+  //       key: '0',
+  //       label: '0',
+  //       keyboard: '0',
+  //     },
+  //     {
+  //       key: '.',
+  //       label: '.',
+  //       keyboard: '.',
+  //     },
+  //     {
+  //       key: 'del',
+  //       label: 'del',
+  //       keyboard: 'del',
+  //     },
+  //   ],
+  //   actionPad: [
 
-      {
-        key: 'customer',
-        label: '客户',
-        keyboard: 'v',
-      },
-      {
-        key: 'payment',
-        label: '付款',
-        keyboard: 'enter',
-      }
-    ]
-  }
-  button = []
+  //     {
+  //       key: 'customer',
+  //       label: '客户',
+  //       keyboard: 'v',
+  //     },
+  //     {
+  //       key: 'payment',
+  //       label: '付款',
+  //       keyboard: 'enter',
+  //     }
+  //   ]
+  // }
+  button = {}
   componentDidMount() {
-    this.state.numPad.forEach(item => {
+    const button = this.button
+    this.props.dispatch({ type: 'commodity/changeChooseCalculatorButton', payload: button})
+    numPad.forEach(item => {
       Mousetrap.bind(item.keyboard, () => {
-        // this.button[item.key].querySelector('button').blur()
-        // this.button[item.key].querySelector('button').focus()
-        // this.button[item.key].querySelector('button').click()
-        this.clickHandler(item.key)
+        button[item.key].querySelector('button').blur()
+        button[item.key].querySelector('button').focus()
+        button[item.key].querySelector('button').click()
       })
     })
-    this.state.actionPad.forEach(item => {
+    actionPad.forEach(item => {
       Mousetrap.bind(item.keyboard, () => {
-        this.button[item.key].querySelector('button').blur()
-        this.button[item.key].querySelector('button').focus()
-        this.button[item.key].querySelector('button').click()
+        button[item.key].querySelector('button').blur()
+        button[item.key].querySelector('button').focus()
+        button[item.key].querySelector('button').click()
       })
     })
+  }
+  componentWillReceiveProps(nextProps) {
+    const button = nextProps.order.chooseCalculatorButton
+    const currentKey = this.props.order.key
+    const nextKey = nextProps.order.key
+    if (Object.keys(button).length > 0 && currentKey !== nextKey) {
+      console.log(nextProps.order.key, button)
+      numPad.forEach(item => {
+        Mousetrap.bind(item.keyboard, () => {
+          button[item.key].querySelector('button').blur()
+          button[item.key].querySelector('button').focus()
+          button[item.key].querySelector('button').click()
+        })
+      })
+      actionPad.forEach(item => {
+        Mousetrap.bind(item.keyboard, () => {
+          button[item.key].querySelector('button').blur()
+          button[item.key].querySelector('button').focus()
+          button[item.key].querySelector('button').click()
+        })
+      })
+    }
   }
   componentWillUnmount() {
-    this.state.numPad.forEach(item => {
-      Mousetrap.unbind(item.keyboard)
-    })
-    this.state.actionPad.forEach(item => {
-      Mousetrap.unbind(item.keyboard)
-    })
   }
   clickHandler = (buttonName) => {
-    const { numPad, actionPad } = this.state
-    const newNumPad = numPad.map(item => {
-      if (item.key === buttonName) {
-        return { ...item, dataClicked: null }
-      } else { return item}
-    })
-    this.setState({numPad: newNumPad})
-    let time = setTimeout(() => {
-    const newNumPad = numPad.map(item => {
-      if (item.key === buttonName) {
-        return { ...item, dataClicked: 'true' }
-      } else { return item }
-    })
-    this.setState({numPad: newNumPad})
-    },0)
+    // const { numPad, actionPad } = this.state
+    // const newNumPad = numPad.map(item => {
+    //   if (item.key === buttonName) {
+    //     return { ...item, dataClicked: null }
+    //   } else { return item}
+    // })
+    // this.setState({numPad: newNumPad})
+    // let time = setTimeout(() => {
+    // const newNumPad = numPad.map(item => {
+    //   if (item.key === buttonName) {
+    //     return { ...item, dataClicked: 'true' }
+    //   } else { return item }
+    // })
+    // this.setState({numPad: newNumPad})
+    // },0)
     // window.clearTimeout(time)
     calculate(this.props.commodity, this.props.dispatch, buttonName);
   }
   createActionPad = (orderType) => {
-    const { actionPad } = this.state
     switch (orderType) {
       case POS_TAB_TYPE.ALLOCATEANDTRANSFER:
         return (
@@ -281,18 +297,15 @@ class ChooseCalculator extends PureComponent {
     }
   }
   render() {
-    const { orders, activeTabKey } = this.props;
-    const { numPad, actionPad } = this.state
-    const currentOrder = Array.isArray(orders) && orders.filter(item => (item.key === activeTabKey))[0] || {};
-    const orderType = currentOrder.type;
-    const { selectedList = [], activeSelectedKey } = currentOrder;
+    const { order } = this.props
+    const { selectedList = [], activeSelectedKey, type } = order;
     const selectedItem = selectedList.filter(item => item.Key === activeSelectedKey)[0] || {};
     const calculateType = selectedItem.CalculateType;
     return (
       <div className={styles.calcWrapper}>
         <div className={styles.actionPad}>
           {
-            this.createActionPad(orderType)
+            this.createActionPad(type)
           }
         </div>
         <div className={styles.numPad}>
@@ -304,7 +317,7 @@ class ChooseCalculator extends PureComponent {
                   name={item.key}
                   clickHandler={this.clickHandler}
                   ref={node => (this.button[item.key] = ReactDOM.findDOMNode(node))}
-                  dataClicked={item.dataClicked}
+                  // dataClicked={item.dataClicked}
                 >
                   {item.label}
                 </Cbutton>
@@ -330,6 +343,5 @@ class ChooseCalculator extends PureComponent {
 }
 export default connect(state => ({
   commodity: state.commodity,
-  activeTabKey: state.commodity.activeTabKey,
-  orders: state.commodity.orders,
+  order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
 }))(ChooseCalculator);

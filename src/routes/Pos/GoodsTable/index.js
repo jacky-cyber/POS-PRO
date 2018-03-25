@@ -14,6 +14,7 @@ import HeaderSearch from '../../../components/HeaderSearch';
 import styles from './index.less';
 import { POS_TAB_TYPE, POS_PHASE, CUSTOMER_TYPE, SALE_TYPE } from '../../../constant';
 import Mousetrap from 'mousetrap';
+import { numPad, actionPad } from '../../../components/Calculator/Choose/'
 
 
 const RadioButton = Radio.Button;
@@ -148,6 +149,7 @@ HeaderCell = DropTarget('column', columnTarget, (connect, monitor) => ({
 @connect(state => ({
   commodity: state.commodity,
   loading: state.loading.effects['commodity/getStoreSaleGoods'] || state.loading.effects['commodity/getMilkPowderGoods'] || state.loading.effects['commodity/getStoreSaleGoods'],
+  order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
 }))
 
 class GoodsTable extends PureComponent {
@@ -311,9 +313,9 @@ class GoodsTable extends PureComponent {
     // if (Array.isArray(currentOrderGoodsList) && currentOrderGoodsList.length > 0 && currentOrderGoodsList.length !== this.props.commodity.currentOrderGoodsList.length) {
       this.setState({ content: nextProps.commodity.currentOrderGoodsList })
     // }
- }
+//  }
+}
   componentDidMount() {
-    console.log('tabDidMount')
     const { commodity } = this.props
     const { currentOrderGoodsList=[], activeTabKey } = commodity
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
@@ -332,6 +334,14 @@ class GoodsTable extends PureComponent {
         tagList: newColumns,
       })
     }
+  }
+  componentWillUnmount() {
+    // numPad.forEach(item => {
+    //   Mousetrap.unbind(item.keyboard)
+    // })
+    // actionPad.forEach(item => {
+    //   Mousetrap.unbind(item.keyboard)
+    // })
   }
 
   toggleCollapse = () => {

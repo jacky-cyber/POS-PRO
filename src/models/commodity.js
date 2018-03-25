@@ -679,6 +679,7 @@ export default {
           lastPhase: POS_PHASE.TABLE,
           totalWeight: 0,
           wholeDiscount: 100,
+          chooseCalculatorButton: {},
         },
       ];
       const activeTabKey = `orders-${count}`;
@@ -1026,6 +1027,18 @@ export default {
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
           return { ...item, wholeDiscount };
+        }
+        return item;
+      });
+      return { ...state, orders: newOrders };
+    },
+    changeChooseCalculatorButton(state, action) {
+      const chooseCalculatorButton = action.payload
+      console.log('chooseCalculatorButton', chooseCalculatorButton)
+      const { activeTabKey } = state;
+      const newOrders = state.orders.map((item) => {
+        if (item.key === activeTabKey) {
+          return { ...item, chooseCalculatorButton };
         }
         return item;
       });

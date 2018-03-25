@@ -12,6 +12,7 @@ import StoreSaleHandler from './StoreSaleHandler';
 import StoreWholeSaleHandler from './StoreWholeSaleHandler/'
 import DescriptionList from '../../../components/DescriptionList';
 import SelectedGoods from '../../../components/List/SelectedGoods/';
+import { numPad, actionPad } from '../../../components/Calculator/Choose/'
 // import WareHouse from './WareHouse';
 
 const { Header, Sider, Content } = Layout;
