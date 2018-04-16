@@ -2,7 +2,7 @@ import moment from 'moment';
 // import key from 'keymaster';
 import { fetchCommodityList, fetchCustomerList, submitCustomer, getCustomer, deleteCustomer, updateCustomer, getMilkPowderGoods, addOrUpdateCacheOrder, fetchWaybill, submitOrder, getStoreSaleGoods, getStoreWholeSaleGoods, addOrUpdateDailyClosing } from '../services/api';
 import { message } from 'antd';
-import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from '../constant'
+import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from '../constant';
 import { calculateExpressOrShippingCost, getGoodsItemCustomerPrice, keepTwoDecimals, setLocalStorage, getLocalStorage } from '../utils/utils';
 import Cookies from 'js-cookie';
 
@@ -43,211 +43,211 @@ export default {
   },
   effects: {
     *addOrUpdateDailyClosing(action, { put, call }) {
-      const { payload } = action
-      const response = yield call(addOrUpdateDailyClosing, payload)
+      const { payload } = action;
+      const response = yield call(addOrUpdateDailyClosing, payload);
       if (response.Status) {
-        message.success('提交成功')
+        message.success('提交成功');
       } else {
-        message.error('提交失败')
+        message.error('提交失败');
       }
     },
     *changeCustomer(action, { put, select }) {
-      const { payload } = action
-      yield put ({type: 'saveCurrentCustomer', payload })
+      const { payload } = action;
+      yield put({ type: 'saveCurrentCustomer', payload });
       const commodity = yield select(state => state.commodity);
-      const { activeTabKey, currentOrderGoodsList } = commodity
+      const { activeTabKey, currentOrderGoodsList } = commodity;
       const currentOrder = getCurrentOrder(commodity);
-      const { customer={}, selectedList, type, saleType } = currentOrder
-      const customerType = customer.memberType
+      const { customer = {}, selectedList, type, saleType } = currentOrder;
+      const customerType = customer.memberType;
       const newSelectedList = selectedList.map(item => ({
         ...item,
-        CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice)
-      }))
+        CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
+      }));
       const newCurrentOrderGoodsList = currentOrderGoodsList.map(item => ({
-        ...item, CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice)
-      }))
-      yield put({type: 'changeSelectedListAndCheck', payload: {activeTabKey, newSelectedList}})
-      yield put({ type: 'changeCurrentOrderGoodsList', payload: newCurrentOrderGoodsList })
+        ...item, CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
+      }));
+      yield put({ type: 'changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
+      yield put({ type: 'changeCurrentOrderGoodsList', payload: newCurrentOrderGoodsList });
     },
     *addOrUpdateCacheOrder(action, { put, call }) {
-      const { payload } = action
-      const response = yield call(addOrUpdateCacheOrder, payload)
+      const { payload } = action;
+      const response = yield call(addOrUpdateCacheOrder, payload);
       if (response) {
-        const payload = response.Result.Data
-        yield put({ type: 'changeOrderID', payload })
+        const payload = response.Result.Data;
+        yield put({ type: 'changeOrderID', payload });
       }
     },
     *goodsListPagingHandler(action, { put, select }) {
-      const totalData = action.payload
-      const length = totalData.length
-      yield put({ type: 'changePaginationTotal', payload: length })
+      const totalData = action.payload;
+      const length = totalData.length;
+      yield put({ type: 'changePaginationTotal', payload: length });
       const commodity = yield select(state => state.commodity);
-      const { pagination={} } = commodity || {}
-      const { pageSize } = pagination || {}
-      const pageTotalNumber = Math.ceil(length / pageSize)
-      const newData = []
-      let startNumber = 0
-      let endNumber = pageSize
-      for (let i=0; i<pageTotalNumber; i++) {
-        newData.push(totalData.slice(startNumber, endNumber))
-        startNumber += pageSize
-        endNumber += pageSize
+      const { pagination = {} } = commodity || {};
+      const { pageSize } = pagination || {};
+      const pageTotalNumber = Math.ceil(length / pageSize);
+      const newData = [];
+      let startNumber = 0;
+      let endNumber = pageSize;
+      for (let i = 0; i < pageTotalNumber; i++) {
+        newData.push(totalData.slice(startNumber, endNumber));
+        startNumber += pageSize;
+        endNumber += pageSize;
       }
-      yield put({ type: 'changePaginationPagingData', payload: newData })
+      yield put({ type: 'changePaginationPagingData', payload: newData });
     },
     *getMilkPowderGoods(action, { put, call }) {
-      const { payload } = action
+      const { payload } = action;
       yield put({
         type: 'changeCommonLoading',
         payload: true,
-      })
-      const response = yield call(getMilkPowderGoods)
+      });
+      const response = yield call(getMilkPowderGoods);
       yield put({
         type: 'changeCommonLoading',
         payload: false,
-      })
+      });
       if (response.Status) {
-        const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, CustomerPrice: item.RetailPrice, Count: 1 }))
-        yield put({ type: 'saveMilkPowderGoodsList', payload })
-        yield put({ type: 'goodsListPagingHandler', payload })
-        yield put({ type: 'changeCurrentOrderGoodsList', payload })
+        const data = response.Result.Data;
+        const payload = data.map(item => ({ ...item, Key: item.Sku, CustomerPrice: item.RetailPrice, Count: 1 }));
+        yield put({ type: 'saveMilkPowderGoodsList', payload });
+        yield put({ type: 'goodsListPagingHandler', payload });
+        yield put({ type: 'changeCurrentOrderGoodsList', payload });
       } else {
-        message.error('获取失败')
+        message.error('获取失败');
       }
     },
     *getStoreSaleGoods(_, { put, call }) {
-      const response = yield call(getStoreSaleGoods)
+      const response = yield call(getStoreSaleGoods);
       if (response) {
-        const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, SaleType: SALE_TYPE.LOCAL, CustomerPrice: item.RetailPrice, Count: 1, }))
-        yield put({ type: 'saveStoreSaleGoodsList', payload })
+        const data = response.Result.Data;
+        const payload = data.map(item => ({ ...item, Key: item.Sku, SaleType: SALE_TYPE.LOCAL, CustomerPrice: item.RetailPrice, Count: 1 }));
+        yield put({ type: 'saveStoreSaleGoodsList', payload });
         // yield put({ type: 'goodsListPagingHandler', payload })
-        yield put({ type: 'changeCurrentOrderGoodsList', payload })
+        yield put({ type: 'changeCurrentOrderGoodsList', payload });
       }
     },
     *getStoreWholeSaleGoods(action, { put, call }) {
-      const { payload } = action
+      const { payload } = action;
       yield put({
         type: 'changeCommonLoading',
         payload: true,
-      })
-      const response = yield call(getStoreWholeSaleGoods)
+      });
+      const response = yield call(getStoreWholeSaleGoods);
       yield put({
         type: 'changeCommonLoading',
         payload: false,
-      })
+      });
       if (response.Status) {
-        const data = response.Result.Data
-        const payload = data.map(item => ({ ...item, Key: item.Sku, CustomerPrice: item.RetailPrice, Count: 1 }))
-        yield put({ type: 'saveStoreWholeSaleGoodsList', payload })
-        yield put({ type: 'goodsListPagingHandler', payload })
-        yield put({ type: 'changeCurrentOrderGoodsList', payload })
+        const data = response.Result.Data;
+        const payload = data.map(item => ({ ...item, Key: item.Sku, CustomerPrice: item.RetailPrice, Count: 1 }));
+        yield put({ type: 'saveStoreWholeSaleGoodsList', payload });
+        yield put({ type: 'goodsListPagingHandler', payload });
+        yield put({ type: 'changeCurrentOrderGoodsList', payload });
       } else {
-        message.error('获取失败')
+        message.error('获取失败');
       }
     },
     *getCustomer(action, { put, call }) {
-      const { payload } = action
-      const response = yield call(getCustomer, payload)
+      const { payload } = action;
+      const response = yield call(getCustomer, payload);
       if (response.Status) {
-        const payload = response.Result.Data
-        yield put({ type: 'saveCustomerList', payload })
+        const payload = response.Result.Data;
+        yield put({ type: 'saveCustomerList', payload });
       }
     },
     *submitCustomer(action, { put, call }) {
-      const { payload } = action
+      const { payload } = action;
       yield put({
         type: 'changeCommonLoading',
         payload: true,
-      })
+      });
       try {
-        const response = yield call(submitCustomer, payload)
+        const response = yield call(submitCustomer, payload);
         if (response.Status) {
-          message.success('提交成功')
+          message.success('提交成功');
         } else {
-          message.error('提交失败')
+          message.error('提交失败');
         }
-        yield put({ type: 'getCustomer' })
+        yield put({ type: 'getCustomer' });
       } catch (e) {
       }
       yield put({
         type: 'changeCommonLoading',
         payload: false,
-      })
+      });
     },
     *deleteCustomer(action, { put, call }) {
-      const { payload } = action
+      const { payload } = action;
       yield put({
         type: 'changeCommonLoading',
         payload: true,
-      })
+      });
       try {
-        const response = yield call(deleteCustomer, payload)
+        const response = yield call(deleteCustomer, payload);
         if (response.Status) {
-          message.success('删除成功')
+          message.success('删除成功');
         } else {
-          message.error('删除失败')
+          message.error('删除失败');
         }
-        yield put({ type: 'getCustomer' })
+        yield put({ type: 'getCustomer' });
       } catch (e) {
       }
       yield put({
         type: 'changeCommonLoading',
         payload: false,
-      })
+      });
     },
     *updateCustomer(action, { put, call }) {
-      const { payload } = action
+      const { payload } = action;
       yield put({
         type: 'changeCommonLoading',
         payload: true,
-      })
+      });
       try {
-        const response = yield call(updateCustomer, payload)
+        const response = yield call(updateCustomer, payload);
         if (response.Status) {
-          message.success('更新成功')
+          message.success('更新成功');
         } else {
-          message.error('更新失败')
+          message.error('更新失败');
         }
-        yield put({ type: 'getCustomer' })
+        yield put({ type: 'getCustomer' });
       } catch (e) {
       }
       yield put({
         type: 'changeCommonLoading',
         payload: false,
-      })
+      });
     },
     *fetchWaybill(action, { call, put }) {
-      const { dataJson, setFieldsValueCallback } = action.payload
+      const { dataJson, setFieldsValueCallback } = action.payload;
       yield put({
         type: 'changeCommonLoading',
         payload: true,
-      })
+      });
       try {
-        const response = yield call(fetchWaybill, dataJson)
+        const response = yield call(fetchWaybill, dataJson);
         if (response.Status) {
-          message.success('抓取成功')
-          setFieldsValueCallback({ waybill: response.Result.Data })
+          message.success('抓取成功');
+          setFieldsValueCallback({ waybill: response.Result.Data });
         } else {
-          message.error('抓取失败')
+          message.error('抓取失败');
         }
       } catch (e) {
       }
       yield put({
         type: 'changeCommonLoading',
         payload: false,
-      })
+      });
     },
     *submitOrder(action, { call, put, select, take }) {
-      const { payload } = action
-      const response = yield call(submitOrder, payload)
+      const { payload } = action;
+      const response = yield call(submitOrder, payload);
       if (response) {
-        message.success('订单提交成功')
+        message.success('订单提交成功');
         const commodity = yield select(state => state.commodity);
-        const { activeTabKey } = commodity
+        const { activeTabKey } = commodity;
         yield put({ type: 'clickAddTabButton', payload: POS_TAB_TYPE.STORESALE });
-        yield take('clickAddTabButton/@@end')
+        yield take('clickAddTabButton/@@end');
         yield put({ type: 'removeTab', payload: activeTabKey });
       }
     },
@@ -263,9 +263,9 @@ export default {
       const commodity = yield select(state => state.commodity);
       // const currentOrder = getCurrentOrder(commodity);
       // const content = getCurrjentContent(currentOrder, commodity)
-      const { pagination={} } = commodity
-      const { pagingData=[], current=0 } = pagination
-      const content = pagingData[current - 1]
+      const { pagination = {} } = commodity;
+      const { pagingData = [], current = 0 } = pagination;
+      const content = pagingData[current - 1];
       const key = action.payload;
       const newContent = content.map((item) => {
         if (item.Key === key) {
@@ -273,14 +273,14 @@ export default {
         }
         return item;
       });
-      pagingData[current - 1] = newContent
+      pagingData[current - 1] = newContent;
       yield put({ type: 'changePaginationPagingData', payload: pagingData });
     },
     *clickGoodsItem(action, { put, select }) {
       const commodity = yield select(state => state.commodity);
-      const { pagination={} } = commodity
-      const { pagingData=[], current=0 } = pagination
-      const content = pagingData[current - 1]
+      const { pagination = {} } = commodity;
+      const { pagingData = [], current = 0 } = pagination;
+      const content = pagingData[current - 1];
       const key = action.payload;
       const newContent = content.map((item) => {
         if (item.Key === key) {
@@ -288,7 +288,7 @@ export default {
         }
         return item;
       });
-      pagingData[current - 1] = newContent
+      pagingData[current - 1] = newContent;
       yield put({ type: 'changePaginationPagingData', payload: pagingData });
       yield put({ type: 'addToSelectedList', payload: { key, count: 1 } });
     },
@@ -342,10 +342,10 @@ export default {
           return 0;
         }
       }
-      let newPaymentData
+      let newPaymentData;
       let prevItem;
       if (!currentItem) {
-        newPaymentData = []
+        newPaymentData = [];
       } else {
         newPaymentData = paymentData.map((item, index) => {
           if (index === 0) {
@@ -381,12 +381,12 @@ export default {
     *addToSelectedList(action, { put, select, take }) {
       const { key: selectedKey, count } = action.payload;
       const commodity = yield select(state => state.commodity);
-      const { orders, activeTabKey, pagination, currentOrderGoodsList } = commodity
-      const { pagingData, current } = pagination || {}
+      const { orders, activeTabKey, pagination, currentOrderGoodsList } = commodity;
+      const { pagingData, current } = pagination || {};
       const currentOrder = getCurrentOrder(commodity);
-      const { type, saleType, customer, targetPhase } = currentOrder
-      const customerType = customer.memberType || null
-      const currentGoodsList = targetPhase === POS_PHASE.TABLE ? currentOrderGoodsList : pagingData[current - 1]
+      const { type, saleType, customer, targetPhase } = currentOrder;
+      const customerType = customer.memberType || null;
+      const currentGoodsList = targetPhase === POS_PHASE.TABLE ? currentOrderGoodsList : pagingData[current - 1];
       const { selectedList } = currentOrder;
       let { avoidDuplicationIndex } = currentOrder;
       const selectedItem = currentGoodsList.filter(item => (item.Key === selectedKey))[0];
@@ -400,7 +400,6 @@ export default {
         };
         return [...selectedList, newSelectedItem];
       }
-      console.log('selectedList', selectedList)
       const index = selectedList.find(item => item.Key === selectedItem.Key);
       if (!index) {
         newSelectedList = addNewToSelectedList(selectedItem, selectedList);
@@ -428,7 +427,7 @@ export default {
         }
         yield put({ type: 'changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
       }
-      yield take('changeSelectedListAndCheck/@@end')
+      yield take('changeSelectedListAndCheck/@@end');
       yield put({ type: 'changeActiveSelectedKey', payload: selectedKey });
       yield put({ type: 'changeAvoidDuplicationIndex', payload: avoidDuplicationIndex });
     },
@@ -436,74 +435,75 @@ export default {
       const { activeTabKey, newSelectedList } = action.payload;
       const { orders } = yield select(state => state.commodity);
       const currentOrder = orders.filter(item => (item.key === activeTabKey))[0];
-      const { wholeDiscount } = currentOrder
+      const { wholeDiscount } = currentOrder;
       let goodsPrice = 0;
       let originPrice = 0;
       let totalWeight = 0;
       const latestSelectedList = newSelectedList.map((item) => {
-        const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.CustomerPrice
-        const retailPrice = item.RetailPrice
+        const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.CustomerPrice;
+        const retailPrice = item.RetailPrice;
         const count = item.Count;
         const discount = item.Discount;
-        const weight = item.Weight
+        const weight = item.Weight;
         const price = unitPrice * count * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
         const realPrice = unitPrice * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
         goodsPrice += price;
-        originPrice += retailPrice * count
-        totalWeight += weight * count
-        return {...item, RealPrice: realPrice}
+        originPrice += retailPrice * count;
+        totalWeight += weight * count;
+        return { ...item, RealPrice: realPrice };
       });
       yield put({ type: 'changeSelectedList', payload: { activeTabKey, latestSelectedList } });
       yield put({ type: 'changeGoodsPrice', payload: goodsPrice });
-      yield put({ type: 'changeOriginPrice', payload: originPrice })
-      yield put({ type: 'changeTotalWeight', payload: totalWeight })
+      yield put({ type: 'changeOriginPrice', payload: originPrice });
+      yield put({ type: 'changeTotalWeight', payload: totalWeight });
       yield put({ type: 'sumTotalPrice' });
+      console.log('text')
     },
     *clickAddTabButton(action, { put, select }) {
       const tabType = action.payload;
       const commodity = yield select(state => state.commodity);
       const count = commodity.newTabIndex + 1;
       const currentTime = moment().format('HH:mm');
-      const createTime = moment().format('YYYY-MM-DD HH:mm')
+      const createTime = moment().format('YYYY-MM-DD HH:mm');
       yield put({ type: 'addTab', payload: { count, tabType, currentTime, createTime } });
       if (tabType === POS_TAB_TYPE.STORESALE) {
-        yield put({ type: 'getStoreSaleGoods' })
+        yield put({ type: 'getStoreSaleGoods' });
       }
       if (tabType === POS_TAB_TYPE.MILKPOWDER) {
-        yield put({ type: 'getMilkPowderGoods' })
+        yield put({ type: 'getMilkPowderGoods' });
       }
       if (tabType === POS_TAB_TYPE.WHOLESALE) {
-        yield put({ type: 'getStoreWholeSaleGoods' })
+        yield put({ type: 'getStoreWholeSaleGoods' });
       }
     },
     *changeActiveTabKeyAndCheck(action, { put, select }) {
       const activeTabKey = action.payload;
       yield put({ type: 'changeActiveTabKey', payload: activeTabKey });
       const commodity = yield select(state => state.commodity);
-      const storeSaleGoodsList = getLocalStorage('storeSaleGoodsList')
-      const { milkPowderGoodsList, wholesaleGoodsList } = commodity
+      const storeSaleGoodsList = getLocalStorage('storeSaleGoodsList');
+      const { milkPowderGoodsList, wholesaleGoodsList } = commodity;
       const currentOrder = getCurrentOrder(commodity);
       const { type } = currentOrder;
-      let currentOrderGoodsList = []
+      let currentOrderGoodsList = [];
       switch (type) {
         case POS_TAB_TYPE.STORESALE: {
-          currentOrderGoodsList = storeSaleGoodsList
+          currentOrderGoodsList = storeSaleGoodsList;
           break;
         }
         case POS_TAB_TYPE.MILKPOWDER: {
-          currentOrderGoodsList = milkPowderGoodsList
+          currentOrderGoodsList = milkPowderGoodsList;
           break;
         }
         case POS_TAB_TYPE.WHOLESALE: {
-          currentOrderGoodsList = wholeSaleGoodsList
+          currentOrderGoodsList = wholeSaleGoodsList;
           break;
         }
         default: {
-          currentOrderGoodsList = []
+          currentOrderGoodsList = [];
         }
       }
       // yield put({ type: 'goodsListPagingHandler', payload: currentOrderGoodsList })
-      yield put({ type: 'changeCurrentOrderGoodsList', payload: currentOrderGoodsList })
+      yield put({ type: 'changeCurrentOrderGoodsList', payload: currentOrderGoodsList });
     },
     *clickTab(action, { put, select }) {
       const activeTabKey = action.payload;
@@ -512,7 +512,7 @@ export default {
     *clickRemoveButton(action, { put, select }) {
       const currentIndex = action.payload;
       const commodity = yield select(state => state.commodity);
-      const removeKey = commodity.activeTabKey
+      const removeKey = commodity.activeTabKey;
       const currentOrder = getCurrentOrder(commodity);
       const { orders } = commodity;
       let activeTabKey;
@@ -534,20 +534,20 @@ export default {
     *clickChangeSaleTypeButton(action, { put, select }) {
       const saleType = action.payload;
       if (saleType === SALE_TYPE.LOCAL) {
-        yield put({ type: 'changeExpressDataAndSumCost', payload: [] })
-        yield put({ type: 'changeShippingDataAndSumCost', payload: [] })
+        yield put({ type: 'changeExpressDataAndSumCost', payload: [] });
+        yield put({ type: 'changeShippingDataAndSumCost', payload: [] });
       }
       if (saleType === SALE_TYPE.EXPRESS) {
-        yield put({ type: 'changeShippingDataAndSumCost', payload: [] })
+        yield put({ type: 'changeShippingDataAndSumCost', payload: [] });
       }
       if (saleType === SALE_TYPE.SHIPPING) {
-        yield put({ type: 'changeExpressDataAndSumCost', payload: [] })
-        yield put({ type: 'changeShippingDataAndSumCost', payload: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0, }] })
+        yield put({ type: 'changeExpressDataAndSumCost', payload: [] });
+        yield put({ type: 'changeShippingDataAndSumCost', payload: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0 }] });
       }
       const { orders, activeTabKey, currentOrderGoodsList } = yield select(state => state.commodity);
       const currentOrder = orders.filter(item => (item.key === activeTabKey))[0];
       const { selectedList, type, customer } = currentOrder;
-      const customerType = customer.memberType
+      const customerType = customer.memberType;
       const newSelectedList = selectedList.map(item => ({
         ...item,
         SaleType: saleType,
@@ -555,23 +555,23 @@ export default {
       }));
       const newCurrentOrderGoodsList = currentOrderGoodsList.map(item => ({
         ...item, CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
-      }))
-      yield put({ type: 'changeCurrentOrderGoodsList', payload: newCurrentOrderGoodsList})
+      }));
+      yield put({ type: 'changeCurrentOrderGoodsList', payload: newCurrentOrderGoodsList });
       yield put({ type: 'changeSaleType', payload: saleType });
       yield put({ type: 'changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
     },
     *changeWholeDiscountInput(action, { put, select }) {
-      const wholeDiscount = action.payload
-      if (typeof wholeDiscount !== 'number' || wholeDiscount > 100 || wholeDiscount < 0) { return }
+      const wholeDiscount = action.payload;
+      if (typeof wholeDiscount !== 'number' || wholeDiscount > 100 || wholeDiscount < 0) { return; }
       const commodity = yield select(state => state.commodity);
-      const { activeTabKey } = commodity
+      const { activeTabKey } = commodity;
       const currentOrder = getCurrentOrder(commodity);
-      const { selectedList } = currentOrder
+      const { selectedList } = currentOrder;
       const newSelectedList = selectedList.map(item => ({
         ...item,
         WholeDiscount: wholeDiscount,
-      }))
-      yield put({ type: 'changeWholeDiscount', payload: wholeDiscount })
+      }));
+      yield put({ type: 'changeWholeDiscount', payload: wholeDiscount });
       yield put({ type: 'changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
     },
     *clickAddBoxButton(action, { put, select }) {
@@ -633,8 +633,8 @@ export default {
     addTab(state, action) {
       const { count, tabType, currentTime, createTime } = action.payload;
       const goodsOrders = state.orders;
-      const currentUser = Cookies.getJSON('currentUser')
-      const { DepartmentID, ShopName } = currentUser
+      const currentUser = Cookies.getJSON('currentUser');
+      const { DepartmentID, ShopName } = currentUser;
       const orders = [
         ...goodsOrders,
         {
@@ -649,7 +649,7 @@ export default {
           goodsPrice: 0,
           expressDataIndex: 0,
           expressData: [],
-          shippingData: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0, }],
+          shippingData: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0 }],
           expressCost: 0,
           shippingCost: 0,
           totalPrice: 0,
@@ -686,7 +686,7 @@ export default {
       return { ...state, orders, activeTabKey, newTabIndex: count };
     },
     removeTab(state, action) {
-      const activeTabKey  = action.payload;
+      const activeTabKey = action.payload;
       const orders = state.orders.filter(item => item.key !== activeTabKey);
       if (orders.length > 0) {
         return { ...state, orders };
@@ -700,14 +700,14 @@ export default {
     changeCommodityContent(state, action) {
       const { activeTabKey } = state;
       const currentOrder = state.orders.filter(item => (item.key === activeTabKey))[0];
-      const { type } = currentOrder
+      const { type } = currentOrder;
       const content = action.payload || [];
       switch (type) {
         case POS_TAB_TYPE.MILKPOWDER: {
-          return { ...state, milkPowderGoodsList: content }
+          return { ...state, milkPowderGoodsList: content };
         }
         default: {
-          return state
+          return state;
         }
       }
     },
@@ -722,7 +722,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeGoodsPrice(state, action) {
-      const goodsPrice = keepTwoDecimals(action.payload)
+      const goodsPrice = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key && item.key === activeTabKey) {
@@ -732,7 +732,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeOriginPrice(state, action) {
-      const originPrice = keepTwoDecimals(action.payload)
+      const originPrice = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key && item.key === activeTabKey) {
@@ -742,7 +742,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeTotalWeight(state, action) {
-      const totalWeight = keepTwoDecimals(action.payload)
+      const totalWeight = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key && item.key === activeTabKey) {
@@ -753,14 +753,14 @@ export default {
     },
     changeCalculateType(state, action) {
       const calculateType = action.payload;
-      const { activeTabKey } = state
+      const { activeTabKey } = state;
       const currentOrder = state.orders.filter(item => (item.key === activeTabKey))[0];
       const selectedList = currentOrder.selectedList;
       const { activeSelectedKey } = currentOrder;
       const newSelectedList = selectedList.map((item) => {
         if (item.Key === activeSelectedKey) {
           // return { ...item, CalculateType: calculateType, CacheCount: null, CacheDiscount: null, CacheUnitPrice: null };
-          return { ...item, CalculateType: calculateType, };
+          return { ...item, CalculateType: calculateType };
         }
         return item;
       });
@@ -795,7 +795,7 @@ export default {
     },
     changeAvoidDuplicationIndex(state, action) {
       const avoidDuplicationIndex = action.payload;
-      const { activeTabKey } = state
+      const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key && item.key === activeTabKey) {
           return { ...item, avoidDuplicationIndex };
@@ -905,7 +905,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeTotalPrice(state, action) {
-      const totalPrice = keepTwoDecimals(action.payload)
+      const totalPrice = keepTwoDecimals(action.payload);
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
@@ -956,34 +956,34 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeCommonLoading(state, action) {
-      const commonLoading = action.payload
-      return { ...state, commonLoading }
+      const commonLoading = action.payload;
+      return { ...state, commonLoading };
     },
     saveCustomerList(state, action) {
-      const customerList = action.payload
-      return { ...state, customerList }
+      const customerList = action.payload;
+      return { ...state, customerList };
     },
     changeCurrentOrderGoodsList(state, action) {
-      const currentOrderGoodsList = action.payload
-      return { ...state, currentOrderGoodsList, }
+      const currentOrderGoodsList = action.payload;
+      return { ...state, currentOrderGoodsList };
     },
     saveMilkPowderGoodsList(state, action) {
-      const milkPowderGoodsList = action.payload
-      return { ...state, milkPowderGoodsList, }
+      const milkPowderGoodsList = action.payload;
+      return { ...state, milkPowderGoodsList };
     },
     saveStoreSaleGoodsList(state, action) {
-      const storeSaleGoodsList = action.payload
-      setLocalStorage('storeSaleGoodsList', storeSaleGoodsList)
+      const storeSaleGoodsList = action.payload;
+      setLocalStorage('storeSaleGoodsList', storeSaleGoodsList);
       // return { ...state, storeSaleGoodsList, }
-      return state
+      return state;
     },
     saveStoreWholeSaleGoodsList(state, action) {
-      const storeWholesaleGoodsList = action.payload
-      return { ...state, storeWholeSaleGoodsList, }
+      const storeWholesaleGoodsList = action.payload;
+      return { ...state, storeWholeSaleGoodsList };
     },
     changeOrderID(state, action) {
-      const ID = action.payload
-      const { activeTabKey } = state
+      const ID = action.payload;
+      const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
           return { ...item, ID };
@@ -993,22 +993,22 @@ export default {
       return { ...state, orders: newOrders };
     },
     changePaginationTotal(state, action) {
-      const { pagination } = state
-      const total = action.payload
-      const newPagination = { ...pagination, total }
-      return { ...state, pagination: newPagination }
+      const { pagination } = state;
+      const total = action.payload;
+      const newPagination = { ...pagination, total };
+      return { ...state, pagination: newPagination };
     },
     changePaginationPagingData(state, action) {
-      const { pagination } = state
-      const pagingData = action.payload
-      const newPagination = { ...pagination, pagingData }
-      return { ...state, pagination: newPagination }
+      const { pagination } = state;
+      const pagingData = action.payload;
+      const newPagination = { ...pagination, pagingData };
+      return { ...state, pagination: newPagination };
     },
     changePaginationCurrent(state, action) {
-      const { pagination } = state
-      const current = action.payload
-      const newPagination = { ...pagination, current }
-      return { ...state, pagination: newPagination }
+      const { pagination } = state;
+      const current = action.payload;
+      const newPagination = { ...pagination, current };
+      return { ...state, pagination: newPagination };
     },
     saveCurrentCustomer(state, action) {
       const customer = action.payload;
@@ -1022,7 +1022,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeWholeDiscount(state, action) {
-      const wholeDiscount = action.payload
+      const wholeDiscount = action.payload;
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
@@ -1033,8 +1033,7 @@ export default {
       return { ...state, orders: newOrders };
     },
     changeChooseCalculatorButton(state, action) {
-      const chooseCalculatorButton = action.payload
-      console.log('chooseCalculatorButton', chooseCalculatorButton)
+      const chooseCalculatorButton = action.payload;
       const { activeTabKey } = state;
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
@@ -1043,6 +1042,17 @@ export default {
         return item;
       });
       return { ...state, orders: newOrders };
-    }
+    },
+    changePaymentCalculatorButton(state, action) {
+      const paymentCalculatorButton = action.payload;
+      const { activeTabKey } = state;
+      const newOrders = state.orders.map((item) => {
+        if (item.key === activeTabKey) {
+          return { ...item, paymentCalculatorButton };
+        }
+        return item;
+      });
+      return { ...state, orders: newOrders };
+    },
   },
 };

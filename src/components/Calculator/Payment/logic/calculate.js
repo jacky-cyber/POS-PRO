@@ -83,10 +83,9 @@ function cashHandler(dispatch, buttonName, paymentData, activePaymentDataIndex, 
 }
 
 export default function calculate(commodity, dispatch, buttonName) {
-  const activeTabKey = commodity.activeTabKey;
+  const { activeTabKey } = commodity;
   const currentOrder = commodity.orders.filter(item => (item.key === activeTabKey))[0];
   const { paymentData, activePaymentDataIndex } = currentOrder;
-  // console.log(activePaymentDataIndex)
   if (!paymentData || (Array.isArray(paymentData) && paymentData.length === 0) || (activePaymentDataIndex === null)) { return; }
   const paymentDataItem = paymentData.filter((item, index) => (index === activePaymentDataIndex))[0];
   cashHandler(dispatch, buttonName, paymentData, activePaymentDataIndex, paymentDataItem);

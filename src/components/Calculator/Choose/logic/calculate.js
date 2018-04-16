@@ -29,6 +29,7 @@ function numberHandler(oldCache, buttonName, activeTabKey, selectedList, activeS
   }
   const number = cache - 0;
   const newSelectedList = generateNewSelectedList(activeSelectedKey, selectedList, cache, number, type);
+  console.log('newSelectedList', newSelectedList)
   dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
 }
 
@@ -76,6 +77,7 @@ function countHandler(dispatch, buttonName, activeTabKey, selectedList, selected
   let CacheCount;
   if (isNumber(buttonName)) {
     numberHandler(oldCacheCount, buttonName, activeTabKey, selectedList, activeSelectedKey, 'count', dispatch);
+    return
   }
   if (buttonName === 'clear') {
     let filterIndex;
@@ -197,14 +199,17 @@ export default function calculate(commodity, dispatch, buttonName) {
   // 数量计算逻辑
   if (calculateType === 'count') {
     countHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
+    return
   }
   // 折扣计算逻辑
   if (calculateType === 'discount') {
     discountHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
+    return
   }
   // 单价计算逻辑
   if (calculateType === 'unitPrice') {
     unitPriceHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
+    return
   }
 }
 

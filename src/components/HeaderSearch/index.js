@@ -28,21 +28,20 @@ export default class HeaderSearch extends PureComponent {
   };
   componentWillUnmount() {
     clearTimeout(this.timeout);
-    Mousetrap.unbind('alt+s')
-    // window.removeEventListener('keyup', this.listen.bind(this));
+    Mousetrap.unbind('alt+s');
   }
   // listen(e) {
   //   if (e.keyCode === 27) this.leaveSearchMode()
   // }
   componentDidMount() {
     Mousetrap.bind('alt+s', () => {
-        this.enterSearchMode()
-      })
+      this.enterSearchMode();
+    });
     // window.addEventListener('keyup', this.listen.bind(this))
   }
   onKeyDown = (e) => {
     if (e.key === 'Enter') {
-    this.setState({value: ''})
+      this.setState({ value: '' });
       this.timeout = setTimeout(() => {
         this.props.onPressEnter(this.state.value); // Fix duplicate onPressEnter
       }, 0);
@@ -66,7 +65,7 @@ export default class HeaderSearch extends PureComponent {
       searchMode: false,
       value: '',
     });
-    this.input.blur()
+    this.input.blur();
   }
   render() {
     const { className, placeholder, ...restProps } = this.props;

@@ -8,12 +8,13 @@ import groupBy from 'lodash/groupBy';
 import { ContainerQuery } from 'react-container-query';
 import classNames from 'classnames';
 import Debounce from 'lodash-decorators/debounce';
+import { TabOne } from 'components/BaseComponents';
 import NoticeIcon from '../components/NoticeIcon';
 import NotFound from '../routes/Exception/404';
 import styles from './PosLayout.less';
 import ChooseCalculator from '../components/Calculator/Choose/';
 import SelectedGoods from '../components/List/SelectedGoods/';
-import { POS_TAB_TYPE, POS_PHASE, } from '../constant';
+import { POS_TAB_TYPE, POS_PHASE } from '../constant';
 import { routerRedux } from 'dva/router';
 import GoodsList from '../routes/Pos/GoodsList';
 import GoodsTable from '../routes/Pos/GoodsTable';
@@ -52,9 +53,6 @@ class PosLayout extends PureComponent {
     location: PropTypes.object,
     breadcrumbNameMap: PropTypes.object,
   }
-  constructor(props) {
-    super(props);
-  }
   getChildContext() {
     const { location, routerData } = this.props;
     return {
@@ -68,6 +66,18 @@ class PosLayout extends PureComponent {
       this.props.dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.STORESALE });
     }
   }
+  onChange = (activeKey) => {
+    if (activeKey === '+') {
+      this.props.dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.STORESALE });
+      return;
+    } else if (activeKey === '-') {
+      return;
+    } else if (activeKey === 'leftHeader') {
+      this.props.dispatch(routerRedux.push('/'));
+      return;
+    }
+    this.props.dispatch({ type: 'commodity/clickTab', payload: activeKey });
+  }
   getPageTitle() {
     const { routerData, location } = this.props;
     const { pathname } = location;
@@ -76,6 +86,13 @@ class PosLayout extends PureComponent {
       title = `${routerData[pathname].name} - Orssica`;
     }
     return title;
+  }
+  handleNoticeVisibleChange = (visible) => {
+    if (visible) {
+      this.props.dispatch({
+        type: 'global/fetchNotices',
+      });
+    }
   }
   getNoticeData() {
     const { notices = [] } = this.props;
@@ -112,33 +129,33 @@ class PosLayout extends PureComponent {
       payload: type,
     });
   }
-  handleNoticeVisibleChange = (visible) => {
-    if (visible) {
-      this.props.dispatch({
-        type: 'global/fetchNotices',
-      });
-    }
-  }
-  onChange = (activeKey) => {
-    if (activeKey === '+') {
-      this.props.dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.STORESALE });
-      return;
-    } else if (activeKey === '-') {
-      return;
-    } else if (activeKey === 'leftHeader') {
-      this.props.dispatch(routerRedux.push('/'));
-      return;
-    }
-    this.props.dispatch({ type: 'commodity/clickTab', payload: activeKey });
-  }
   remove = (currentIndex) => {
     this.props.dispatch({ type: 'commodity/clickRemoveButton', payload: currentIndex });
   }
+  generatePosLayoutContent = (targetPhase) => {
+    switch (targetPhase) {
+      case POS_PHASE.TABLE: {
+        return <GoodsTable />;
+      }
+      case POS_PHASE.LIST: {
+        return <GoodsList />;
+      }
+      case POS_PHASE.PAY: {
+        return <Payment />;
+      }
+      case POS_PHASE.CUSTOMER: {
+        return <Customer />;
+      }
+      default: {
+        return null;
+      }
+    }
+  };
   render() {
     const { currentUser, fetchingNotices, dispatch } = this.props;
     const { orders, activeTabKey } = this.props.commodity || {};
     const currentIndex = orders.findIndex(item => item.key === activeTabKey);
-    const currentOrder = orders.filter(item => item.key === activeTabKey)[0]
+    const currentOrder = orders.filter(item => item.key === activeTabKey)[0];
     const createTabTitle = (title, type, key, currentTime) => {
       const tabsBarContentCls = cls({
         [styles.tabsBarContent]: true,
@@ -211,26 +228,6 @@ class PosLayout extends PureComponent {
         <Button icon="left" />
       </Dropdown>
     );
-    const generatePosLayoutContent = () => {
-      switch (currentOrder.targetPhase) {
-        case POS_PHASE.TABLE: {
-          return <GoodsTable />
-        }
-        case POS_PHASE.LIST: {
-          return <GoodsList />
-        }
-        case POS_PHASE.PAY: {
-          return <Payment />
-        }
-        case POS_PHASE.CUSTOMER: {
-          return <Customer />
-        }
-        default: {
-          return null
-        }
-      }
-    }
-
 
     const layout = (
       <Layout>
@@ -239,7 +236,8 @@ class PosLayout extends PureComponent {
             <div
               className={styles.tabsWrapper}
             >
-              <Tabs
+            <TabOne />
+              {/* <Tabs
                 hideAdd
                 tabBarExtraContent={rightButton}
                 onChange={this.onChange}
@@ -250,9 +248,9 @@ class PosLayout extends PureComponent {
                 {
                   orders.map(orderItem => (
                     <TabPane tab={createTabTitle(orderItem.title, orderItem.type, orderItem.key, orderItem.currentTime)} key={orderItem.key}>
-                      <div className={styles.tabContent}>
+                      <div className={styles.tabContent} role={orderItem.key}>
                         {
-                          generatePosLayoutContent()
+                          this.generatePosLayoutContent(orderItem.targetPhase)
                         }
                       </div>
                     </TabPane>
@@ -260,7 +258,7 @@ class PosLayout extends PureComponent {
                 }
                 <TabPane tab={plusButton} key="+" />
                 <TabPane tab={minusButton} key="-" />
-              </Tabs>
+              </Tabs> */}
             </div>
           </div>
         </Content>
