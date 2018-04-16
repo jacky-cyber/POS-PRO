@@ -151,6 +151,9 @@ class PosLayout extends PureComponent {
       }
     }
   };
+  tabChangeHandler = (key) => {
+    console.log('key', key)
+  }
   render() {
     const { currentUser, fetchingNotices, dispatch } = this.props;
     const { orders, activeTabKey } = this.props.commodity || {};
@@ -159,13 +162,14 @@ class PosLayout extends PureComponent {
     const createTabTitle = (title, type, key, currentTime) => {
       const tabsBarContentCls = cls({
         [styles.tabsBarContent]: true,
+        [styles.tabsActiveBarContent]: activeTabKey === key,
         [styles.tabsBarContentAllocate]: type === POS_TAB_TYPE.ALLOCATEANDTRANSFER,
         [styles.tabsBarContentMilkPowder]: type === POS_TAB_TYPE.MILKPOWDER,
         [styles.tabsBarContentWholeSale]: type === POS_TAB_TYPE.WHOLESALE,
       });
       if (typeof title === 'number') {
         const tabsBarElement = (
-          <div className={tabsBarContentCls}>
+          <div className={tabsBarContentCls} key={key}>
             <Badge count={title} overflowCount={1000} style={{ background: '#393939' }} />
             {
               activeTabKey === key && <span>{currentTime}</span>
@@ -236,7 +240,30 @@ class PosLayout extends PureComponent {
             <div
               className={styles.tabsWrapper}
             >
-            <TabOne />
+            <TabOne
+             content={this.generatePosLayoutContent(currentOrder.targetPhase)}
+             activeKey={activeTabKey}
+             onChange={this.tabChangeHandler}
+             >
+              {
+                orders.map(orderItem => (
+                  createTabTitle(orderItem.title, orderItem.type, orderItem.key, orderItem.currentTime)
+                ))
+              }
+              <Button
+               className={styles.operationButton}
+               onClick={() => this.props.dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.STORESALE })}
+               key="+"
+               >
+               +
+               </Button>
+              <Button
+               className={styles.operationButton}
+               key="-"
+               >
+               -
+               </Button>
+              </TabOne>
               {/* <Tabs
                 hideAdd
                 tabBarExtraContent={rightButton}

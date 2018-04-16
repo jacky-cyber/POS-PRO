@@ -18,8 +18,8 @@ export const SALE_TYPE = {
 }
 
 
-export const DOMAIN = 'http://192.168.1.225:8086';
-// export const DOMAIN = 'http://posapi.he2009.nz';
+// export const DOMAIN = 'http://192.168.1.225:8086';
+export const DOMAIN = 'http://posapi.he2009.nz';
 
 export const POS_PHASE = {
   LIST: 'CHOOSE_LIST',
