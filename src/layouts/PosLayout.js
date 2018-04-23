@@ -157,8 +157,10 @@ class PosLayout extends PureComponent {
   render() {
     const { currentUser, fetchingNotices, dispatch } = this.props;
     const { orders, activeTabKey } = this.props.commodity || {};
+    console.log('orders', orders)
     const currentIndex = orders.findIndex(item => item.key === activeTabKey);
     const currentOrder = orders.filter(item => item.key === activeTabKey)[0];
+    console.log('currentOrder', currentOrder)
     const createTabTitle = (title, type, key, currentTime) => {
       const tabsBarContentCls = cls({
         [styles.tabsBarContent]: true,
@@ -241,7 +243,7 @@ class PosLayout extends PureComponent {
               className={styles.tabsWrapper}
             >
             <TabOne
-             content={this.generatePosLayoutContent(currentOrder.targetPhase)}
+             content={this.generatePosLayoutContent(currentOrder && currentOrder.targetPhase)}
              activeKey={activeTabKey}
              onChange={this.tabChangeHandler}
              >

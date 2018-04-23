@@ -460,6 +460,7 @@ export default {
       console.log('text')
     },
     *clickAddTabButton(action, { put, select }) {
+      console.log('clickAddTabButton')
       const tabType = action.payload;
       const commodity = yield select(state => state.commodity);
       const count = commodity.newTabIndex + 1;
