@@ -1,46 +1,41 @@
 import React, { PureComponent } from 'react';
-import { Table, Card, Collapse, Layout, Icon, Button, InputNumber, Divider, Select, Radio } from 'antd'
+import { Table, Layout, Icon, Button, InputNumber, Select, Radio } from 'antd';
 import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
-import { connect } from 'dva'
-import StandardFormRow from '../../../components/StandardFormRow';
+import { connect } from 'dva';
+import classNames from 'classnames';
+import { ChooseCalculator, SelectedGoods } from 'components/PosComponents';
+import { POS_TAB_TYPE, POS_PHASE, CUSTOMER_TYPE, SALE_TYPE } from 'constant';
 import TagSelect from '../../../components/TagSelect';
-import { routerRedux } from 'dva/router';
-import classNames from 'classnames'
-import ChooseCalculator from '../../../components/Calculator/Choose/'
-import SelectedGoods from '../../../components/List/SelectedGoods/'
+// import SelectedGoods from '../../../components/List/SelectedGoods/';
 import HeaderSearch from '../../../components/HeaderSearch';
 import styles from './index.less';
-import { POS_TAB_TYPE, POS_PHASE, CUSTOMER_TYPE, SALE_TYPE } from '../../../constant';
-import Mousetrap from 'mousetrap';
-import { numPad, actionPad } from '../../../components/Calculator/Choose/'
 
 
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
-const { Panel } = Collapse
-const { Header, Sider, Content } = Layout;
-const { Option } = Select
-let cx = classNames.bind(styles)
+const { Sider, Content } = Layout;
+const { Option } = Select;
+const cx = classNames.bind(styles);
 
-    function getCustomerText(memberType) {
-      if (!memberType || !CUSTOMER_TYPE.filter(item => item.value === memberType)[0]) { return '非' }
-      return CUSTOMER_TYPE.filter(item => item.value === memberType)[0].label
-    }
+function getCustomerText(memberType) {
+  if (!memberType || !CUSTOMER_TYPE.filter(item => item.value === memberType)[0]) { return '非'; }
+  return CUSTOMER_TYPE.filter(item => item.value === memberType)[0].label;
+}
 
 function searchResult(value, count, includedBarcodeCount, includedSkuCount) {
   return [
     <Option key={`${value}1`} value="" text={`${value}`}>
       条码等于 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{count}</span> 个
     </Option>,
-    <Option key={`${value}2`} value="barcode" text=''>
+    <Option key={`${value}2`} value="barcode" text="">
       条码包含 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{includedBarcodeCount}</span> 个
     </Option>,
-    <Option key={`${value}3`} value="sku" text=''>
+    <Option key={`${value}3`} value="sku" text="">
       SKU 包含 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{includedSkuCount}</span> 个
-    </Option>
-  ]
+    </Option>,
+  ];
 }
 
 
@@ -59,7 +54,6 @@ function dragDirection(
   if (dragIndex > hoverIndex && hoverClientX < hoverMiddleX) {
     return 'leftward';
   }
-
 }
 
 let HeaderCell = (props) => {
@@ -76,7 +70,7 @@ let HeaderCell = (props) => {
   } = props;
   const style = { cursor: 'move' };
 
-  let className = restProps.className;
+  let { className } = restProps;
   if (isOver && initialClientOffset) {
     const direction = dragDirection(
       dragRow.index,
@@ -103,7 +97,7 @@ let HeaderCell = (props) => {
       />
     )
   );
-}
+};
 const columnSource = {
   beginDrag(props) {
     return {
@@ -154,13 +148,13 @@ HeaderCell = DropTarget('column', columnTarget, (connect, monitor) => ({
 
 class GoodsTable extends PureComponent {
   constructor(props) {
-    super(props)
-    const currentOrder = props.commodity.orders.filter(item => (item.key === props.commodity.activeTabKey))[0]
-    const { customer={} } = currentOrder
-    const { memberType } = customer
+    super(props);
+    const currentOrder = props.commodity.orders.filter(item => (item.key === props.commodity.activeTabKey))[0];
+    const { customer = {} } = currentOrder;
+    const { memberType } = customer;
     function getCustomerText(memberType) {
-      if (!memberType || !CUSTOMER_TYPE.filter(item => item.value === memberType)[0]) { return '非' }
-      return CUSTOMER_TYPE.filter(item => item.value === memberType)[0].label
+      if (!memberType || !CUSTOMER_TYPE.filter(item => item.value === memberType)[0]) { return '非'; }
+      return CUSTOMER_TYPE.filter(item => item.value === memberType)[0].label;
     }
     this.state = {
       display: false,
@@ -175,11 +169,11 @@ class GoodsTable extends PureComponent {
           dataIndex: 'CN',
           key: 'CN',
           onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
             return {
               index,
               moveColumn: this.moveColumn,
-            }
+            };
           },
         },
         {
@@ -187,23 +181,23 @@ class GoodsTable extends PureComponent {
           dataIndex: 'RetailPrice',
           key: 'RetailPrice',
           onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
             return {
               index,
               moveColumn: this.moveColumn,
-            }
+            };
           },
         },
         {
-          title: `真实价格`,
+          title: '真实价格',
           dataIndex: 'CustomerPrice',
           key: 'CustomerPrice',
           onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
             return {
               index,
               moveColumn: this.moveColumn,
-            }
+            };
           },
         },
         {
@@ -212,9 +206,16 @@ class GoodsTable extends PureComponent {
           key: 'Count',
           render: (text, record, index) => {
             return (
-              <InputNumber size="small" value={text} min={0} onChange={(value) => this.countChangeHandler(value, record)} />
-            )
-          }
+              <InputNumber size="small" value={text} min={0} onChange={value => this.countChangeHandler(value, record)} />
+            );
+          },
+          onHeaderCell: (columns) => {
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
+            return {
+              index,
+              moveColumn: this.moveColumn,
+            };
+          },
         },
         {
           title: '操作',
@@ -230,14 +231,14 @@ class GoodsTable extends PureComponent {
                 shape="circle"
                 onClick={() => props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: record.Key, count: record.Count } })}
               />
-            )
+            );
           },
           onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
             return {
               index,
               moveColumn: this.moveColumn,
-            }
+            };
           },
         },
       ],
@@ -252,23 +253,23 @@ class GoodsTable extends PureComponent {
           dataIndex: 'RetailPrice',
           key: 'RetailPrice',
           onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
             return {
               index,
               moveColumn: this.moveColumn,
-            }
+            };
           },
         },
         {
-          title: `真实价格`,
+          title: '真实价格',
           dataIndex: 'RealPrice',
           key: 'RealPrice',
           onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
             return {
               index,
               moveColumn: this.moveColumn,
-            }
+            };
           },
         },
         {
@@ -281,80 +282,62 @@ class GoodsTable extends PureComponent {
                 type="primary"
                 size="small"
                 className={styles.addButton}
-              >添加到购物车</Button>
-            )
+              >添加到购物车
+              </Button>
+            );
           },
           onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key)
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
             return {
               index,
               moveColumn: this.moveColumn,
-            }
+            };
           },
         },
-      ]
-    }
-  }
-  countChangeHandler = (value, record) => {
-    const key = record.Key
-    const newContent = this.state.content.map(item => {
-      if (item.Key === key) {
-        return { ...item, Count: value }
-      }
-      return item
-    })
-    this.setState({ content: newContent })
+      ],
+    };
   }
 
+
+  componentDidMount() {
+    const { commodity } = this.props;
+    const { currentOrderGoodsList = [], activeTabKey } = commodity;
+    const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
+    const { customer = {} } = currentOrder;
+    const { memberType } = customer;
+    this.setState({ content: this.props.commodity.currentOrderGoodsList });
+  }
 
   componentWillReceiveProps(nextProps) {
-    const { commodity } = nextProps
-    const { currentOrderGoodsList=[], activeTabKey } = commodity
+    const { commodity } = nextProps;
+    const { currentOrderGoodsList = [], activeTabKey } = commodity;
     // if (Array.isArray(currentOrderGoodsList) && currentOrderGoodsList.length > 0 && currentOrderGoodsList.length !== this.props.commodity.currentOrderGoodsList.length) {
-      this.setState({ content: nextProps.commodity.currentOrderGoodsList })
+    this.setState({ content: nextProps.commodity.currentOrderGoodsList });
     // }
-//  }
-}
-  componentDidMount() {
-    const { commodity } = this.props
-    const { currentOrderGoodsList=[], activeTabKey } = commodity
-    const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
-    const { customer={} } = currentOrder
-    const { memberType } = customer
-      this.setState({ content: this.props.commodity.currentOrderGoodsList })
-    if (memberType) {
-      const newColumns = this.state.columns.map(item => {
-        if (item.dataIndex === 'CustomerPrice') {
-          return { ...item, title: `真实价格-${getCustomerText(memberType)}会员`}
-        }
-        return item
-      })
-      this.setState({
-        columns: newColumns,
-        tagList: newColumns,
-      })
-    }
+    //  }
   }
-  componentWillUnmount() {
-    // numPad.forEach(item => {
-    //   Mousetrap.unbind(item.keyboard)
-    // })
-    // actionPad.forEach(item => {
-    //   Mousetrap.unbind(item.keyboard)
-    // })
+  countChangeHandler = (value, record) => {
+    const key = record.Key;
+    const newContent = this.state.content.map((item) => {
+      if (item.Key === key) {
+        return { ...item, Count: value };
+      }
+      return item;
+    });
+    this.setState({ content: newContent });
   }
 
   toggleCollapse = () => {
     this.setState({
       display: !this.state.display,
-    })
+    });
   }
 
 
   components = {
     header: {
-      cell: HeaderCell
-    }
+      cell: HeaderCell,
+    },
   }
   moveColumn = (dragIndex, hoverIndex) => {
     const { columns } = this.state;
@@ -368,74 +351,73 @@ class GoodsTable extends PureComponent {
       }),
     );
   }
-  handleTagChange = (tagList) => {
-    const newColumns = this.state.tagList.filter(columnItem => {
-      return !!tagList.find(tagItem => (tagItem === columnItem.dataIndex))
-    })
-    this.setState({ columns: newColumns })
+  tagChangeHandler = (tagList) => {
+    const newColumns = this.state.tagList.filter((columnItem) => {
+      return !!tagList.find(tagItem => (tagItem === columnItem.dataIndex));
+    });
+    this.setState({ columns: newColumns });
   }
   clickTableHandler = (activeTabKey, currentPhase) => {
     if (currentPhase === POS_PHASE.TABLE) {
-      return
+      return;
     }
-    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.TABLE } })
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.TABLE } });
   }
   clickListHandler = (activeTabKey, currentPhase) => {
     if (currentPhase === POS_PHASE.LIST) {
-      return
+      return;
     }
-    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } })
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } });
   }
   selectHandler = (value) => {
     if (value === '') {
-      this.pressEnterHandler(value)
+      this.pressEnterHandler(value);
     } else if (value === 'barcode') {
-      this.setState({content: this.state.includedBarcodeContent})
+      this.setState({ content: this.state.includedBarcodeContent });
     } else if (value === 'sku') {
-      this.setState({content: this.state.includedSkuContent})
+      this.setState({ content: this.state.includedSkuContent });
     }
   }
-  pressEnterHandler = (value) => {
+  pressEnterHandler = () => {
     this.setState({
       value: '',
       dataSource: [],
-    })
-    const { filteredContent } = this.state
+    });
+    const { filteredContent } = this.state;
     if (filteredContent.length === 1) {
-      const filteredItem = filteredContent[0]
-      this.props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 } })
+      const filteredItem = filteredContent[0];
+      this.props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 } });
     }
-
   }
   clearSearchHandler = () => {
-    this.setState({content: this.props.commodity.currentOrderGoodsList})
+    this.setState({ content: this.props.commodity.currentOrderGoodsList });
   }
   render() {
-    const { commodity, dispatch, loading } = this.props
-    const { filteredContent, includedBarcodeContent, value, dataSource } = this.state
-    const { currentOrderGoodsList, activeTabKey } = commodity
-    const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0]
-    const { targetPhase: currentPhase, saleType, type } = currentOrder
-    let displayTable = cx({
+    const { commodity, dispatch, loading } = this.props;
+    const { filteredContent, includedBarcodeContent, value, dataSource } = this.state;
+    const { currentOrderGoodsList, activeTabKey } = commodity;
+    const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
+    const { targetPhase: currentPhase, saleType, type } = currentOrder;
+    const displayTable = cx({
       [styles.trigger]: true,
-      [styles.activeTrigger]: currentPhase === POS_PHASE.TABLE
-    })
-    let displayCardList = cx({
+      [styles.activeTrigger]: currentPhase === POS_PHASE.TABLE,
+    });
+    const displayCardList = cx({
       [styles.trigger]: true,
-      [styles.activeTrigger]: currentPhase === POS_PHASE.LIST
-    })
-    const defaultValue = this.state.tagList.map(item => item.dataIndex)
+      [styles.activeTrigger]: currentPhase === POS_PHASE.LIST,
+    });
+    const defaultValue = this.state.tagList.map(item => item.dataIndex);
     const customPanelStyle = {
       background: '#f7f7f7',
       borderRadius: 4,
       marginBottom: 24,
       border: 0,
       overflow: 'hidden',
-    }
-    let tagSelectWrapper = cx({
+    };
+    const tagSelectWrapper = cx({
       [styles.tagSelectShow]: this.state.display,
       [styles.tagSelectHide]: !this.state.display,
-    })
+    });
     return (
       <Layout>
         <Sider
@@ -466,9 +448,9 @@ class GoodsTable extends PureComponent {
               onClick={() => this.clickListHandler(activeTabKey, currentPhase)}
             />
             <a style={{ marginLeft: 8 }} onClick={this.toggleCollapse}>
-              配置表格 <Icon type={this.state.display ? "up" : "down"} />
+              配置表格 <Icon type={this.state.display ? 'up' : 'down'} />
             </a>
-              {
+            {
                 type === POS_TAB_TYPE.STORESALE && (
 
                   <RadioGroup
@@ -502,7 +484,7 @@ class GoodsTable extends PureComponent {
             </div> */}
           </div>
           <div className={tagSelectWrapper}>
-            <TagSelect onChange={this.handleTagChange} defaultValue={defaultValue}>
+            <TagSelect onChange={this.tagChangeHandler} defaultValue={defaultValue}>
               {
                 this.state.tagList.map(item => (
                   <TagSelect.Option value={item.dataIndex} key={item.key}>{item.title}</TagSelect.Option>
@@ -516,28 +498,28 @@ class GoodsTable extends PureComponent {
               placeholder="商品条码搜索-此状态下可使用扫码枪"
               dataSource={dataSource}
               optionLabelProp="text"
-              onSelect={(value) => this.selectHandler(value)}
+              onSelect={value => this.selectHandler(value)}
               onSearch={(value) => {
-                const filteredContent = this.state.content.filter(item => item.Barcode === value)
-                const includedBarcodeContent = this.state.content.filter(item => item.Barcode.includes(value))
-                const includedSkuContent = this.state.content.filter(item => item.Sku.includes(value))
+                const filteredContent = this.state.content.filter(item => item.Barcode === value);
+                const includedBarcodeContent = this.state.content.filter(item => item.Barcode.includes(value));
+                const includedSkuContent = this.state.content.filter(item => item.Sku.includes(value));
                 this.setState({
                   value,
                   dataSource: value ? searchResult(value, filteredContent.length, includedBarcodeContent.length, includedSkuContent.length) : [],
                   filteredContent,
                   includedBarcodeContent,
                   includedSkuContent,
-                })
+                });
               }}
               onPressEnter={(value) => {
                 this.setState({
                   value: '',
                   dataSource: [],
-                })
-                const { filteredContent } = this.state
+                });
+                const { filteredContent } = this.state;
                 if (filteredContent.length === 1) {
-                  const filteredItem = filteredContent[0]
-                  dispatch({ type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 } })
+                  const filteredItem = filteredContent[0];
+                  dispatch({ type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 } });
                 }
               }}
             />
@@ -560,8 +542,8 @@ class GoodsTable extends PureComponent {
           </div>
         </Content>
       </Layout>
-    )
+    );
   }
 }
 const Demo = DragDropContext(HTML5Backend)(GoodsTable);
-export default Demo
+export default Demo;

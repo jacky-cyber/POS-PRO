@@ -5,7 +5,7 @@ import Mousetrap from 'mousetrap';
 import styles from './index.less';
 import Cbutton from '../Cbutton';
 import calculate from './logic/calculate';
-import { POS_TAB_TYPE } from '../../../constant';
+import { POS_TAB_TYPE } from 'constant';
 import isNumber from '../isNumber';
 
 export const numPad = [
@@ -110,21 +110,16 @@ class ChooseCalculator extends PureComponent {
     super(props);
     this.button = {};
   }
-    dispatchClick = () => {
-        button[item.key].querySelector('button').blur();
-        button[item.key].querySelector('button').focus();
-        button[item.key].querySelector('button').click();
-    }
   componentDidMount() {
     const { button } = this;
     numPad.forEach((item) => {
       Mousetrap.bind(item.keyboard, () => {
-        this.dispatchClick()
+        this.dispatchClick(item, button);
       });
     });
     actionPad.forEach((item) => {
       Mousetrap.bind(item.keyboard, () => {
-        this.dispatchClick()
+        this.dispatchClick(item, button);
       });
     });
   }
@@ -140,6 +135,11 @@ class ChooseCalculator extends PureComponent {
       }
     });
   }
+    dispatchClick = (item, button) => {
+      button[item.key].querySelector('button').blur();
+      button[item.key].querySelector('button').focus();
+      button[item.key].querySelector('button').click();
+    }
   clickHandler = (buttonName) => {
     calculate(this.props.commodity, this.props.dispatch, buttonName);
   }
@@ -161,7 +161,7 @@ class ChooseCalculator extends PureComponent {
                   key={item.key}
                   name={item.key}
                   clickHandler={this.clickHandler}
-                  ref={(node) => {this.button[item.key] = ReactDOM.findDOMNode(node)}}
+                  ref={(node) => { this.button[item.key] = ReactDOM.findDOMNode(node); }}
                 >
                   {item.label}
                 </Cbutton>

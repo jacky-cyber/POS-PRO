@@ -7,10 +7,6 @@
   color: @primary-6;
 }
 
-.leftContent {
-    height: calc(100vh - 235px - 48px) !important;
-    overflow: auto;
-}
 
 .calculator {
     height: 235px;
@@ -98,11 +94,16 @@
     /* box-shadow: 2px 0 6px rgba(0, 21, 41, .35); */
     position: fixed;
     top: 0;
+    // margin-top: 48px;
     padding-top: 48px;
     z-index: 10;
-     :global(.ant-layout-sider-children) {
+    :global(.ant-layout-sider-children) {
         display: flex;
         flex-direction: column;
+    }
+    .leftContent {
+        height: calc(100vh - 235px - 48px) !important;
+        overflow: auto;
     }
 }
 

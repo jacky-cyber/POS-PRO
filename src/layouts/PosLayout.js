@@ -1,31 +1,21 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Layout, Menu, Icon, Avatar, Dropdown, Tag, message, Spin, Tabs, Button, Badge } from 'antd';
+import { Layout, Menu, Icon, Dropdown, Badge } from 'antd';
 import DocumentTitle from 'react-document-title';
 import { connect } from 'dva';
 import { Link } from 'dva/router';
-import groupBy from 'lodash/groupBy';
 import { ContainerQuery } from 'react-container-query';
-import classNames from 'classnames';
-import Debounce from 'lodash-decorators/debounce';
+import cls from 'classnames';
 import { TabOne } from 'components/BaseComponents';
-import NoticeIcon from '../components/NoticeIcon';
-import NotFound from '../routes/Exception/404';
 import styles from './PosLayout.less';
-import ChooseCalculator from '../components/Calculator/Choose/';
-import SelectedGoods from '../components/List/SelectedGoods/';
 import { POS_TAB_TYPE, POS_PHASE } from '../constant';
-import { routerRedux } from 'dva/router';
 import GoodsList from '../routes/Pos/GoodsList';
 import GoodsTable from '../routes/Pos/GoodsTable';
 import Payment from '../routes/Pos/Payment';
 import Customer from '../routes/Pos/Customer';
-import moment from 'moment';
 
-const cls = classNames.bind(styles);
 
-const { Header, Sider, Content, Footer } = Layout;
-const TabPane = Tabs.TabPane;
+const { Content } = Layout;
 
 const query = {
   'screen-xs': {
@@ -48,7 +38,13 @@ const query = {
   },
 };
 
-class PosLayout extends PureComponent {
+@connect(({ commodity }) => ({
+  orders: commodity.orders,
+  activeTabKey: commodity.activeTabKey,
+  order: commodity.orders.filter(item => item.key === commodity.activeTabKey)[0],
+}))
+
+export default class PosLayout extends PureComponent {
   static childContextTypes = {
     location: PropTypes.object,
     breadcrumbNameMap: PropTypes.object,
@@ -61,22 +57,10 @@ class PosLayout extends PureComponent {
     };
   }
   componentDidMount() {
-    this.innerHeight = window.innerHeight;
-    if (this.props.commodity.orders.length === 0) {
+    const { orders } = this.props;
+    if (orders.length === 0) {
       this.props.dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.STORESALE });
     }
-  }
-  onChange = (activeKey) => {
-    if (activeKey === '+') {
-      this.props.dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.STORESALE });
-      return;
-    } else if (activeKey === '-') {
-      return;
-    } else if (activeKey === 'leftHeader') {
-      this.props.dispatch(routerRedux.push('/'));
-      return;
-    }
-    this.props.dispatch({ type: 'commodity/clickTab', payload: activeKey });
   }
   getPageTitle() {
     const { routerData, location } = this.props;
@@ -86,48 +70,6 @@ class PosLayout extends PureComponent {
       title = `${routerData[pathname].name} - Orssica`;
     }
     return title;
-  }
-  handleNoticeVisibleChange = (visible) => {
-    if (visible) {
-      this.props.dispatch({
-        type: 'global/fetchNotices',
-      });
-    }
-  }
-  getNoticeData() {
-    const { notices = [] } = this.props;
-    if (notices.length === 0) {
-      return {};
-    }
-    const newNotices = notices.map((notice) => {
-      const newNotice = { ...notice };
-      if (newNotice.datetime) {
-        newNotice.datetime = moment(notice.datetime).fromNow();
-      }
-      // transform id to item key
-      if (newNotice.id) {
-        newNotice.key = newNotice.id;
-      }
-      if (newNotice.extra && newNotice.status) {
-        const color = ({
-          todo: '',
-          processing: 'blue',
-          urgent: 'red',
-          doing: 'gold',
-        })[newNotice.status];
-        newNotice.extra = <Tag color={color} style={{ marginRight: 0 }}>{newNotice.extra}</Tag>;
-      }
-      return newNotice;
-    });
-    return groupBy(newNotices, 'type');
-  }
-  @Debounce(600)
-  handleNoticeClear = (type) => {
-    message.success(`清空了${type}`);
-    this.props.dispatch({
-      type: 'global/clearNotices',
-      payload: type,
-    });
   }
   remove = (currentIndex) => {
     this.props.dispatch({ type: 'commodity/clickRemoveButton', payload: currentIndex });
@@ -151,16 +93,19 @@ class PosLayout extends PureComponent {
       }
     }
   };
-  tabChangeHandler = (key) => {
-    console.log('key', key)
+  tabChangeHandler = (activeKey) => {
+    if (activeKey === '+') {
+      this.props.dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.STORESALE });
+    } else if (activeKey === '-') {
+      const { orders, activeTabKey } = this.props || {};
+      const currentIndex = orders.findIndex(item => item.key === activeTabKey);
+      this.props.dispatch({ type: 'commodity/clickRemoveButton', payload: currentIndex });
+    } else {
+      this.props.dispatch({ type: 'commodity/clickTab', payload: activeKey });
+    }
   }
   render() {
-    const { currentUser, fetchingNotices, dispatch } = this.props;
-    const { orders, activeTabKey } = this.props.commodity || {};
-    console.log('orders', orders)
-    const currentIndex = orders.findIndex(item => item.key === activeTabKey);
-    const currentOrder = orders.filter(item => item.key === activeTabKey)[0];
-    console.log('currentOrder', currentOrder)
+    const { dispatch, orders, activeTabKey, order } = this.props;
     const createTabTitle = (title, type, key, currentTime) => {
       const tabsBarContentCls = cls({
         [styles.tabsBarContent]: true,
@@ -182,44 +127,16 @@ class PosLayout extends PureComponent {
       }
     };
     const plusButton = (
-      <div className={styles.operationButton}>
+      <div className={styles.operationButton} key="+">
         <Icon type="plus" />
       </div>
     );
     const minusButton = (
-      <div className={styles.operationButton}>
-        <Icon type="minus" onClick={this.remove.bind(this, currentIndex)} />
+      <div className={styles.operationButton} key="-">
+        <Icon type="minus" />
       </div>
     );
-    const menu = (
-      <Menu className={styles.menu} selectedKeys={[]} onClick={this.onMenuClick}>
-        <Menu.Item disabled><Icon type="user" />个人中心</Menu.Item>
-        <Menu.Item disabled><Icon type="setting" />设置</Menu.Item>
-        <Menu.Divider />
-        <Menu.Item key="logout"><Icon type="logout" />退出登录</Menu.Item>
-      </Menu>
-    );
-    const noticeData = this.getNoticeData();
-    const leftHeader = (
-      <div className={styles.logo}>
-        <Link to="/">
-          <h1>POS</h1>
-        </Link>
-      </div>
-    );
-    // const rightButtonListData = []
-
-    const rightButtonList = (
-      <div>
-        <div>
-          <Button>111</Button>
-        </div>
-        <div>
-          <Button>111</Button>
-        </div>
-      </div>
-    );
-    const rightButtonMenu = (
+    const rightExtraMenu = (
       <Menu>
         <Menu.Item key="0">
           <a onClick={() => dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.MILKPOWDER })}>新建奶粉/生鲜订单</a>
@@ -229,10 +146,20 @@ class PosLayout extends PureComponent {
         </Menu.Item>
       </Menu>
     );
-    const rightButton = (
-      <Dropdown overlay={rightButtonMenu} trigger={['click']}>
-        <Button icon="left" />
+    const rightExtra = (
+      <Dropdown overlay={rightExtraMenu} trigger={['click']}>
+        <div className={styles.operationButton}>
+          <Icon type="right" />
+        </div>
       </Dropdown>
+    );
+
+    const leftExtra = (
+      <div style={{ width: 440 }}>
+        <Link to="/">
+          <h1>POS</h1>
+        </Link>
+      </div>
     );
 
     const layout = (
@@ -242,52 +169,25 @@ class PosLayout extends PureComponent {
             <div
               className={styles.tabsWrapper}
             >
-            <TabOne
-             content={this.generatePosLayoutContent(currentOrder && currentOrder.targetPhase)}
-             activeKey={activeTabKey}
-             onChange={this.tabChangeHandler}
-             >
-              {
-                orders.map(orderItem => (
-                  createTabTitle(orderItem.title, orderItem.type, orderItem.key, orderItem.currentTime)
-                ))
-              }
-              <Button
-               className={styles.operationButton}
-               onClick={() => this.props.dispatch({ type: 'commodity/clickAddTabButton', payload: POS_TAB_TYPE.STORESALE })}
-               key="+"
-               >
-               +
-               </Button>
-              <Button
-               className={styles.operationButton}
-               key="-"
-               >
-               -
-               </Button>
-              </TabOne>
-              {/* <Tabs
-                hideAdd
-                tabBarExtraContent={rightButton}
-                onChange={this.onChange}
+              <TabOne
+                content={this.generatePosLayoutContent(order && order.targetPhase)}
                 activeKey={activeTabKey}
-                type="card"
+                onChange={this.tabChangeHandler}
+                leftExtra={leftExtra}
+                rightExtra={rightExtra}
               >
-                <TabPane tab={<span>POS</span>} key="leftHeader" />
                 {
                   orders.map(orderItem => (
-                    <TabPane tab={createTabTitle(orderItem.title, orderItem.type, orderItem.key, orderItem.currentTime)} key={orderItem.key}>
-                      <div className={styles.tabContent} role={orderItem.key}>
-                        {
-                          this.generatePosLayoutContent(orderItem.targetPhase)
-                        }
-                      </div>
-                    </TabPane>
+                    createTabTitle(orderItem.title, orderItem.type, orderItem.key, orderItem.currentTime)
                   ))
                 }
-                <TabPane tab={plusButton} key="+" />
-                <TabPane tab={minusButton} key="-" />
-              </Tabs> */}
+                {
+                  plusButton
+                }
+                {
+                  minusButton
+                }
+              </TabOne>
             </div>
           </div>
         </Content>
@@ -297,16 +197,9 @@ class PosLayout extends PureComponent {
     return (
       <DocumentTitle title={this.getPageTitle()}>
         <ContainerQuery query={query}>
-          {params => <div className={classNames(params)}>{layout}</div>}
+          {params => <div className={cls(params)}>{layout}</div>}
         </ContainerQuery>
       </DocumentTitle>
     );
   }
 }
-
-export default connect(state => ({
-  currentUser: state.user.currentUser,
-  fetchingNotices: state.global.fetchingNotices,
-  notices: state.global.notices,
-  commodity: state.commodity,
-}))(PosLayout);

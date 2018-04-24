@@ -1,0 +1,105 @@
+@border-color: #BFBFBF;
+@bg-color: #E2E2E2;
+.calcWrapper {
+    display: flex;
+    height: 100%;
+    border-top: 2px solid;
+    padding: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: @bg-color;
+    button {
+        font-size: 24px;
+        font-weight: bold;
+        color: #555;
+        border: 1px solid @border-color;
+        border-radius: 0;
+        position: relative;
+        overflow: hidden;
+        background-color: @bg-color;
+        &:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, .8);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        // &[dataClicked="true"]::after {
+        //     animation: ripple 1s ease-out;
+        // }
+        &:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        &:hover {
+            color: initial;
+            background-color: @bg-color;
+            border-color: @border-color;
+        }
+        &:focus {
+            color: initial;
+            background-color: @bg-color;
+            border-color: @border-color;
+        }
+        &[datatype="string"] {
+            padding: 0;
+            font-size: 14px;
+        }
+    }
+}
+.actionPad {
+    width: 199px;
+    display: flex;
+    flex-direction: column;
+    .saleType {
+      display: flex;
+    }
+    div:first-child {
+        height: 57px;
+        button {
+            height: 100%;
+            width: 100%;
+        }
+    }
+    div:last-child {
+        height: 171px;
+        button {
+            height: 100%;
+            width: 100%;
+        }
+    }
+}
+.numPad {
+    width: 228px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    button {
+        width: 57px;
+        height: 57px;
+    }
+}
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(30, 30);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(50, 50);
+  }
+}
+
+.activeButton {
+    background-color: #6EC89B !important;
+    color: #fff !important;
+}

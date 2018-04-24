@@ -36,10 +36,6 @@ export default {
   },
 
   subscriptions: {
-    // keyboardWatcher({ dispatch }) {
-    //   key('⌘+up, ctrl+up', () => { dispatch({ type: 'keyBoardOperationChooseCalculator' }); });
-    //   if (key.isPressed('M')) alert('M key is pressed, can ya believe it!?');
-    // },
   },
   effects: {
     *addOrUpdateDailyClosing(action, { put, call }) {
@@ -381,11 +377,10 @@ export default {
     *addToSelectedList(action, { put, select, take }) {
       const { key: selectedKey, count } = action.payload;
       const commodity = yield select(state => state.commodity);
-      const { orders, activeTabKey, pagination, currentOrderGoodsList } = commodity;
+      const { activeTabKey, pagination, currentOrderGoodsList } = commodity;
       const { pagingData, current } = pagination || {};
       const currentOrder = getCurrentOrder(commodity);
-      const { type, saleType, customer, targetPhase } = currentOrder;
-      const customerType = customer.memberType || null;
+      const { saleType, targetPhase } = currentOrder;
       const currentGoodsList = targetPhase === POS_PHASE.TABLE ? currentOrderGoodsList : pagingData[current - 1];
       const { selectedList } = currentOrder;
       let { avoidDuplicationIndex } = currentOrder;
@@ -436,17 +431,25 @@ export default {
       const { orders } = yield select(state => state.commodity);
       const currentOrder = orders.filter(item => (item.key === activeTabKey))[0];
       const { wholeDiscount } = currentOrder;
+      // 商品总价
       let goodsPrice = 0;
+      // 商品零售总价
       let originPrice = 0;
+      // 商品总重量
       let totalWeight = 0;
       const latestSelectedList = newSelectedList.map((item) => {
-        const unitPrice = (item.NewUnitPrice || item.NewUnitPrice === 0) ? item.NewUnitPrice : item.CustomerPrice;
+        // 单价优先级 => 修改过单价 > 会员价 > 零售价
+        const unitPrice = (item.NewUnitPrice !== undefined) ? item.NewUnitPrice : item.CustomerPrice || item.RetailPrice;
         const retailPrice = item.RetailPrice;
         const count = item.Count;
+        // 单品折扣
         const discount = item.Discount;
+        // 单品重量
         const weight = item.Weight;
-        const price = unitPrice * count * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
-        const realPrice = unitPrice * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
+        // 单品总价
+        const price = unitPrice * count * ((discount || 100) / 100) * ((wholeDiscount || 100) / 100);
+        // 单品销售价
+        const realPrice = unitPrice * ((discount || 100) / 100) * ((wholeDiscount || 100) / 100);
         goodsPrice += price;
         originPrice += retailPrice * count;
         totalWeight += weight * count;
@@ -457,10 +460,8 @@ export default {
       yield put({ type: 'changeOriginPrice', payload: originPrice });
       yield put({ type: 'changeTotalWeight', payload: totalWeight });
       yield put({ type: 'sumTotalPrice' });
-      console.log('text')
     },
     *clickAddTabButton(action, { put, select }) {
-      console.log('clickAddTabButton')
       const tabType = action.payload;
       const commodity = yield select(state => state.commodity);
       const count = commodity.newTabIndex + 1;

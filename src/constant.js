@@ -15,25 +15,25 @@ export const SALE_TYPE = {
   LOCAL: 1,
   EXPRESS: 2,
   SHIPPING: 3,
-}
+};
 
 
-// export const DOMAIN = 'http://192.168.1.225:8086';
-export const DOMAIN = 'http://posapi.he2009.nz';
+export const DOMAIN = 'http://192.168.1.225:8086';
+// export const DOMAIN = 'http://posapi.he2009.nz';
 
 export const POS_PHASE = {
   LIST: 'CHOOSE_LIST',
   TABLE: 'CHOOSE_TABLE',
   PAY: 'PAY',
   CUSTOMER: 'CUSTOMER',
-}
+};
 
-export const CUSTOMER_TYPE= [
-  {value: 1, label: '普通'},
-  {value: 2, label: '白金'},
-  {value: 3, label: '钻石'},
-  {value: 4, label: 'SVIP'}
-]
+export const CUSTOMER_TYPE = [
+  { value: 1, label: '普通' },
+  { value: 2, label: '白金' },
+  { value: 3, label: '钻石' },
+  { value: 4, label: 'SVIP' },
+];
 
 export const DEPARTMENT = [
   { value: 0, label: '测试店铺' },
@@ -106,4 +106,4 @@ export const DEPARTMENT = [
   { value: 73, label: 'GFC-VGLS' },
   { value: 74, label: '网易考拉' },
   { value: 75, label: '京东' },
-]
+];

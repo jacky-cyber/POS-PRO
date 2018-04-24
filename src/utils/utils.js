@@ -2,82 +2,82 @@ import moment from 'moment';
 import { POS_TAB_TYPE, SALE_TYPE } from '../constant';
 
 
-export function setLocalStorage (key, value) {
-  if (value === null) return
-  if (typeof value === 'undefined') return
-  if (typeof value === 'function') return
-  window.localStorage.setItem(key, JSON.stringify(value))
+export function setLocalStorage(key, value) {
+  if (value === null) return;
+  if (typeof value === 'undefined') return;
+  if (typeof value === 'function') return;
+  window.localStorage.setItem(key, JSON.stringify(value));
 }
 
-export function getLocalStorage (key) {
-  return JSON.parse(window.localStorage.getItem(key))
+export function getLocalStorage(key) {
+  return JSON.parse(window.localStorage.getItem(key));
 }
 
 export function keepTwoDecimals(val) {
-  if (val === 0) return 0
-  if (!val) return
-  return parseFloat(val).toFixed(2) - 0
+  if (val === 0) return 0;
+  if (!val) return;
+  return parseFloat(val).toFixed(2) - 0;
 }
 
 export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice) {
   // console.log(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice)
   if (!customerType) {
-    return keepTwoDecimals(retailPrice)
+    return keepTwoDecimals(retailPrice);
   }
-  let customerPrice = 0
+  let customerPrice = 0;
   if (type === POS_TAB_TYPE.STORESALE || type === POS_TAB_TYPE.MILKPOWDER) {
     if (saleType === SALE_TYPE.LOCAL || saleType === SALE_TYPE.EXPRESS) {
       switch (customerType) {
         case 1:
-          customerPrice = reatilPrice
-          break
+          customerPrice = reatilPrice;
+          break;
         case 2:
-          customerPrice = platinumPrice
-          break
+          customerPrice = platinumPrice;
+          break;
         case 3:
-          customerPrice = diamondPrice
-          break
+          customerPrice = diamondPrice;
+          break;
         case 4:
-          customerPrice = SVVIPPrice
-          break
+          customerPrice = SVVIPPrice;
+          break;
         default:
-          customerPrice = retailPrice
-          break
+          customerPrice = retailPrice;
+          break;
       }
     } else if (saleType === SALE_TYPE.SHIPPING) {
       switch (customerType) {
         case 1:
-          customerPrice = reatilPrice
-          break
+          customerPrice = reatilPrice;
+          break;
         case 2:
-          customerPrice = platinumPrice
-          break
+          customerPrice = platinumPrice;
+          break;
         case 3:
-          customerPrice = VIPPrice
-          break
+          customerPrice = VIPPrice;
+          break;
         case 4:
-          customerPrice = SVVIPPrice
-          break
+          customerPrice = SVVIPPrice;
+          break;
         default:
-          customerPrice = retailPrice
-          break
+          customerPrice = retailPrice;
+          break;
       }
     } else if (!saleType) {
-      customerPrice = retailPrice
+      customerPrice = retailPrice;
     }
   }
-  return keepTwoDecimals(customerPrice)
+  return keepTwoDecimals(customerPrice);
 }
 
 export function calculateExpressOrShippingCost(unitPrice, weight, weightedWeight) {
-  const totalWeight = weight + weightedWeight
-  if (!unitPrice) { return 0 }
+  const totalWeight = weight + weightedWeight;
+  if (!unitPrice) { return 0; }
   if (totalWeight <= 0) {
-    return 0
+    return 0;
   } else if (totalWeight <= 1) {
-    return unitPrice
+    return unitPrice;
   } else if (totalWeight >= 1) {}
-  return unitPrice * totalWeight
+  return unitPrice * totalWeight;
 }
 
 
