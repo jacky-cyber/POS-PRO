@@ -9,7 +9,6 @@ import cls from 'classnames';
 import { TabOne } from 'components/BaseComponents';
 import styles from './PosLayout.less';
 import { POS_TAB_TYPE, POS_PHASE } from '../constant';
-import GoodsList from '../routes/Pos/GoodsList';
 import GoodsTable from '../routes/Pos/GoodsTable';
 import Payment from '../routes/Pos/Payment';
 import Customer from '../routes/Pos/Customer';
@@ -78,9 +77,6 @@ export default class PosLayout extends PureComponent {
     switch (targetPhase) {
       case POS_PHASE.TABLE: {
         return <GoodsTable />;
-      }
-      case POS_PHASE.LIST: {
-        return <GoodsList />;
       }
       case POS_PHASE.PAY: {
         return <Payment />;

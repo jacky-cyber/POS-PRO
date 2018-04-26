@@ -4,12 +4,10 @@ import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
 import { connect } from 'dva';
-import classNames from 'classnames';
+import cls from 'classnames';
 import { ChooseCalculator, SelectedGoods } from 'components/PosComponents';
-import { POS_TAB_TYPE, POS_PHASE, CUSTOMER_TYPE, SALE_TYPE } from 'constant';
-import TagSelect from '../../../components/TagSelect';
-// import SelectedGoods from '../../../components/List/SelectedGoods/';
-import HeaderSearch from '../../../components/HeaderSearch';
+import { TagSelect, HeaderSearch } from 'components/BaseComponents';
+import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from 'constant';
 import styles from './index.less';
 
 
@@ -17,14 +15,8 @@ const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 const { Sider, Content } = Layout;
 const { Option } = Select;
-const cx = classNames.bind(styles);
 
-function getCustomerText(memberType) {
-  if (!memberType || !CUSTOMER_TYPE.filter(item => item.value === memberType)[0]) { return '非'; }
-  return CUSTOMER_TYPE.filter(item => item.value === memberType)[0].label;
-}
-
-function searchResult(value, count, includedBarcodeCount, includedSkuCount) {
+function searchResult(value, count, includedBarcodeCount, includedSkuCount, includedCNCount) {
   return [
     <Option key={`${value}1`} value="" text={`${value}`}>
       条码等于 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{count}</span> 个
@@ -34,6 +26,9 @@ function searchResult(value, count, includedBarcodeCount, includedSkuCount) {
     </Option>,
     <Option key={`${value}3`} value="sku" text="">
       SKU 包含 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{includedSkuCount}</span> 个
+    </Option>,
+    <Option key={`${value}3`} value="CN" text="">
+      中文名 包含 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{includedCNCount}</span> 个
     </Option>,
   ];
 }
@@ -149,20 +144,16 @@ HeaderCell = DropTarget('column', columnTarget, (connect, monitor) => ({
 class GoodsTable extends PureComponent {
   constructor(props) {
     super(props);
-    const currentOrder = props.commodity.orders.filter(item => (item.key === props.commodity.activeTabKey))[0];
-    const { customer = {} } = currentOrder;
-    const { memberType } = customer;
-    function getCustomerText(memberType) {
-      if (!memberType || !CUSTOMER_TYPE.filter(item => item.value === memberType)[0]) { return '非'; }
-      return CUSTOMER_TYPE.filter(item => item.value === memberType)[0].label;
-    }
     this.state = {
       display: false,
-      content: [],
-      value: '',
+      originalContent: props.commodity.currentOrderGoodsList,
+      content: props.commodity.currentOrderGoodsList,
       dataSource: [],
       filteredContent: [],
       includedBarcodeContent: [],
+      includedSkuContent: [],
+      includedCNContent: [],
+      includedENContent: [],
       columns: [
         {
           title: '商品名',
@@ -204,9 +195,15 @@ class GoodsTable extends PureComponent {
           title: '数量',
           dataIndex: 'Count',
           key: 'Count',
-          render: (text, record, index) => {
+          render: (text, record) => {
             return (
-              <InputNumber size="small" value={text} min={0} onChange={value => this.countChangeHandler(value, record)} />
+              <InputNumber
+                style={{ width: 50 }}
+                size="small"
+                value={text}
+                min={0}
+                onChange={value => this.countChangeHandler(value, record)}
+              />
             );
           },
           onHeaderCell: (columns) => {
@@ -252,69 +249,28 @@ class GoodsTable extends PureComponent {
           title: '零售价',
           dataIndex: 'RetailPrice',
           key: 'RetailPrice',
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
-          },
         },
         {
-          title: '真实价格',
+          title: '销售价',
           dataIndex: 'RealPrice',
           key: 'RealPrice',
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
-          },
         },
         {
           title: '操作',
           dataIndex: 'Add',
           key: 'Add',
-          render: (text, record, index) => {
-            return (
-              <Button
-                type="primary"
-                size="small"
-                className={styles.addButton}
-              >添加到购物车
-              </Button>
-            );
-          },
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
-          },
         },
       ],
     };
   }
 
-
-  componentDidMount() {
-    const { commodity } = this.props;
-    const { currentOrderGoodsList = [], activeTabKey } = commodity;
-    const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
-    const { customer = {} } = currentOrder;
-    const { memberType } = customer;
-    this.setState({ content: this.props.commodity.currentOrderGoodsList });
-  }
-
   componentWillReceiveProps(nextProps) {
     const { commodity } = nextProps;
-    const { currentOrderGoodsList = [], activeTabKey } = commodity;
-    // if (Array.isArray(currentOrderGoodsList) && currentOrderGoodsList.length > 0 && currentOrderGoodsList.length !== this.props.commodity.currentOrderGoodsList.length) {
-    this.setState({ content: nextProps.commodity.currentOrderGoodsList });
-    // }
-    //  }
+    const { currentOrderGoodsList = [] } = commodity;
+    this.setState({
+      content: currentOrderGoodsList,
+      originalContent: currentOrderGoodsList,
+    });
   }
   countChangeHandler = (value, record) => {
     const key = record.Key;
@@ -378,9 +334,25 @@ class GoodsTable extends PureComponent {
       this.setState({ content: this.state.includedSkuContent });
     }
   }
+  searchHandler = (value) => {
+    console.log('value', value)
+    const filteredContent = this.state.originalContent.filter(item => item.Barcode === value);
+    const includedBarcodeContent = this.state.originalContent.filter(item => item.Barcode.includes(value));
+    const includedSkuContent = this.state.originalContent.filter(item => item.Sku.includes(value));
+    const includedCNContent = this.state.originalContent.filter(item => (item.CN.includes(value)));
+    this.setState({
+      dataSource: value ? searchResult(value, filteredContent.length, includedBarcodeContent.length, includedSkuContent.length, includedCNContent.length) : [],
+      filteredContent,
+      includedBarcodeContent,
+      includedSkuContent,
+      includedCNContent,
+    });
+  }
+  clearSearchHandler = () => {
+    this.setState({ content: this.props.commodity.currentOrderGoodsList });
+  }
   pressEnterHandler = () => {
     this.setState({
-      value: '',
       dataSource: [],
     });
     const { filteredContent } = this.state;
@@ -389,35 +361,44 @@ class GoodsTable extends PureComponent {
       this.props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 } });
     }
   }
-  clearSearchHandler = () => {
-    this.setState({ content: this.props.commodity.currentOrderGoodsList });
-  }
   render() {
     const { commodity, dispatch, loading } = this.props;
-    const { filteredContent, includedBarcodeContent, value, dataSource } = this.state;
-    const { currentOrderGoodsList, activeTabKey } = commodity;
+    const { dataSource, content } = this.state;
+    console.log('content', content)
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
-    const { targetPhase: currentPhase, saleType, type } = currentOrder;
-    const displayTable = cx({
-      [styles.trigger]: true,
-      [styles.activeTrigger]: currentPhase === POS_PHASE.TABLE,
-    });
-    const displayCardList = cx({
-      [styles.trigger]: true,
-      [styles.activeTrigger]: currentPhase === POS_PHASE.LIST,
-    });
+    const { saleType, type } = currentOrder;
     const defaultValue = this.state.tagList.map(item => item.dataIndex);
-    const customPanelStyle = {
-      background: '#f7f7f7',
-      borderRadius: 4,
-      marginBottom: 24,
-      border: 0,
-      overflow: 'hidden',
-    };
-    const tagSelectWrapper = cx({
+    const tagSelectWrapper = cls({
       [styles.tagSelectShow]: this.state.display,
       [styles.tagSelectHide]: !this.state.display,
     });
+    const typeSelectRender = (
+      type === POS_TAB_TYPE.STORESALE && (
+      <RadioGroup
+        value={saleType}
+        onChange={e => dispatch({ type: 'commodity/clickChangeSaleTypeButton', payload: e.target.value })}
+        style={{ marginLeft: 24 }}
+      >
+        <RadioButton value={SALE_TYPE.LOCAL}>本地</RadioButton>
+        <RadioButton value={SALE_TYPE.EXPRESS}>邮寄</RadioButton>
+        <RadioButton value={SALE_TYPE.SHIPPING}>代发</RadioButton>
+      </RadioGroup>
+      )
+    );
+    const tabHeaderRender = (
+      <div>
+        <HeaderSearch
+          className={`${styles.action} ${styles.search}`}
+          placeholder="商品条码搜索-此状态下可使用扫码枪"
+          dataSource={dataSource}
+          optionLabelProp="text"
+          onSelect={this.selectHandler}
+          onSearch={this.searchHandler}
+          onPressEnter={this.pressEnterHandler}
+        />
+        <a onClick={() => this.clearSearchHandler()}>清除搜索</a>
+      </div>
+    );
     return (
       <Layout>
         <Sider
@@ -437,51 +418,12 @@ class GoodsTable extends PureComponent {
         </Sider>
         <Content className={styles.rightContent}>
           <div className={styles.header}>
-            <Icon
-              className={displayTable}
-              type="profile"
-              onClick={() => this.clickTableHandler(activeTabKey, currentPhase)}
-            />
-            <Icon
-              className={displayCardList}
-              type="table"
-              onClick={() => this.clickListHandler(activeTabKey, currentPhase)}
-            />
-            <a style={{ marginLeft: 8 }} onClick={this.toggleCollapse}>
+            <div>
+              <a style={{ marginLeft: 8 }} onClick={this.toggleCollapse}>
               配置表格 <Icon type={this.state.display ? 'up' : 'down'} />
-            </a>
-            {
-                type === POS_TAB_TYPE.STORESALE && (
-
-                  <RadioGroup
-                    value={saleType}
-                    onChange={e => dispatch({ type: 'commodity/clickChangeSaleTypeButton', payload: e.target.value })}
-                    style={{ marginLeft: 24 }}
-                  >
-                    <RadioButton value={SALE_TYPE.LOCAL}>本地</RadioButton>
-                    <RadioButton value={SALE_TYPE.EXPRESS}>邮寄</RadioButton>
-                    <RadioButton value={SALE_TYPE.SHIPPING}>代发</RadioButton>
-                  </RadioGroup>
-                )
-              }
-            {/* <div className={styles.right}>
-              <HeaderSearch
-                className={`${styles.action} ${styles.search}`}
-                placeholder="商品条码搜索"
-                dataSource={this.state.filteredContent.map(item => (item.Key))}
-                onSearch={(value) => {
-                  const filteredContent = this.state.content.filter(item => item.Barcode === value)
-                  this.setState({filteredContent})
-                }}
-                onPressEnter={(value) => {
-                  const { filteredContent } = this.state
-                  if (filteredContent.length === 1) {
-                    const filteredItem = filteredContent[0]
-                    dispatch({type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 }})
-                  }
-                }}
-              />
-            </div> */}
+              </a>
+            </div>
+            { typeSelectRender }
           </div>
           <div className={tagSelectWrapper}>
             <TagSelect onChange={this.tagChangeHandler} defaultValue={defaultValue}>
@@ -493,50 +435,20 @@ class GoodsTable extends PureComponent {
             </TagSelect>
           </div>
           <div className={styles.tabHeader}>
-            <HeaderSearch
-              className={`${styles.action} ${styles.search}`}
-              placeholder="商品条码搜索-此状态下可使用扫码枪"
-              dataSource={dataSource}
-              optionLabelProp="text"
-              onSelect={value => this.selectHandler(value)}
-              onSearch={(value) => {
-                const filteredContent = this.state.content.filter(item => item.Barcode === value);
-                const includedBarcodeContent = this.state.content.filter(item => item.Barcode.includes(value));
-                const includedSkuContent = this.state.content.filter(item => item.Sku.includes(value));
-                this.setState({
-                  value,
-                  dataSource: value ? searchResult(value, filteredContent.length, includedBarcodeContent.length, includedSkuContent.length) : [],
-                  filteredContent,
-                  includedBarcodeContent,
-                  includedSkuContent,
-                });
-              }}
-              onPressEnter={(value) => {
-                this.setState({
-                  value: '',
-                  dataSource: [],
-                });
-                const { filteredContent } = this.state;
-                if (filteredContent.length === 1) {
-                  const filteredItem = filteredContent[0];
-                  dispatch({ type: 'commodity/addToSelectedList', payload: { key: filteredItem.Key, count: 1 } });
-                }
-              }}
-            />
-            <a onClick={() => this.clearSearchHandler()}>清除搜索</a>
+            { tabHeaderRender }
           </div>
           <div className={styles.commodityListWrapper}>
             <div>可以拖拽表头进行排序</div>
             <Table
               bordered
-              dataSource={this.state.content}
+              dataSource={content}
               columns={this.state.columns}
               components={this.components}
               rowKey={record => record.Key}
               loading={loading}
               size="small"
               pagination={{
-                pageSize: 20,
+                pageSize: 15,
               }}
             />
           </div>
