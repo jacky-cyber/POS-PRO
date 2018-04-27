@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Table, Layout, Icon, Button, InputNumber, Select, Radio } from 'antd';
+import { Table, Layout, Icon, Button, InputNumber, Select, Radio, Input } from 'antd';
 import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
@@ -16,7 +16,7 @@ const RadioGroup = Radio.Group;
 const { Sider, Content } = Layout;
 const { Option } = Select;
 
-function searchResult(value, count, includedBarcodeCount, includedSkuCount, includedCNCount) {
+function searchResult(value, count, includedBarcodeCount, includedSkuCount, includedCNCount, includedENCount) {
   return [
     <Option key={`${value}1`} value="" text={`${value}`}>
       条码等于 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{count}</span> 个
@@ -29,6 +29,9 @@ function searchResult(value, count, includedBarcodeCount, includedSkuCount, incl
     </Option>,
     <Option key={`${value}3`} value="CN" text="">
       中文名 包含 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{includedCNCount}</span> 个
+    </Option>,
+    <Option key={`${value}3`} value="EN" text="">
+      英文名 包含 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{includedENCount}</span> 个
     </Option>,
   ];
 }
@@ -156,9 +159,21 @@ class GoodsTable extends PureComponent {
       includedENContent: [],
       columns: [
         {
-          title: '商品名',
+          title: '商品名-CN',
           dataIndex: 'CN',
           key: 'CN',
+          onHeaderCell: (columns) => {
+            const index = this.state.columns.findIndex(item => item.key === columns.key);
+            return {
+              index,
+              moveColumn: this.moveColumn,
+            };
+          },
+        },
+        {
+          title: '商品名-EN',
+          dataIndex: 'EN',
+          key: 'EN',
           onHeaderCell: (columns) => {
             const index = this.state.columns.findIndex(item => item.key === columns.key);
             return {
@@ -180,7 +195,7 @@ class GoodsTable extends PureComponent {
           },
         },
         {
-          title: '真实价格',
+          title: '会员价格',
           dataIndex: 'CustomerPrice',
           key: 'CustomerPrice',
           onHeaderCell: (columns) => {
@@ -332,20 +347,36 @@ class GoodsTable extends PureComponent {
       this.setState({ content: this.state.includedBarcodeContent });
     } else if (value === 'sku') {
       this.setState({ content: this.state.includedSkuContent });
+    } else if (value === 'CN') {
+      this.setState({ content: this.state.includedCNContent });
+    } else if (value === 'EN') {
+      this.setState({ content: this.state.includedENContent });
     }
   }
   searchHandler = (value) => {
-    console.log('value', value)
     const filteredContent = this.state.originalContent.filter(item => item.Barcode === value);
     const includedBarcodeContent = this.state.originalContent.filter(item => item.Barcode.includes(value));
     const includedSkuContent = this.state.originalContent.filter(item => item.Sku.includes(value));
-    const includedCNContent = this.state.originalContent.filter(item => (item.CN.includes(value)));
+    const strArray = value ? value.split(' ').filter(item => item !== '') : [];
+    const includedCNContent = this.state.originalContent.filter(item => (strArray.reduce((a, b) => {
+      const s = item.CN || '';
+      const b1 = typeof a === 'boolean' ? a : s.includes(a);
+      const b2 = s.includes(b);
+      return b1 && b2;
+    }, true)));
+    const includedENContent = this.state.originalContent.filter(item => (strArray.reduce((a, b) => {
+      const s = item.EN || '';
+      const b1 = typeof a === 'boolean' ? a : s.includes(a);
+      const b2 = s.includes(b);
+      return b1 && b2;
+    }, true)));
     this.setState({
-      dataSource: value ? searchResult(value, filteredContent.length, includedBarcodeContent.length, includedSkuContent.length, includedCNContent.length) : [],
+      dataSource: value ? searchResult(value, filteredContent.length, includedBarcodeContent.length, includedSkuContent.length, includedCNContent.length, includedENContent.length) : [],
       filteredContent,
       includedBarcodeContent,
       includedSkuContent,
       includedCNContent,
+      includedENContent,
     });
   }
   clearSearchHandler = () => {
@@ -364,7 +395,6 @@ class GoodsTable extends PureComponent {
   render() {
     const { commodity, dispatch, loading } = this.props;
     const { dataSource, content } = this.state;
-    console.log('content', content)
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
     const { saleType, type } = currentOrder;
     const defaultValue = this.state.tagList.map(item => item.dataIndex);
