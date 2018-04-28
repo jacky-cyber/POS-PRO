@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Table, Layout, Icon, Button, InputNumber, Select, Radio, Input } from 'antd';
+import { Table, Layout, Icon, Button, InputNumber, Select, Radio } from 'antd';
 import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
@@ -16,7 +16,13 @@ const RadioGroup = Radio.Group;
 const { Sider, Content } = Layout;
 const { Option } = Select;
 
-function searchResult(value, count, includedBarcodeCount, includedSkuCount, includedCNCount, includedENCount) {
+function searchResult(
+  value,
+  count,
+  includedBarcodeCount,
+  includedSkuCount,
+  includedCNCount,
+  includedENCount) {
   return [
     <Option key={`${value}1`} value="" text={`${value}`}>
       条码等于 <span style={{ color: 'red' }}>{value}</span> 的商品有 <span className={styles.optionCount}>{count}</span> 个
@@ -395,6 +401,7 @@ class GoodsTable extends PureComponent {
   render() {
     const { commodity, dispatch, loading } = this.props;
     const { dataSource, content } = this.state;
+    console.log('content', content);
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
     const { saleType, type } = currentOrder;
     const defaultValue = this.state.tagList.map(item => item.dataIndex);
@@ -459,7 +466,9 @@ class GoodsTable extends PureComponent {
             <TagSelect onChange={this.tagChangeHandler} defaultValue={defaultValue}>
               {
                 this.state.tagList.map(item => (
-                  <TagSelect.Option value={item.dataIndex} key={item.key}>{item.title}</TagSelect.Option>
+                  <TagSelect.Option value={item.dataIndex} key={item.key}>
+                    {item.title}
+                  </TagSelect.Option>
                 ))
               }
             </TagSelect>
