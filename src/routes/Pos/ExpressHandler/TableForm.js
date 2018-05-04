@@ -34,12 +34,6 @@ export default class TableForm extends PureComponent {
       return;
     }
     this.props.onSubmit(target);
-    // e.preventDefault();
-    // this.props.form.validateFieldsAndScroll((err, values) => {
-    //     if (!err) {
-    //         console.log(values)
-    //     }
-    // });
   }
   removeLocal(key) {
     const target = this.getRowByKey(key);
@@ -50,15 +44,11 @@ export default class TableForm extends PureComponent {
   remove(key) {
     const data = this.props.dataSource;
     const newData = data.filter(item => (item.ID !== key));
-    this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: newData })
-    //   const target = this.getRowByKey(key);
-    //   if (!target.ID) { return; }
-    //   if (!target.isNew) {
-    //     this.props.onDelete(target.ID);
-    //     return;
-    //   }
-    //   const newData = this.state.data.filter(item => item.ID !== key);
-    //   this.setState({ data: newData });
+    this.props.dispatch(
+      {
+        type: 'commodity/changeExpressDataAndSumCost',
+        payload: newData,
+      });
   }
   newMember = () => {
     const data = [...this.state.data];
@@ -74,19 +64,13 @@ export default class TableForm extends PureComponent {
   handleFieldChange(e, fieldName, key) {
     const data = this.props.dataSource;
     const value = e && (e.target ? e.target.value : e);
-    const newData = data.map(item => {
+    const newData = data.map((item) => {
       if (item.ID === key) {
         return { ...item, [fieldName]: value };
       }
       return item;
     });
-    this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: newData })
-    // const newData = [...this.state.data];
-    // const target = this.getRowByKey(key);
-    // if (target) {
-    //   target[fieldName] = e && (e.target ? e.target.value : e);
-    //   this.setState({ data: newData });
-    // }
+    this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: newData });
   }
   render() {
     const { dataSource, dispatch } = this.props;

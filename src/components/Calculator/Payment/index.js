@@ -95,7 +95,6 @@ class PaymentCalculator extends PureComponent {
   }
   componentDidMount() {
     const { button } = this;
-    this.props.dispatch({ type: 'commodity/changePaymentCalculatorButton', payload: button });
     numPad.forEach((item) => {
       if (item.keyboard) {
         Mousetrap.bind(item.keyboard, () => {

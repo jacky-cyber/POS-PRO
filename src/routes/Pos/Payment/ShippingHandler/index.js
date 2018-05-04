@@ -1,12 +1,12 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd'
+import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd';
 import { connect } from 'dva';
 import TableForm from './TableForm';
 import CascaderInFormItem from '../MilkPowderHandler/CascaderInFormItem';
 import FooterToolbar from '../../../../components/FooterToolbar';
-import styles from './index.less'
+import styles from './index.less';
 import Print from 'rc-print';
-import { POS_PHASE } from '../../../../constant'
+import { POS_PHASE } from '../../../../constant';
 import Mousetrap from 'mousetrap';
 
 
@@ -26,12 +26,12 @@ const dataSource = [{
   key: '1',
   name: '胡彦斌',
   age: 32,
-  address: '西湖区湖底公园1号'
+  address: '西湖区湖底公园1号',
 }, {
   key: '2',
   name: '胡彦祖',
   age: 42,
-  address: '西湖区湖底公园1号'
+  address: '西湖区湖底公园1号',
 }];
 
 const columns = [{
@@ -48,7 +48,7 @@ const columns = [{
   key: 'address',
 }];
 
-const keyboardMapping = ['backspace', 'p', 'enter']
+const keyboardMapping = ['backspace', 'p', 'enter'];
 
 
 @connect(state => ({
@@ -64,68 +64,68 @@ const keyboardMapping = ['backspace', 'p', 'enter']
 
 export default class ShippingHandler extends PureComponent {
   componentDidMount() {
-    Mousetrap.bind('backspace', () => this.prevHandler())
-    Mousetrap.bind('p', () => this.printHandler())
-    Mousetrap.bind('enter', () => this.validate())
+    Mousetrap.bind('backspace', () => this.prevHandler());
+    Mousetrap.bind('p', () => this.printHandler());
+    Mousetrap.bind('enter', () => this.validate());
   }
   componentWillUnmount() {
-    keyboardMapping.forEach(item => {
-      Mousetrap.unbind(item)
-    })
+    keyboardMapping.forEach((item) => {
+      Mousetrap.unbind(item);
+    });
   }
   printHandler = () => {
     this.refs.printForm.onPrint();
   }
   prevHandler = () => {
-    const activeTabKey = this.props.activeTabKey
-    const lastPhase = POS_PHASE.PAY
-    const targetPhase = POS_PHASE.TABLE
-    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } })
+    const activeTabKey = this.props.activeTabKey;
+    const lastPhase = POS_PHASE.PAY;
+    const targetPhase = POS_PHASE.TABLE;
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   checkShippingData = (rule, value, callback) => {
-    console.log(value)
-    const { Name } = value[0]
+    console.log(value);
+    const { Name } = value[0];
     if (Name.ID && Name.Name) {
-      callback()
-      return
+      callback();
+      return;
     }
-    callback('快递公司是必填的')
+    callback('快递公司是必填的');
   }
   fetchWaybillHandler = () => {
-    const dataJson = JSON.stringify(this.props.form.getFieldValue('waybill'))
+    const dataJson = JSON.stringify(this.props.form.getFieldValue('waybill'));
     const payload = {
       dataJson,
       setFieldsValueCallback: this.props.form.setFieldsValue,
-    }
-    this.props.dispatch({type: 'commodity/fetchWaybill', payload})
+    };
+    this.props.dispatch({ type: 'commodity/fetchWaybill', payload });
   }
   submit = (value) => {
-    console.log('value', value)
-    this.props.dispatch({ type: 'commodity/submitOrder', payload: value })
+    console.log('value', value);
+    this.props.dispatch({ type: 'commodity/submitOrder', payload: value });
   }
   valueHandler = (values) => {
-    const { order } = this.props
-    const { ID } = order
-    const { selectedList, ...restOrder } = order
-    const newValues = { ...values, ...restOrder, waybill: selectedList }
-    const valuesJson = JSON.stringify(newValues)
+    const { order } = this.props;
+    const { ID } = order;
+    const { selectedList, ...restOrder } = order;
+    const newValues = { ...values, ...restOrder, waybill: selectedList };
+    const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
       dataJson: valuesJson,
-    }
-    this.submit(payload)
+    };
+    this.submit(payload);
   }
   validate = () => {
-      this.props.form.validateFieldsAndScroll((error, values) => {
-        if (!error) {
-        this.valueHandler(values)
-        }
-      });
+    this.props.form.validateFieldsAndScroll((error, values) => {
+      if (!error) {
+        this.valueHandler(values);
+      }
+    });
   }
   render() {
     const { form, order, dispatch, loading, priceListNode, submitLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
-    const { shippingData } = order || []
+    const { shippingData } = order || [];
     // const newShippingData = shippingData.map(item => ({
     //   ...item, Name: item.Name.Name
     // }))
@@ -183,15 +183,19 @@ export default class ShippingHandler extends PureComponent {
             </div>
           </div>
         </Print>
-        <Card title="代发包裹管理" bordered={false} style={{marginBottom: 24}} >
-            {getFieldDecorator('shippingData', {
+        <Card title="代发包裹管理" bordered={false} style={{ marginBottom: 24 }} >
+          {getFieldDecorator('shippingData', {
               initialValue: shippingData,
-              rules: [{ validator: this.checkShippingData }]
+              rules: [{ validator: this.checkShippingData }],
             })(
-              <TableForm dispatch={dispatch} express={this.props.express} setFieldsValue={this.props.form.setFieldsValue}  />
+              <TableForm
+                dispatch={dispatch}
+                express={this.props.express}
+                setFieldsValue={this.props.form.setFieldsValue}
+              />
               )}
         </Card>
-        <Card title="代发下单地址"  bordered={false} style={{marginBottom: 24}}>
+        <Card title="代发下单地址" bordered={false} style={{ marginBottom: 24 }}>
           <Form layout="vertical">
             <Row gutter={16}>
               <Col lg={8} md={12} sm={24}>
@@ -272,7 +276,7 @@ export default class ShippingHandler extends PureComponent {
             onClick={this.printHandler}
           >
             打印
-              </Button>
+          </Button>
           <Button
             type="primary"
             onClick={this.validate}

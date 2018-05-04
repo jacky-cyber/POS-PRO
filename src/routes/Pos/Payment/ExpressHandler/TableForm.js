@@ -1,73 +1,61 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, message, Popconfirm, Divider, Input, InputNumber, Popover, Icon } from 'antd';
+import { Table, Button, Popconfirm, Divider, Input, InputNumber, Popover, Icon } from 'antd';
 import styles from './index.less';
-import SearchableSelect from '../ShippingHandler/SearchableSelect'
+import SearchableSelect from '../ShippingHandler/SearchableSelect';
 import { calculateExpressOrShippingCost } from '../../../../utils/utils';
 
 export default class TableForm extends PureComponent {
   remove(key) {
     const data = this.props.value;
     const newData = data.filter(item => (item.ID !== key));
-    this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: newData })
-    //   const target = this.getRowByKey(key);
-    //   if (!target.ID) { return; }
-    //   if (!target.isNew) {
-    //     this.props.onDelete(target.ID);
-    //     return;
-    //   }
-    //   const newData = this.state.data.filter(item => item.ID !== key);
-    //   this.setState({ data: newData });
+    this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: newData });
   }
 
-  handleFieldChange = (e, fieldName, key) => {
-    const { setFieldsValue, express } = this.props
-    const { expressList = [] } = express
-    const data = this.props.value
+  nameChangeHandler = (e, fieldName, key) => {
+    const { value: data } = this.props;
     const value = e && (e.target ? e.target.value : e);
-    let newData = []
-    if (fieldName === 'Name') {
-      const Name = { Name: value.Name, ID: value.ID }
-      const UnitPrice = value.Price
-      newData = data.map(item => {
-        if (item.ID === key) {
-          return {
-            ...item,
-            Name,
-            UnitPrice,
-          }
-        }
-      })
-      const expressData = newData.map(item => ({
-        ...item,
-        RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
-      }))
-      // const expressDataToForm = newData.map(item => ({
-      //   ...item,
-      //   RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
-      //   Name: value.ID,
-      // }))
-      this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData })
-      setFieldsValue({ expressData: expressData })
-    } else {
-      newData = data.map(item => {
-        if (item.ID === key) {
-          return { ...item, [fieldName]: value };
-        }
-        return item;
-      });
-      const expressData = newData.map(item => ({
-        ...item,
-        RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, ),
-      }))
-      this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData })
-      setFieldsValue({ expressData: expressData })
-    }
+    const Name = { Name: value.Name, ID: value.ID };
+    const UnitPrice = value.Price;
+    const newData = data.map((item) => {
+      if (item.ID === key) {
+        return {
+          ...item,
+          Name,
+          UnitPrice,
+        };
+      }
+      return item;
+    });
+    const expressData = newData.map(item => ({
+      ...item,
+      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight),
+    }));
+    this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData });
+  }
+  handleFieldChange = (e, fieldName, key) => {
+    const { value: data } = this.props;
+    const value = e && (e.target ? e.target.value : e);
+    const newData = data.map((item) => {
+      if (item.ID === key) {
+        return { ...item, [fieldName]: value };
+      }
+      return item;
+    });
+    const expressData = newData.map(item => ({
+      ...item,
+      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight),
+    }));
+    this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData });
   }
   render() {
     const { value, dispatch, express } = this.props;
-    const { expressList = [], loading } = express
-    const getCompany = () => dispatch({ type: 'express/getCompany' })
-    const content = "包裹与商品的总重量不足 1kg 时，快递金额为该快递公司的单价，超过 1kg 时快递金额 = 总重量 * 快递单价"
+    const { expressList = [], loading } = express;
+    const getCompany = () => dispatch({ type: 'express/getCompany' });
+    const content = (
+      <p style={{ width: 400 }}>
+    包裹与商品的总重量不足 1kg 时，快递金额为该快递公司的单价，超过 1kg 时快递金额 = 总重量 * 快递单价
+      </p>
+    );
     const columns = [{
       title: '包裹序号',
       dataIndex: 'BoxIndex',
@@ -75,14 +63,13 @@ export default class TableForm extends PureComponent {
     }, {
       title: '快递公司',
       dataIndex: 'Name',
-      // render: (text, record) => <Input value={text} onChange={e => this.handleFieldChange(e, 'Name', record.ID)} />,
       render: (text, record) => (
         <SearchableSelect
           fetchData={getCompany}
-          onChange={e => this.handleFieldChange(e, 'Name', record.ID)}
+          onChange={e => this.nameChangeHandler(e, 'Name', record.ID)}
           data={expressList}
-          label='Name'
-          value={text['ID']}
+          label="Name"
+          value={text.ID}
           dispatch={dispatch}
           disabled={loading}
         />
@@ -104,16 +91,26 @@ export default class TableForm extends PureComponent {
       dataIndex: 'UnitPrice',
       render: (text, record) => <InputNumber value={text} min={0} precision={2} onChange={e => this.handleFieldChange(e, 'UnitPrice', record.ID)} />,
     }, {
-      title: '包裹快递金额',
-      dataIndex: 'RealPrice',
-      render: (text, record) => (
-        <span>{text}
-          <Popover title="包裹快递金额规则" content={content} trigger="hover" placement="top">
-            <Divider type="vertical" />
+      title: (
+        <span>
+        包裹快递金额
+          <Divider type="vertical" />
+          <Popover
+            title="包裹快递金额规则"
+            content={content}
+            trigger="hover"
+            placement="top"
+          >
             <Icon type="question-circle-o" />
           </Popover>
         </span>
-      )
+      ),
+      dataIndex: 'RealPrice',
+      render: (text, record) => (
+        <span>
+          {text}
+        </span>
+      ),
     }, {
       title: '操作',
       dataIndex: 'action',

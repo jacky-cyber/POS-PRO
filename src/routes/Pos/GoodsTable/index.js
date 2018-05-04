@@ -401,7 +401,6 @@ class GoodsTable extends PureComponent {
   render() {
     const { commodity, dispatch, loading } = this.props;
     const { dataSource, content } = this.state;
-    console.log('content', content);
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
     const { saleType, type } = currentOrder;
     const defaultValue = this.state.tagList.map(item => item.dataIndex);

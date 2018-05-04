@@ -1,13 +1,13 @@
-import react, { Purecomponent } from 'react'
-import { Button } from 'antd'
+import React from 'react';
+import { Button } from 'antd';
 
 export default ({ name, value, clickHandler, ...otherProps }) => {
   return (
     <Button
       onClick={() => clickHandler({ name, value })}
-      { ...otherProps }
+      {...otherProps}
     >
       {name}
     </Button>
-  )
-}
+  );
+};

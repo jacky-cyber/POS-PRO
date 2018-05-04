@@ -1,10 +1,10 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd'
+import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd';
 import { connect } from 'dva';
 import FooterToolbar from '../../../../components/FooterToolbar';
-import styles from './index.less'
+import styles from './index.less';
 import Print from 'rc-print';
-import { POS_PHASE } from '../../../../constant'
+import { POS_PHASE } from '../../../../constant';
 import Mousetrap from 'mousetrap';
 import ReactDOM from 'react-dom';
 
@@ -12,12 +12,12 @@ const dataSource = [{
   key: '1',
   name: '胡彦斌',
   age: 32,
-  address: '西湖区湖底公园1号'
+  address: '西湖区湖底公园1号',
 }, {
   key: '2',
   name: '胡彦祖',
   age: 42,
-  address: '西湖区湖底公园1号'
+  address: '西湖区湖底公园1号',
 }];
 
 const columns = [{
@@ -34,7 +34,7 @@ const columns = [{
   key: 'address',
 }];
 
-const keyboardMapping = ['backspace', 'p', 'enter']
+const keyboardMapping = ['backspace', 'p', 'enter'];
 
 
 @connect(state => ({
@@ -47,55 +47,55 @@ const keyboardMapping = ['backspace', 'p', 'enter']
 @Form.create()
 
 
-
 export default class LocalHandler extends PureComponent {
   componentDidMount() {
-    Mousetrap.bind('backspace', () => this.prevHandler())
-    Mousetrap.bind('p', () => this.printHandler())
+    Mousetrap.bind('backspace', () => this.prevHandler());
+    Mousetrap.bind('p', () => this.printHandler());
     // Mousetrap.bind('enter', () => this.submitHandler())
-    Mousetrap.bind('enter', () => this.submitButton.click())
+    Mousetrap.bind('enter', () => this.submitButton.click());
   }
   componentWillUnmount() {
-    keyboardMapping.forEach(item => {
-      Mousetrap.unbind(item)
-    })
+    keyboardMapping.forEach((item) => {
+      Mousetrap.unbind(item);
+    });
   }
   printHandler = () => {
     this.refs.printForm.onPrint();
   }
   prevHandler = () => {
-    const activeTabKey = this.props.activeTabKey
-    const lastPhase = POS_PHASE.PAY
-    const targetPhase = POS_PHASE.TABLE
-    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } })
+    const activeTabKey = this.props.activeTabKey;
+    const lastPhase = POS_PHASE.PAY;
+    const targetPhase = POS_PHASE.TABLE;
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   submitHandler = () => {
-    const { ID } = this.props.order
-    const { selectedList, expressData, shippingData, ...restOrder } = this.props.order
+    const { ID } = this.props.order;
+    const { selectedList, expressData, shippingData, ...restOrder } = this.props.order;
     const address = {
-      SenderName: "",
-      SenderPhoneNumber: "",
-      ReceiverName: "",
-      ReceiverPhoneNumber: "",
-      ReceiverIDNumber: "",
+      SenderName: '',
+      SenderPhoneNumber: '',
+      ReceiverName: '',
+      ReceiverPhoneNumber: '',
+      ReceiverIDNumber: '',
       ReceiverAddress: {
-        Province: "",
-        City: "",
-        District: ""
+        Province: '',
+        City: '',
+        District: '',
       },
-      ReceiverDetailedAddress: "",
-    }
-    const newValues = { ...restOrder, waybill: selectedList, ...address, }
-    const valuesJson = JSON.stringify(newValues)
+      ReceiverDetailedAddress: '',
+    };
+    const newValues = { ...restOrder, waybill: selectedList, ...address };
+    console.log('newValues', newValues);
+    const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
       dataJson: valuesJson,
-    }
-    this.props.dispatch({ type: 'commodity/submitOrder', payload })
+    };
+    this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   render() {
-    const { priceListNode, submitLoading, order } = this.props
-    const { receiveMoney, totalPrice } = order
+    const { priceListNode, submitLoading, order } = this.props;
+    const { receiveMoney, totalPrice } = order;
 
     return (
       <div>
@@ -110,20 +110,20 @@ export default class LocalHandler extends PureComponent {
           </div>
         </Print>
         {/* <FooterToolbar style={{ width: '100%', paddingLeft: 440, }} extra={priceListNode} > */}
-        <FooterToolbar style={{ width: '100%', paddingLeft: 440, }}>
+        <FooterToolbar style={{ width: '100%', paddingLeft: 440 }}>
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
             onClick={this.printHandler}
           >
             打印
-              </Button>
+          </Button>
           <Button
             type="primary"
             onClick={this.submitHandler}
             loading={submitLoading}
             disabled={!!(totalPrice - receiveMoney > 0)}
             // ref="submitButton"
-                  ref={node => (this.submitButton = ReactDOM.findDOMNode(node))}
+            ref={node => (this.submitButton = ReactDOM.findDOMNode(node))}
           >
             提交
           </Button>

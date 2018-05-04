@@ -1,10 +1,10 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd'
+import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd';
 import { connect } from 'dva';
 import TableForm from './TableForm';
 import FooterToolbar from '../../../../components/FooterToolbar';
-import { POS_PHASE } from '../../../../constant'
-import styles from './index.less'
+import { POS_PHASE } from '../../../../constant';
+import styles from './index.less';
 import Print from 'rc-print';
 
 
@@ -12,19 +12,19 @@ const fieldLabels = {
   expressData: '邮寄包裹信息',
 };
 
-const keyboardMapping = ['backspace', 'p', 'enter']
+const keyboardMapping = ['backspace', 'p', 'enter'];
 
 
 const dataSource = [{
   key: '1',
   name: '胡彦斌',
   age: 32,
-  address: '西湖区湖底公园1号'
+  address: '西湖区湖底公园1号',
 }, {
   key: '2',
   name: '胡彦祖',
   age: 42,
-  address: '西湖区湖底公园1号'
+  address: '西湖区湖底公园1号',
 }];
 
 const columns = [{
@@ -53,74 +53,73 @@ const columns = [{
 
 export default class ExpressHandler extends PureComponent {
   componentDidMount() {
-    Mousetrap.bind('backspace', () => this.prevHandler())
-    Mousetrap.bind('p', () => this.printHandler())
-    Mousetrap.bind('enter', () => this.validate())
+    Mousetrap.bind('backspace', () => this.prevHandler());
+    Mousetrap.bind('p', () => this.printHandler());
+    Mousetrap.bind('enter', () => this.validate());
   }
   componentWillUnmount() {
-    keyboardMapping.forEach(item => {
-      Mousetrap.unbind(item)
-    })
+    keyboardMapping.forEach((item) => {
+      Mousetrap.unbind(item);
+    });
   }
   prevHandler = () => {
-    const activeTabKey = this.props.activeTabKey
-    const lastPhase = POS_PHASE.PAY
-    const targetPhase = POS_PHASE.TABLE
-    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } })
+    const activeTabKey = this.props.activeTabKey;
+    const lastPhase = POS_PHASE.PAY;
+    const targetPhase = POS_PHASE.TABLE;
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   printHandler = () => {
     this.refs.printForm.onPrint();
   }
   checkExpressData = (rule, value, callback) => {
     if (value[0]) {
-    const { Name, InvoiceNo } = value[0]
-    if (Name && InvoiceNo) {
-      callback()
-      return
-    }
-    callback('快递公司和运单号是必填的')
+      const { Name, InvoiceNo } = value[0];
+      if (Name && InvoiceNo) {
+        callback();
+        return;
+      }
+      callback('快递公司和运单号是必填的');
     } else {
-      callback()
-      return
+      callback();
     }
   }
   valueHandler = (values) => {
-    const { ID } = this.props.order
-    const { selectedList, ...restOrder } = this.props.order
+    const { ID } = this.props.order;
+    const { selectedList, ...restOrder } = this.props.order;
     const address = {
-      SenderName: "",
-      SenderPhoneNumber: "",
-      ReceiverName: "",
-      ReceiverPhoneNumber: "",
-      ReceiverIDNumber: "",
+      SenderName: '',
+      SenderPhoneNumber: '',
+      ReceiverName: '',
+      ReceiverPhoneNumber: '',
+      ReceiverIDNumber: '',
       ReceiverAddress: {
-        Province: "",
-        City: "",
-        District: ""
+        Province: '',
+        City: '',
+        District: '',
       },
-      ReceiverDetailedAddress: "",
-    }
-    console.log(restOrder)
-    const newValues = { ...values, ...restOrder, waybill: selectedList, ...address }
-    const valuesJson = JSON.stringify(newValues)
-    console.log(valuesJson)
+      ReceiverDetailedAddress: '',
+    };
+    console.log(restOrder);
+    const newValues = { ...values, ...restOrder, waybill: selectedList, ...address };
+    const valuesJson = JSON.stringify(newValues);
+    console.log(valuesJson);
     const payload = {
       orderID: ID,
       dataJson: valuesJson,
-    }
-    this.props.dispatch({ type: 'commodity/submitOrder', payload })
+    };
+    this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   validate = () => {
-      this.props.form.validateFieldsAndScroll((error, values) => {
-        if (!error) {
-        this.valueHandler(values)
-        }
-      });
+    this.props.form.validateFieldsAndScroll((error, values) => {
+      if (!error) {
+        this.valueHandler(values);
+      }
+    });
   }
   render() {
     const { form, order, dispatch, priceListNode, submitLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
-    const { expressData, receiveMoney, totalPrice } = order || []
+    const { expressData, receiveMoney, totalPrice } = order || [];
     const errors = getFieldsError();
     const getErrorInfo = () => {
       const errorCount = Object.keys(errors).filter(key => errors[key]).length;
@@ -174,22 +173,25 @@ export default class ExpressHandler extends PureComponent {
             </div>
           </div>
         </Print>
-        <Card title="邮寄包裹管理" bordered={false} style={{marginBottom: 24}} >
-            {getFieldDecorator('expressData', {
+        <Card title="邮寄包裹管理" bordered={false} style={{ marginBottom: 24 }} >
+          {getFieldDecorator('expressData', {
               initialValue: expressData,
-              rules: [{ validator: this.checkExpressData }]
+              rules: [{ validator: this.checkExpressData }],
             })(
-              <TableForm dispatch={dispatch} express={this.props.express} setFieldsValue={this.props.form.setFieldsValue} />
+              <TableForm
+                dispatch={dispatch}
+                express={this.props.express}
+              />
               )}
         </Card>
-        <FooterToolbar style={{ width: '100%' }}  extra={priceListNode}>
+        <FooterToolbar style={{ width: '100%' }} extra={priceListNode}>
           {getErrorInfo()}
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
             onClick={this.printHandler}
           >
             打印
-              </Button>
+          </Button>
           <Button
             type="primary"
             onClick={this.validate}

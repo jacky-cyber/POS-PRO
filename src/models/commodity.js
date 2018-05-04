@@ -292,17 +292,31 @@ export default {
       const paymentMethod = action.payload;
       const commodity = yield select(state => state.commodity);
       const currentOrder = getCurrentOrder(commodity);
-      const { paymentData, paymentDataIndex } = currentOrder;
+      const { paymentData, paymentDataIndex, totalPrice } = currentOrder;
       const activePaymentDataIndex = paymentData.length;
       yield put({ type: 'changePaymentDataIndex', payload: paymentDataIndex });
-      const newPaymentData = [...paymentData, {
-        demand: 0,
-        cash: 0,
-        giveChange: 0,
-        method: paymentMethod.value,
-        key: paymentDataIndex,
-        cacheCash: null,
-      }];
+      let newPaymentData = [];
+      if (Array.isArray(paymentData)) {
+        if (activePaymentDataIndex === 0) {
+          newPaymentData = [...paymentData, {
+            demand: totalPrice,
+            cash: totalPrice,
+            giveChange: 0,
+            method: paymentMethod.name,
+            key: paymentDataIndex,
+            cacheCash: null,
+          }];
+        } else {
+          newPaymentData = [...paymentData, {
+            demand: 0,
+            cash: 0,
+            giveChange: 0,
+            method: paymentMethod.name,
+            key: paymentDataIndex,
+            cacheCash: null,
+          }];
+        }
+      }
       yield put({ type: 'changePaymentData', payload: newPaymentData });
       yield put({ type: 'changeActivePaymentDataIndex', payload: activePaymentDataIndex });
       yield put({ type: 'checkPaymentData' });
@@ -345,11 +359,19 @@ export default {
       } else {
         newPaymentData = paymentData.map((item, index) => {
           if (index === 0) {
-            prevItem = { ...item, demand: totalPrice, giveChange: generateGiveChange(totalPrice, item.cash) };
+            prevItem = {
+              ...item,
+              demand: totalPrice,
+              giveChange: generateGiveChange(totalPrice, item.cash),
+            };
             return prevItem;
           } else {
             const demand = generateDemand(prevItem.demand, prevItem.cash);
-            prevItem = { ...item, demand, giveChange: generateGiveChange(demand, item.cash) };
+            prevItem = {
+              ...item,
+              demand,
+              giveChange: generateGiveChange(demand, item.cash),
+            };
             return prevItem;
           }
         });
@@ -1029,28 +1051,6 @@ export default {
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
           return { ...item, wholeDiscount };
-        }
-        return item;
-      });
-      return { ...state, orders: newOrders };
-    },
-    changeChooseCalculatorButton(state, action) {
-      const chooseCalculatorButton = action.payload;
-      const { activeTabKey } = state;
-      const newOrders = state.orders.map((item) => {
-        if (item.key === activeTabKey) {
-          return { ...item, chooseCalculatorButton };
-        }
-        return item;
-      });
-      return { ...state, orders: newOrders };
-    },
-    changePaymentCalculatorButton(state, action) {
-      const paymentCalculatorButton = action.payload;
-      const { activeTabKey } = state;
-      const newOrders = state.orders.map((item) => {
-        if (item.key === activeTabKey) {
-          return { ...item, paymentCalculatorButton };
         }
         return item;
       });

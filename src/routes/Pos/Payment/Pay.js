@@ -1,28 +1,29 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
+import { Row, Col, Table, Icon } from 'antd';
 import Mbutton from './Mbutton';
-import { Row, Col, Table, Button, Icon } from 'antd';
 import styles from './Pay.less';
 import PaymentCalculator from '../../../components/Calculator/Payment/';
-import DescriptionList from '../../../components/DescriptionList';
 
-const { Description } = DescriptionList
 
 const paymentMethods = [
-  { name: '现金', value: 'Cash' },
-  { name: 'EFTPOS', value: 'EFTPOS' },
-  { name: '银联', value: 'UnionPay' },
-  { name: '转账', value: 'Transfer' },
-  { name: '信用卡', value: 'CreditCard' },
-  { name: 'LatiPay', value: 'LatiPay' },
-  { name: '支付宝', value: 'AliPay' },
-  { name: '微信', value: 'WechatPay' },
+  { label: '现金', value: 'Cash' },
+  { label: 'EFTPOS', value: 'EFTPOS' },
+  { label: '银联', value: 'UnionPay' },
+  { label: '转账', value: 'Transfer' },
+  { label: '信用卡', value: 'CreditCard' },
+  { label: 'LatiPay', value: 'LatiPay' },
+  { label: '支付宝', value: 'AliPay' },
+  { label: '微信', value: 'WechatPay' },
 ];
 
 class Pay extends PureComponent {
   componentDidMount() {
-    const paymentData = this.props.order.paymentData;
-    Array.isArray(paymentData) && paymentData.length > 0 && this.props.dispatch({ type: 'commodity/checkPaymentData' });
+    const { order = {} } = this.props;
+    const { paymentData } = order;
+    if (Array.isArray(paymentData) && paymentData.length > 0) {
+      this.props.dispatch({ type: 'commodity/checkPaymentData' });
+    }
   }
   handleRemoveClick = (index) => {
     this.props.dispatch({ type: 'commodity/clickRemovePaymentDataItemButton', payload: index });
@@ -44,7 +45,7 @@ class Pay extends PureComponent {
     };
   }
   render() {
-    const { totalPrice, paymentData } = this.props.order;
+    const { paymentData, activePaymentDataIndex } = this.props.order;
     const columns = [{
       title: '还需',
       dataIndex: 'demand',
@@ -66,11 +67,13 @@ class Pay extends PureComponent {
     }, {
       key: 'delete',
       render: (text, record, index) => {
-        return (<Icon
-          type="close-circle"
-          style={{ cursor: 'pointer' }}
-          onClick={this.handleRemoveClick.bind(this, index)}
-        />);
+        return (
+          <Icon
+            type="close-circle"
+            style={{ cursor: 'pointer' }}
+            onClick={this.handleRemoveClick.bind(this, index)}
+          />
+        );
       },
     }];
     return (
@@ -80,14 +83,16 @@ class Pay extends PureComponent {
           className={styles.leftContent}
         >
           {
-            paymentMethods.map(item => (<Mbutton
-              ghost
-              type="primary"
-              name={item.name}
-              value={item.value}
-              clickHandler={this.clickHandler}
-              key={item.value}
-            />))
+            paymentMethods.map(item => (
+              <Mbutton
+                ghost
+                type="primary"
+                name={item.label}
+                value={item.value}
+                clickHandler={this.clickHandler}
+                key={item.value}
+              />
+            ))
           }
 
         </Col>
@@ -99,9 +104,9 @@ class Pay extends PureComponent {
                 dataSource={paymentData}
                 pagination={false}
                 onRow={this.handleRowClick}
-                locale={{emptyText: '请选择支付方式'}}
+                locale={{ emptyText: '请选择支付方式' }}
                 rowClassName={(record, index) => {
-                  if (index === this.props.order.activePaymentDataIndex) {
+                  if (index === activePaymentDataIndex) {
                     if (record.giveChange > 0) {
                       return styles.hasGiveChangeRow;
                     }
