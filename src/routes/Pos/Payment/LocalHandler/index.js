@@ -1,12 +1,13 @@
 import React, { PureComponent } from 'react';
+import Mousetrap from 'mousetrap';
+import ReactDOM from 'react-dom';
 import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd';
+import Print from 'rc-print';
 import { connect } from 'dva';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import styles from './index.less';
-import Print from 'rc-print';
+import Receipt from '../Receipt';
 import { POS_PHASE } from '../../../../constant';
-import Mousetrap from 'mousetrap';
-import ReactDOM from 'react-dom';
 
 const dataSource = [{
   key: '1',
@@ -94,6 +95,7 @@ export default class LocalHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   render() {
+    console.log(this.props.order);
     const { priceListNode, submitLoading, order } = this.props;
     const { receiveMoney, totalPrice } = order;
 
@@ -105,7 +107,7 @@ export default class LocalHandler extends PureComponent {
         >
           <div style={{ display: 'none' }}>
             <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
-              <Table dataSource={dataSource} columns={columns} />
+              <Receipt />
             </div>
           </div>
         </Print>
