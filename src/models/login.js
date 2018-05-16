@@ -1,13 +1,10 @@
 import { routerRedux } from 'dva/router';
-import { fakeAccountLogin, login } from '../services/api';
+import Cookies from 'js-cookie';
+import { login } from '../services/api';
 import { setAuthority } from '../utils/authority';
 import { reloadAuthorized } from '../utils/Authorized';
-import Cookies from 'js-cookie';
-import { message } from 'antd';
-import { getMenuData } from '../common/menu'
-import { app } from '../index'
-import { getRouterData } from '../common/router';
-import createLoading from 'dva-loading';
+// import { app } from '../index';
+// import { getRouterData } from '../common/router';
 
 export default {
   namespace: 'login',
@@ -17,28 +14,16 @@ export default {
   },
 
   effects: {
-    // *login({ payload }, { call, put }) {
-    //   const response = yield call(fakeAccountLogin, payload);
-    //   yield put({
-    //     type: 'changeLoginStatus',
-    //     payload: response,
-    //   });
-    //   // Login successfully
-    //   if (response.status === 'ok') {
-    //     reloadAuthorized();
-    //     yield put(routerRedux.push('/'));
-    //   }
-    // },
     *login({ payload }, { put, call }) {
-      const response = yield call(login, payload)
+      const response = yield call(login, payload);
       if (response) {
-        const { Result={} } = response
-        const { Data={} } = Result
-        Cookies.set('currentUser', Data, { expires: 1, path: '' })
+        const { Result = {} } = response;
+        const { Data = {} } = Result;
+        Cookies.set('currentUser', Data, { expires: 1, path: '' });
         yield put({
           type: 'user/saveCurrentUser',
           payload: Data,
-        })
+        });
         yield put({
           type: 'changeLoginStatus',
           payload: {
@@ -46,24 +31,22 @@ export default {
             currentAuthority: 'user',
           },
         });
-        let authority = response.Result.Data.Authority
+        const authority = response.Result.Data.Authority;
         const generateAuthority = (authority) => {
           if (typeof authority === 'string') {
-            return authority.split(',')
+            return authority.split(',');
           } else if (Array.isArray(authority)) {
-            return authority
+            return authority;
           } else {
-            return []
+            return [];
           }
-        }
-        const routerAuthority = generateAuthority(authority)
-        Cookies.set('authority', routerAuthority, { expires: 1, path: '' })
-        reloadAuthorized()
-        // getMenuData()
-        // window.location.reload()
+        };
+        const routerAuthority = generateAuthority(authority);
+        Cookies.set('authority', routerAuthority, { expires: 1, path: '' });
+        reloadAuthorized();
         yield put(routerRedux.push('/'));
-        app.router(require('../router').default);
-        getRouterData(app)
+        // app.router(require('../router').default);
+        // getRouterData(app);
       }
     },
     *logoutUnRedirect(_, { put, select }) {
@@ -84,7 +67,7 @@ export default {
         });
         reloadAuthorized();
         yield put(routerRedux.push('/user/login'));
-        Cookies.remove('authority', { path: '' })
+        Cookies.remove('authority', { path: '' });
       }
     },
     *logout(_, { put, select }) {
@@ -105,29 +88,10 @@ export default {
         });
         reloadAuthorized();
         yield put(routerRedux.push('/user/login'));
-        Cookies.remove('authority', { path: '' })
+        Cookies.remove('authority', { path: '' });
+        Cookies.remove('currentUser', { path: '' });
       }
     },
-    // *logout(_, { put, select }) {
-    //   try {
-    //     // get location pathname
-    //     const urlParams = new URL(window.location.href);
-    //     const pathname = yield select(state => state.routing.location.pathname);
-    //     // add the parameters in the url
-    //     urlParams.searchParams.set('redirect', pathname);
-    //     window.history.replaceState(null, 'login', urlParams.href);
-    //   } finally {
-    //     yield put({
-    //       type: 'changeLoginStatus',
-    //       payload: {
-    //         status: false,
-    //         currentAuthority: 'guest',
-    //       },
-    //     });
-    //     reloadAuthorized();
-    //     yield put(routerRedux.push('/user/login'));
-    //   }
-    // },
   },
 
   reducers: {
@@ -136,8 +100,7 @@ export default {
       return {
         ...state,
         status: payload.status,
-        // type: payload.type,
       };
     },
   },
-}
+};

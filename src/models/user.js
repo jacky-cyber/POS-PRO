@@ -1,6 +1,6 @@
+import { message } from 'antd';
 import { query as queryUsers, queryCurrent } from '../services/user';
 import { getUser, addOrUpdateUser } from '../services/api';
-import { message } from 'antd'
 
 export default {
   namespace: 'user',
@@ -13,26 +13,26 @@ export default {
 
   effects: {
     *getAll(_, { call, put }) {
-      const response = yield call(getUser)
+      const response = yield call(getUser);
       if (response.Status) {
-        const userList = response.Result.Data
-        const payload = Array.isArray(userList) ? userList : []
-      yield put({
-        type: 'saveUserList',
-        payload,
-      })
+        const userList = response.Result.Data;
+        const payload = Array.isArray(userList) ? userList : [];
+        yield put({
+          type: 'saveUserList',
+          payload,
+        });
       } else {
-        message.error('获取失败')
+        message.error('获取失败');
       }
     },
     *addOrUpdate(action, { call, put }) {
-      const { payload } = action
-      const response = yield call(addOrUpdateUser, payload)
+      const { payload } = action;
+      const response = yield call(addOrUpdateUser, payload);
       if (response.Status) {
-        const payload = response.Result.Data
-        yield put({type: 'getAll'})
+        const payload = response.Result.Data;
+        yield put({ type: 'getAll' });
       } else {
-        message.error('添加失败')
+        message.error('添加失败');
       }
     },
     *fetch(_, { call, put }) {
@@ -56,7 +56,7 @@ export default {
       return {
         ...state,
         userList: action.payload,
-      }
+      };
     },
     save(state, action) {
       return {

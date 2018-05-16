@@ -19,6 +19,8 @@ function RouterConfig({ history, app }) {
   const UserLayout = routerData['/user'].component;
   const BasicLayout = routerData['/'].component;
   const PosLayout = routerData['/pos'].component;
+  const Exception403 = routerData['/exception/403'].component;
+  const Exception404 = routerData['/exception/404'].component;
   return (
     <LocaleProvider locale={zhCN}>
       <ConnectedRouter history={history}>
@@ -27,23 +29,21 @@ function RouterConfig({ history, app }) {
             path="/user"
             component={UserLayout}
           />
+          <Route
+            path="/exception/403"
+            component={Exception403}
+          />
           <AuthorizedRoute
             path="/pos"
             render={props => <PosLayout {...props} />}
-            // authority={['admin', 'user']}
             authority={['admin', 'user']}
             redirectPath="/exception/403"
           />
-          {/* <Route
-            path="/pos"
-            component={PosLayout}
-          /> */}
           <AuthorizedRoute
             path="/"
-            render={props => {
-             return <BasicLayout {...props} />
-          }}
-            // authority={['admin', 'user']}
+            render={props => (
+              <BasicLayout {...props} />
+            )}
             authority={['admin', 'user']}
             redirectPath="/user/login"
           />

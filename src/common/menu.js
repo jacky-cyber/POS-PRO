@@ -1,7 +1,5 @@
-import { isUrl } from '../utils/utils';
 import Cookies from 'js-cookie';
-
-    // Cookies.set('authority', ['pos', 'express'], { expires: 7, path: '' })
+import { isUrl } from '../utils/utils';
 
 const menuData = [{
   name: 'POS系统',
@@ -24,7 +22,7 @@ const menuData = [{
   }, {
     name: '现金收款复查',
     path: 'cashStatistics',
-  },]
+  }],
 }, {
   name: '订货管理',
   icon: 'shop',
@@ -37,8 +35,8 @@ const menuData = [{
     }, {
       name: '订单管理',
       path: 'orderManagement',
-    }
-  ]
+    },
+  ],
 },
 {
   name: '历史订单',
@@ -54,9 +52,9 @@ const menuData = [{
   children: [
     {
       name: '账号管理',
-      path: 'crud'
-    }
-  ]
+      path: 'crud',
+    },
+  ],
 },
 {
   name: '销售分析',
@@ -181,7 +179,7 @@ const menuData = [{
 // }
 ];
 
-const getAuthority = () => (Cookies.getJSON('authority') || [])
+const getAuthority = () => (Cookies.getJSON('authority') || []);
 
 // const newMenuData = menuData.map(item => {
 //   if (authority.includes(item.ID)) {
@@ -190,12 +188,12 @@ const getAuthority = () => (Cookies.getJSON('authority') || [])
 //   return { ...item, authority: ['admin']}
 // })
 
-const getNewMenuData = () => ( menuData.map(item => {
+const getNewMenuData = () => (menuData.map((item) => {
   if (getAuthority().includes(item.ID)) {
-    return { ...item, authority: ['admin', 'user']}
+    return { ...item, authority: ['admin', 'user'] };
   }
-  return { ...item, authority: ['admin']}
-}))
+  return { ...item, authority: ['admin'] };
+}));
 
 function formatter(data, parentPath = '/', parentAuthority) {
   return data.map((item) => {

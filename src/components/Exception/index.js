@@ -1,6 +1,6 @@
 import React, { createElement } from 'react';
 import classNames from 'classnames';
-import { Button } from 'antd';
+import { Button, Divider } from 'antd';
 import config from './typeConfig';
 import styles from './index.less';
 
@@ -21,10 +21,18 @@ export default ({ className, linkElement = 'a', type, title, desc, img, actions,
         <div className={styles.actions}>
           {
             actions ||
-              createElement(linkElement, {
+            createElement(linkElement, {
                 to: '/',
                 href: '/',
-              }, <Button type="primary">返回首页</Button>)
+            }, <Button type="primary">返回首页</Button>)
+          }
+          <Divider type="vertical" />
+          {
+            actions ||
+            createElement(linkElement, {
+                to: '/user/login',
+                href: '/',
+            }, <Button type="primary">返回登录页</Button>)
           }
         </div>
       </div>

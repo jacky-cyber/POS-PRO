@@ -89,11 +89,11 @@ class BasicLayout extends React.PureComponent {
         isMobile: mobile,
       });
     });
-    const currentUser = Cookies.getJSON('currentUser') || []
+    const currentUser = Cookies.getJSON('currentUser') || [];
     if (currentUser.ID) {
-      this.props.dispatch({type: 'user/saveCurrentUser', payload: currentUser})
+      this.props.dispatch({ type: 'user/saveCurrentUser', payload: currentUser });
     } else {
-      this.props.dispatch({type: 'login/logout'})
+      this.props.dispatch({ type: 'login/logout' });
     }
     // this.props.dispatch({.default
     //   type: 'user/fetchCurrent',
@@ -157,9 +157,9 @@ class BasicLayout extends React.PureComponent {
   }
   render() {
     const {
-      currentUser, collapsed, fetchingNotices, notices,  match, location,
+      currentUser, collapsed, fetchingNotices, notices, match, location,
     } = this.props;
-    const { routerData } = this.state
+    const { routerData } = this.state;
     const bashRedirect = this.getBashRedirect();
     const layout = (
       <Layout>
@@ -198,17 +198,20 @@ class BasicLayout extends React.PureComponent {
                 )
               }
               {
-                getRoutes(match.path, routerData).map(item =>
-                  (
-                    <AuthorizedRoute
-                      key={item.key}
-                      path={item.path}
-                      component={item.component}
-                      exact={item.exact}
-                      authority={item.authority}
-                      redirectPath="/exception/403"
-                    />
-                  )
+                getRoutes(match.path, routerData).map((item) => {
+                  return (
+                    (
+                      <AuthorizedRoute
+                        key={item.key}
+                        path={item.path}
+                        component={item.component}
+                        exact={item.exact}
+                        authority={item.authority}
+                        redirectPath="/exception/403"
+                      />
+                    )
+                  );
+                }
                 )
               }
               <Redirect exact from="/" to={bashRedirect} />
