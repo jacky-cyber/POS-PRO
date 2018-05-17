@@ -2,6 +2,31 @@ import moment from 'moment';
 import { POS_TAB_TYPE, SALE_TYPE } from '../constant';
 
 
+export function formatToDecimals(val, count = 0) {
+  const value = parseFloat(val);
+  if (value === 0) return 0;
+  const isNumber = isNaN(value);
+  if (isNumber) {
+    return '/';
+  } else {
+    return value.toFixed(count) - 0;
+  }
+}
+
+export function formatToPercentage(val, count = 0) {
+  const value = parseFloat(val);
+  let newValue;
+  if (value === 0) return '0%';
+  const isNumber = isNaN(value);
+  if (isNumber) {
+    return '/';
+  } else {
+    newValue = value * 100;
+  }
+  const result = formatToDecimals(newValue, count);
+  return `${result}%`;
+}
+
 export function setLocalStorage(key, value) {
   if (value === null) return;
   if (typeof value === 'undefined') return;

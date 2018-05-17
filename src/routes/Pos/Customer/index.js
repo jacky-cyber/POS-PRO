@@ -1,22 +1,22 @@
 import React, { PureComponent } from 'react';
-import { connect } from 'dva'
-import { Tabs, Button, Badge, Row, Col, Icon, Table, Input, Divider, Form, Select, Modal, InputNumber } from 'antd'
-import styles from './index.less'
-import MessageItem from './MessageItem.js'
+import { connect } from 'dva';
+import { Tabs, Button, Badge, Row, Col, Icon, Table, Input, Divider, Form, Select, Modal, InputNumber } from 'antd';
+import styles from './index.less';
+import MessageItem from './MessageItem.js';
 import { routerRedux } from 'dva/router';
 import SwitchableFormItem from '../../../components/SwitchableItem/SwitchableFormItem';
-import classNames from 'classnames'
-import TypeSelect from './TypeSelect'
-import { POS_PHASE } from '../../../constant'
+import classNames from 'classnames';
+import TypeSelect from './TypeSelect';
+import { POS_PHASE } from '../../../constant';
 import Mousetrap from 'mousetrap';
 
-const { TabPane } = Tabs
+const { TabPane } = Tabs;
 const FormItem = Form.Item;
-const { Option } = Select
+const { Option } = Select;
 
-const cx = classNames.bind(styles)
+const cx = classNames.bind(styles);
 
-const keyboardMapping = ['backspace', 'enter']
+const keyboardMapping = ['backspace', 'enter'];
 
 const fieldLabels = {
   name: '客户名',
@@ -56,13 +56,13 @@ const columns = [
   {
     title: '折扣',
     dataIndex: 'Discount',
-  }
-]
+  },
+];
 
 const formItemLayout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 16 },
-}
+};
 
 
 @connect(({ commodity, loading }) => ({
@@ -76,47 +76,47 @@ const formItemLayout = {
 @Form.create()
 export default class Customer extends PureComponent {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       showAddCustomerForm: false,
       showCustomerMessage: false,
       tempRowData: {},
       isEdit: false,
       activeIndex: null,
-    }
+    };
   }
   componentDidMount() {
-    Mousetrap.bind('backspace', () => this.prevHandler())
-    Mousetrap.bind('enter', () => this.selectHandler())
-    this.props.dispatch({ type: 'commodity/getCustomer' })
+    Mousetrap.bind('backspace', () => this.prevHandler());
+    Mousetrap.bind('enter', () => this.selectHandler());
+    this.props.dispatch({ type: 'commodity/getCustomer' });
   }
   componentWillUnmount() {
-    keyboardMapping.forEach(item => {
-      Mousetrap.unbind(item)
-    })
+    keyboardMapping.forEach((item) => {
+      Mousetrap.unbind(item);
+    });
   }
   prevHandler = () => {
-    const { order, activeTabKey } = this.props
-    const { lastPhase } = order
+    const { order, activeTabKey } = this.props;
+    const { lastPhase } = order;
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: POS_PHASE.CUSTOMER, targetPhase: lastPhase } });
   }
   selectHandler = () => {
-    const { order, activeTabKey } = this.props
-    const { lastPhase } = order
-    const { tempRowData } = this.state
+    const { order, activeTabKey } = this.props;
+    const { lastPhase } = order;
+    const { tempRowData } = this.state;
     // if (this.state.tempRowData.ID) {
-      const customer = {
-        memberID: tempRowData.ID || '',
-        memberName: tempRowData.Name || '',
-        memberAddress: tempRowData.Address || '',
-        memberEmail: tempRowData.Email || '',
-        memberPhone: tempRowData.Phone || '',
-        memberType: tempRowData.Type || '',
-        memberScore: tempRowData.Score || '',
-        memberCardNumber: tempRowData.CardNumber || '',
-        memberDiscount: tempRowData.Discount || '',
-      }
-      this.props.dispatch({ type: 'commodity/changeCustomer', payload: customer })
+    const customer = {
+      memberID: tempRowData.ID || '',
+      memberName: tempRowData.Name || '',
+      memberAddress: tempRowData.Address || '',
+      memberEmail: tempRowData.Email || '',
+      memberPhone: tempRowData.Phone || '',
+      memberType: tempRowData.Type || '',
+      memberScore: tempRowData.Score || '',
+      memberCardNumber: tempRowData.CardNumber || '',
+      memberDiscount: tempRowData.Discount || '',
+    };
+    this.props.dispatch({ type: 'commodity/changeCustomer', payload: customer });
     // } else {
     //   this.props.dispatch({ type: 'commodity/changeCustomer', payload: {} })
     // }
@@ -128,12 +128,12 @@ export default class Customer extends PureComponent {
       tempRowData: {},
       showCustomerMessage: false,
       showAddCustomerForm: false,
-    })
+    });
   }
   validate = (bool) => {
     this.setState({
       isConfirmEnable: bool,
-    })
+    });
   }
   handleFormSubmit = (e) => {
     e.preventDefault();
@@ -147,24 +147,23 @@ export default class Customer extends PureComponent {
     // e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
-        console.log('values', values)
-        this.props.dispatch({ type: 'commodity/submitCustomer', payload: values })
+        this.props.dispatch({ type: 'commodity/submitCustomer', payload: values });
         this.setState({
           showCustomerMessage: false,
           showAddCustomerForm: false,
           isEdit: false,
-        })
+        });
       }
     });
   }
   updateHandler = () => {
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
-        const newValues = { ...values, ID: this.state.tempRowData.ID }
-        this.props.dispatch({ type: 'commodity/updateCustomer', payload: newValues })
+        const newValues = { ...values, ID: this.state.tempRowData.ID };
+        this.props.dispatch({ type: 'commodity/updateCustomer', payload: newValues });
         this.setState({
           isEdit: false,
-        })
+        });
       }
     });
   }
@@ -175,7 +174,7 @@ export default class Customer extends PureComponent {
       isEdit: true,
       tempRowData: {},
       activeIndex: null,
-    })
+    });
   }
   hideAddCustomerForm = () => {
     this.setState({
@@ -183,8 +182,8 @@ export default class Customer extends PureComponent {
       showCustomerMessage: false,
       isEdit: false,
       activeIndex: null,
-    })
-    this.props.form.resetFields()
+    });
+    this.props.form.resetFields();
   }
   hideCustomerForm = () => {
     this.setState({
@@ -192,8 +191,8 @@ export default class Customer extends PureComponent {
       showCustomerMessage: true,
       isEdit: false,
       // activeIndex: null,
-    })
-    this.props.form.resetFields()
+    });
+    this.props.form.resetFields();
   }
   rowClickHandler = (record, index) => {
     return {
@@ -205,39 +204,39 @@ export default class Customer extends PureComponent {
             showAddCustomerForm: false,
             isEdit: false,
             activeIndex: index,
-          })
+          });
         }
       },
     };
   }
   deleteCustomerHandler = () => {
-    const { ID } = this.state.tempRowData
+    const { ID } = this.state.tempRowData;
     if (ID) {
-      this.props.dispatch({ type: 'commodity/deleteCustomer', payload: ID })
+      this.props.dispatch({ type: 'commodity/deleteCustomer', payload: ID });
     }
     this.setState({
       isEdit: false,
       showCustomerMessage: false,
       activeIndex: null,
       tempRowData: {},
-    })
+    });
   }
   searchHandler = (value) => {
-    this.props.dispatch({ type: 'commodity/getCustomer', payload: value })
+    this.props.dispatch({ type: 'commodity/getCustomer', payload: value });
   }
   toEditHandler = () => {
     this.setState({
       isEdit: true,
-    })
+    });
   }
   render() {
-    const { dispatch, form, getLoading, submitLoading, customerList } = this.props
-    const { totalPrice } = this.props.order
-    const { getFieldDecorator, resetFields, } = form
-    const { showAddCustomerForm, showCustomerMessage, tempRowData, isEdit, activeIndex, } = this.state
+    const { dispatch, form, getLoading, submitLoading, customerList } = this.props;
+    const { totalPrice } = this.props.order;
+    const { getFieldDecorator, resetFields } = form;
+    const { showAddCustomerForm, showCustomerMessage, tempRowData, isEdit, activeIndex } = this.state;
     const nameRow = cx({
       [styles.nameRow]: showCustomerMessage && !isEdit,
-    })
+    });
     const customerForm = (
       <Form
         onSubmit={this.submitHandler}
@@ -249,7 +248,7 @@ export default class Customer extends PureComponent {
             <FormItem label={fieldLabels.name} {...formItemLayout}>
               {getFieldDecorator('name', {
                 rules: [{ required: true, message: '请输入客户名' }],
-                initialValue: tempRowData['Name'],
+                initialValue: tempRowData.Name,
               })(
                 <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
               )}
@@ -307,7 +306,7 @@ export default class Customer extends PureComponent {
             <FormItem label={fieldLabels.address} {...formItemLayout}>
               {getFieldDecorator('address', {
                 rules: [{ required: true, message: '请输入地址' }],
-                initialValue: tempRowData['Address'],
+                initialValue: tempRowData.Address,
               })(
                 <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
               )}
@@ -317,7 +316,7 @@ export default class Customer extends PureComponent {
             <FormItem label={fieldLabels.phone} {...formItemLayout}>
               {getFieldDecorator('phone', {
                 rules: [{ required: true, message: '请输入电话' }],
-                initialValue: tempRowData['Phone'],
+                initialValue: tempRowData.Phone,
               })(
                 <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
               )}
@@ -327,7 +326,7 @@ export default class Customer extends PureComponent {
             <FormItem label={fieldLabels.type} {...formItemLayout}>
               {getFieldDecorator('type', {
                 rules: [{ required: true, message: '请选择会员类型' }],
-                initialValue: tempRowData['Type'],
+                initialValue: tempRowData.Type,
               })(
                 <SwitchableFormItem FormItemElement={TypeSelect} editable={isEdit} />
               )}
@@ -336,7 +335,7 @@ export default class Customer extends PureComponent {
           <Col lg={12} sm={24}>
             <FormItem label={fieldLabels.email} {...formItemLayout}>
               {getFieldDecorator('email', {
-                initialValue: tempRowData['Email'],
+                initialValue: tempRowData.Email,
               })(
                 <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
               )}
@@ -345,24 +344,24 @@ export default class Customer extends PureComponent {
           <Col lg={12} sm={24}>
             <FormItem label={fieldLabels.discount} {...formItemLayout}>
               {getFieldDecorator('discount', {
-                initialValue: tempRowData['Discount'],
+                initialValue: tempRowData.Discount,
               })(
-                  <SwitchableFormItem
-                      FormItemElement={InputNumber}
-                      editable={isEdit}
-                      min={0}
-                      max={100}
-                      step={5}
-                      precision={0}
-                      formatter={value => `${value}%`}
-                      parser={value => value.replace('%', '')}
-                  />
+                <SwitchableFormItem
+                  FormItemElement={InputNumber}
+                  editable={isEdit}
+                  min={0}
+                  max={100}
+                  step={5}
+                  precision={0}
+                  formatter={value => `${value}%`}
+                  parser={value => value.replace('%', '')}
+                />
               )}
             </FormItem>
           </Col>
         </Row>
       </Form>
-    )
+    );
     return (
       <div className={styles.customerWrapper}>
         <Row
@@ -387,16 +386,16 @@ export default class Customer extends PureComponent {
             </Button>
           </Col>
           <Col style={{ textAlign: 'right' }}>
-          {
-            activeIndex !== null &&
-          <Button onClick={this.cancelHandler}>取消选择</Button>
-          }
-          <Divider type="vertical" />
+            {
+              activeIndex !== null &&
+              <Button onClick={this.cancelHandler}>取消选择</Button>
+            }
+            <Divider type="vertical" />
             <Button
-             onClick={this.selectHandler}
-             >
+              onClick={this.selectHandler}
+            >
               确认
-                        </Button>
+            </Button>
           </Col>
         </Row>
         <div className={styles.displayArea}>
@@ -413,13 +412,13 @@ export default class Customer extends PureComponent {
             onRow={this.rowClickHandler}
             rowClassName={(record, index) => {
               if (index === activeIndex) {
-                return styles.activeRow
+                return styles.activeRow;
               }
             }}
           />
         </div>
       </div>
-    )
+    );
   }
 }
 // export default connect(state => ({

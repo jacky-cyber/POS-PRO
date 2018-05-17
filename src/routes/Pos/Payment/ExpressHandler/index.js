@@ -6,6 +6,7 @@ import FooterToolbar from '../../../../components/FooterToolbar';
 import { POS_PHASE } from '../../../../constant';
 import styles from './index.less';
 import Print from 'rc-print';
+import Receipt from '../Receipt';
 
 
 const fieldLabels = {
@@ -99,10 +100,8 @@ export default class ExpressHandler extends PureComponent {
       },
       ReceiverDetailedAddress: '',
     };
-    console.log(restOrder);
     const newValues = { ...values, ...restOrder, waybill: selectedList, ...address };
     const valuesJson = JSON.stringify(newValues);
-    console.log(valuesJson);
     const payload = {
       orderID: ID,
       dataJson: valuesJson,
@@ -168,8 +167,8 @@ export default class ExpressHandler extends PureComponent {
           title="门店出口/邮寄/代发"
         >
           <div style={{ display: 'none' }}>
-            <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
-              <Table dataSource={dataSource} columns={columns} />
+            <div style={{ width: '80mm', border: '1px solid' }}>
+              <Receipt />
             </div>
           </div>
         </Print>

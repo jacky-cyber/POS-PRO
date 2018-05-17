@@ -53,7 +53,7 @@ export default class TableForm extends PureComponent {
     const getCompany = () => dispatch({ type: 'express/getCompany' });
     const content = (
       <p style={{ width: 400 }}>
-    包裹与商品的总重量不足 1kg 时，快递金额为该快递公司的单价，超过 1kg 时快递金额 = 总重量 * 快递单价
+        包裹与商品的总重量不足 1kg 时，快递金额为该快递公司的单价，超过 1kg 时快递金额 = 总重量 * 快递单价
       </p>
     );
     const columns = [{
@@ -93,7 +93,7 @@ export default class TableForm extends PureComponent {
     }, {
       title: (
         <span>
-        包裹快递金额
+          包裹快递金额
           <Divider type="vertical" />
           <Popover
             title="包裹快递金额规则"

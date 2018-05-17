@@ -6,8 +6,9 @@ import CascaderInFormItem from '../MilkPowderHandler/CascaderInFormItem';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import styles from './index.less';
 import Print from 'rc-print';
-import { POS_PHASE } from '../../../../constant';
 import Mousetrap from 'mousetrap';
+import { POS_PHASE } from '../../../../constant';
+import Receipt from '../Receipt';
 
 
 const fieldLabels = {
@@ -83,7 +84,6 @@ export default class ShippingHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   checkShippingData = (rule, value, callback) => {
-    console.log(value);
     const { Name } = value[0];
     if (Name.ID && Name.Name) {
       callback();
@@ -100,7 +100,6 @@ export default class ShippingHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/fetchWaybill', payload });
   }
   submit = (value) => {
-    console.log('value', value);
     this.props.dispatch({ type: 'commodity/submitOrder', payload: value });
   }
   valueHandler = (values) => {
@@ -125,7 +124,7 @@ export default class ShippingHandler extends PureComponent {
   render() {
     const { form, order, dispatch, loading, priceListNode, submitLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
-    const { shippingData } = order || [];
+    const { shippingData, totalWeight } = order || [];
     // const newShippingData = shippingData.map(item => ({
     //   ...item, Name: item.Name.Name
     // }))
@@ -178,22 +177,23 @@ export default class ShippingHandler extends PureComponent {
           title="门店出口/邮寄/代发"
         >
           <div style={{ display: 'none' }}>
-            <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
-              <Table dataSource={dataSource} columns={columns} />
+            <div style={{ width: '80mm', border: '1px solid' }}>
+              <Receipt />
             </div>
           </div>
         </Print>
         <Card title="代发包裹管理" bordered={false} style={{ marginBottom: 24 }} >
           {getFieldDecorator('shippingData', {
               initialValue: shippingData,
-              rules: [{ validator: this.checkShippingData }],
-            })(
-              <TableForm
-                dispatch={dispatch}
-                express={this.props.express}
-                setFieldsValue={this.props.form.setFieldsValue}
-              />
-              )}
+            rules: [{ validator: this.checkShippingData }],
+          })(
+            <TableForm
+              dispatch={dispatch}
+              express={this.props.express}
+              setFieldsValue={this.props.form.setFieldsValue}
+              totalWeight={totalWeight}
+            />
+          )}
         </Card>
         <Card title="代发下单地址" bordered={false} style={{ marginBottom: 24 }}>
           <Form layout="vertical">

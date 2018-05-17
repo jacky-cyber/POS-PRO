@@ -86,7 +86,6 @@ export default class LocalHandler extends PureComponent {
       ReceiverDetailedAddress: '',
     };
     const newValues = { ...restOrder, waybill: selectedList, ...address };
-    console.log('newValues', newValues);
     const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
@@ -95,7 +94,6 @@ export default class LocalHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   render() {
-    console.log(this.props.order);
     const { priceListNode, submitLoading, order } = this.props;
     const { receiveMoney, totalPrice } = order;
 
@@ -106,7 +104,7 @@ export default class LocalHandler extends PureComponent {
           title="门店出口/邮寄/代发"
         >
           <div style={{ display: 'none' }}>
-            <div style={{ color: 'red', width: '80mm', border: '1px solid red' }}>
+            <div style={{ width: '80mm', border: '1px solid' }}>
               <Receipt />
             </div>
           </div>

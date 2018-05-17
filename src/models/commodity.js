@@ -290,6 +290,7 @@ export default {
     },
     *clickPaymentMethodButton(action, { put, select }) {
       const paymentMethod = action.payload;
+      console.log('paymentMethod', paymentMethod);
       const commodity = yield select(state => state.commodity);
       const currentOrder = getCurrentOrder(commodity);
       const { paymentData, paymentDataIndex, totalPrice } = currentOrder;
@@ -303,6 +304,7 @@ export default {
             cash: totalPrice,
             giveChange: 0,
             method: paymentMethod.name,
+            methodEN: paymentMethod.value,
             key: paymentDataIndex,
             cacheCash: null,
           }];
@@ -312,6 +314,7 @@ export default {
             cash: 0,
             giveChange: 0,
             method: paymentMethod.name,
+            methodEN: paymentMethod.value,
             key: paymentDataIndex,
             cacheCash: null,
           }];

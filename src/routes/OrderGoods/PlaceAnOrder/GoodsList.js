@@ -26,8 +26,13 @@ export default class GoodsList extends PureComponent {
       {
         title: '订货数量',
         dataIndex: 'Count',
-        render: (text, record, index) => (
-          <InputNumber defaultValue={0} min={0} max={record.Stock || 0} onChange={value => countChangeHandler(value, record)} />
+        render: (text, record) => (
+          <InputNumber
+            defaultValue={0}
+            min={0}
+            max={record.Stock || 0}
+            onChange={value => countChangeHandler(value, record)}
+          />
         ),
       },
       {
@@ -44,6 +49,7 @@ export default class GoodsList extends PureComponent {
           rowKey={record => record.Sku}
           columns={columns}
           dataSource={goodsList}
+          loading={loading}
         />
       </div>
     );

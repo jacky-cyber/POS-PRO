@@ -18,9 +18,9 @@ export const SALE_TYPE = {
 };
 
 
-// export const DOMAIN = 'http://192.168.1.225:8086';
+export const DOMAIN = 'http://192.168.1.225:8086';
 // export const DOMAIN = 'http://posapi.he2009.nz';
-export const DOMAIN = 'http://testposapi.he2009.nz';
+// export const DOMAIN = 'http://testposapi.he2009.nz';
 
 export const POS_PHASE = {
   LIST: 'CHOOSE_LIST',
@@ -108,3 +108,5 @@ export const DEPARTMENT = [
   { value: 74, label: '网易考拉' },
   { value: 75, label: '京东' },
 ];
+
+export const TAX_RATE = 0.15;

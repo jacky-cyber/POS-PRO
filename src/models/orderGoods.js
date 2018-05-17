@@ -1,5 +1,5 @@
 import { getWholeSaleGoods, addWholeSaleOrder } from '../services/api';
-import { message } from 'antd'
+import { message } from 'antd';
 
 export default {
   namespace: 'orderGoods',
@@ -9,27 +9,27 @@ export default {
   },
 
   effects: {
-    *fetchGoodsList(_, { call, put }) {
+    *fetchGoodsList(action, { call, put }) {
+      const { payload } = action;
       const response = yield call(getWholeSaleGoods);
-      const goodsList = response.Result.Data
-      console.log('goodsList', goodsList)
+      const goodsList = response.Result.Data;
       yield put({
         type: 'saveGoodsList',
         payload: Array.isArray(goodsList) ? goodsList : [],
       });
     },
-    *addOrder(action, { call, put}) {
-      const { payload } = action
+    *addOrder(action, { call, put }) {
+      const { payload } = action;
       try {
-        const response = yield call(addWholeSaleOrder, payload)
+        const response = yield call(addWholeSaleOrder, payload);
         if (response.Status) {
-          message.success('提交成功')
+          message.success('提交成功');
         } else {
-          message.error('提交失败')
+          message.error('提交失败');
         }
       } catch (e) {
       }
-    }
+    },
   },
 
   reducers: {

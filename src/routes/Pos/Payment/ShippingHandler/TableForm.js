@@ -1,26 +1,39 @@
 import React, { PureComponent } from 'react';
 import { Table, InputNumber, Icon, Popover, Divider } from 'antd';
+import { formatToDecimals } from 'utils/utils';
 import { calculateExpressOrShippingCost } from '../../../../utils/utils';
 import SearchableSelect from './SearchableSelect';
 
 
 export default class TableForm extends PureComponent {
+  constructor(props) {
+    super(props);
+    const { totalWeight } = props;
+    const dataSource = props.value.map(item => ({
+      ...item,
+      Weight: totalWeight,
+      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, totalWeight, item.WeightedWeight),
+    })
+    );
+    this.state = {
+      dataSource,
+    };
+  }
   handleFieldChange = (e, fieldName, key) => {
-    const { setFieldsValue } = this.props;
-    const data = this.props.value;
+    const { dataSource } = this.state;
     const value = e && (e.target ? e.target.value : e);
     let newData = [];
     if (fieldName === 'Name') {
       const Name = { ID: value.ID, Name: value.Name };
       const UnitPrice = value.Price;
-      newData = data.map((item) => {
+      newData = dataSource.map((item) => {
         if (item.ID === key) {
           return { ...item, Name, UnitPrice };
         }
         return item;
       });
     } else {
-      newData = data.map((item) => {
+      newData = dataSource.map((item) => {
         if (item.ID === key) {
           return { ...item, [fieldName]: value };
         }
@@ -31,16 +44,18 @@ export default class TableForm extends PureComponent {
       ...item,
       RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight),
     }));
+    console.log('shippingData', shippingData);
     this.props.dispatch({ type: 'commodity/changeShippingDataAndSumCost', payload: shippingData });
-    setFieldsValue({ shippingData });
+    this.setState({ dataSource: shippingData });
   }
   render() {
-    const { express, dispatch, value } = this.props;
+    const { dataSource } = this.state;
+    const { express, dispatch } = this.props;
     const { expressList = [], loading } = express;
     const getCompany = () => dispatch({ type: 'express/getCompany' });
     const content = (
       <p style={{ width: 400 }}>
-    包裹与商品的总重量不足 1kg 时，快递金额为该快递公司的单价，超过 1kg 时快递金额 = 总重量 * 快递单价
+        包裹与商品的总重量不足 1kg 时，快递金额为该快递公司的单价，超过 1kg 时快递金额 = 总重量 * 快递单价
       </p>
     );
     const columns = [{
@@ -93,7 +108,7 @@ export default class TableForm extends PureComponent {
     }, {
       title: (
         <span>
-        包裹快递金额
+          包裹快递金额
           <Divider type="vertical" />
           <Popover
             title="包裹快递金额规则"
@@ -108,7 +123,9 @@ export default class TableForm extends PureComponent {
       dataIndex: 'RealPrice',
       render: text => (
         <span>
-          {text}
+          {
+            formatToDecimals(text, 2)
+          }
         </span>
       ),
     }];
@@ -117,7 +134,7 @@ export default class TableForm extends PureComponent {
       <div>
         <Table
           columns={columns}
-          dataSource={value}
+          dataSource={dataSource}
           pagination={false}
           rowKey={record => record.ID}
           size="small"

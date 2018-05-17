@@ -45,11 +45,11 @@ function checkStatus(response) {
 }
 function checkAgain(responseJson) {
   if (responseJson) {
-    const { Message, Result, Status } = responseJson
+    const { Message, Result, Status } = responseJson;
     if (Status === 1) {
-      Cookies.set('token', responseJson.Result.Token || '', { expires: 1, path: '' })
-      Cookies.set('sysUserID', responseJson.Result.SysUserID || '', { expires: 1, path: '' })
-      return responseJson
+      Cookies.set('token', responseJson.Result.Token || '', { expires: 1, path: '' });
+      Cookies.set('sysUserID', responseJson.Result.SysUserID || '', { expires: 1, path: '' });
+      return responseJson;
     }
     const errortext = codeMessage[Status] || Message;
     notification.error({
@@ -59,7 +59,7 @@ function checkAgain(responseJson) {
     const error = new Error(errortext);
     error.name = Status;
     error.response = responseJson;
-    console.log('error', error)
+    console.log('error', error);
     throw error;
   }
 }
@@ -129,10 +129,10 @@ export default function request(url, options = {}) {
     const defaultOptions = {
       // credentials: 'include',
     };
-    const token = Cookies.get('token') || ''
-    const sysUserID = Cookies.get('sysUserID') || ''
+    const token = Cookies.get('token') || '';
+    const sysUserID = Cookies.get('sysUserID') || '';
     // let initBody = `Token=!QAZ@WSX12345&SysUserID=administrator`
-    let initBody = `Token=${token}&SysUserID=${sysUserID}`
+    const initBody = `Token=${token}&SysUserID=${sysUserID}`;
     const tempOptions = { ...defaultOptions, ...options };
     const newOptions = {
       ...tempOptions,
@@ -141,7 +141,9 @@ export default function request(url, options = {}) {
       },
       method: 'POST',
       body: encodeURI(`${initBody}&${tempOptions.body || ''}`),
-    }
+    };
+
+    console.log('newOptions', newOptions);
 
     return fetch(url, newOptions)
       .then(checkStatus)
@@ -159,7 +161,7 @@ export default function request(url, options = {}) {
         if (status === 101) {
           dispatch({
             type: 'login/logout',
-          })
+          });
           return;
         }
         if (status === 102) {
@@ -198,7 +200,6 @@ export default function request(url, options = {}) {
           });
         }
         // return error;
-        return
       });
   } else {
     const defaultOptions = {
@@ -234,5 +235,4 @@ export default function request(url, options = {}) {
         return error;
       });
   }
-
 }

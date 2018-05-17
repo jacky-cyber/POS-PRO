@@ -1,0 +1,30 @@
+.receiptWrapper {
+  padding: 4px;
+    .bolder {
+      font-weight: bolder;
+    }
+  :global {
+    .ant-divider-horizontal {
+      margin: 6px 0;
+    }
+  }
+  .head {
+    text-align: center;
+  }
+  .list {
+    border-bottom: 1px dashed #e8e8e8;
+    margin-bottom: 6px;
+  }
+
+  .item {
+    span {
+      word-wrap: break-word;
+      &:first-child {
+        margin-right: 4px;
+        &:after {
+          content: ':';
+        }
+      }
+    }
+  }
+}
