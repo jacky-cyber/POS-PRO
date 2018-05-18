@@ -44,10 +44,12 @@ export function keepTwoDecimals(val) {
   return parseFloat(val).toFixed(2) - 0;
 }
 
-export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice) {
-  // console.log(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice)
+export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice, wholesalePrice, secondWholesalePrice) {
+  if (type === POS_TAB_TYPE.WHOLESALE) {
+    return formatToDecimals(wholesalePrice, 2);
+  }
   if (!customerType) {
-    return keepTwoDecimals(retailPrice);
+    return formatToDecimals(retailPrice, 2);
   }
   let customerPrice = 0;
   if (type === POS_TAB_TYPE.STORESALE || type === POS_TAB_TYPE.MILKPOWDER) {
@@ -91,7 +93,7 @@ export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPr
       customerPrice = retailPrice;
     }
   }
-  return keepTwoDecimals(customerPrice);
+  return formatToDecimals(customerPrice, 2);
 }
 
 export function calculateExpressOrShippingCost(unitPrice, weight, weightedWeight) {

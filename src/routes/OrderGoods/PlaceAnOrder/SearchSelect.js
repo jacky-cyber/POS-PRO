@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Select, Button } from 'antd';
+import { connect } from 'dva';
 import PropTypes from 'prop-types';
 import styles from './index.less';
 
@@ -9,8 +10,8 @@ const searchTypeMapping = {
   Sku: 'SKU',
   ChineseName: '产品中文名',
   EnglishName: '产品英文名',
-  BrandChineseName: '品牌中文名',
-  BrandEnglishName: '品牌英文名',
+  // BrandChineseName: '品牌中文名',
+  // BrandEnglishName: '品牌英文名',
 };
 
 const generateOptions = (options) => {
@@ -20,13 +21,16 @@ const generateOptions = (options) => {
   return newOptions;
 };
 
+@connect()
+
 export default class Searchable extends PureComponent {
   constructor() {
     super();
     this.state = {
       searchString: '',
       value: [],
-      searchType: new Set(['Sku', 'ChineseName', 'EnglishName', 'BrandChineseName', 'BrandEnglishName']),
+      // searchType: new Set(['Sku', 'ChineseName', 'EnglishName', 'BrandChineseName', 'BrandEnglishName']),
+      searchType: new Set(['Sku', 'ChineseName', 'EnglishName']),
     };
   }
   searchHandler = (string) => {
@@ -55,7 +59,14 @@ export default class Searchable extends PureComponent {
     this.setState({ searchString: '' });
   }
   submitHandler = () => {
-    console.log(this.state.value);
+    const payload = {};
+    this.state.value.forEach((item) => {
+      const tempArray = item.split('-');
+      const key = tempArray[0];
+      const value = tempArray[1];
+      Object.assign(payload, { [key]: value });
+    });
+    this.props.dispatch({ type: 'orderGoods/fetchGoodsList', payload });
   }
   render() {
     const { searchString, searchType } = this.state;

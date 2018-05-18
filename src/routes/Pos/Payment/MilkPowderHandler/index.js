@@ -1,11 +1,17 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover } from 'antd'
+import ReactDOM from 'react-dom';
+import Mousetrap from 'mousetrap';
+import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover } from 'antd';
 import { connect } from 'dva';
+import Print from 'rc-print';
+import { POS_PHASE } from 'constant';
 import TableForm from './TableForm';
 import CascaderInFormItem from './CascaderInFormItem';
 import FooterToolbar from '../../../../components/FooterToolbar';
-import styles from './index.less'
+import Receipt from '../Receipt';
+import styles from './index.less';
 
+const keyboardMapping = ['backspace', 'p', 'enter'];
 
 const fieldLabels = {
   senderName: '寄件人姓名',
@@ -21,60 +27,82 @@ const fieldLabels = {
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
   activeTabKey: state.commodity.activeTabKey,
+  submitLoading: state.loading.effects['commodity/submitOrder'],
 }))
 
 
 @Form.create()
 
 export default class MilkPowderHandler extends PureComponent {
+  componentDidMount() {
+    Mousetrap.bind('backspace', () => this.prevHandler());
+    Mousetrap.bind('p', () => this.printHandler());
+    // Mousetrap.bind('enter', () => this.submitHandler())
+    Mousetrap.bind('enter', () => this.submitButton.click());
+  }
+  componentWillUnmount() {
+    keyboardMapping.forEach((item) => {
+      Mousetrap.unbind(item);
+    });
+  }
+  printHandler = () => {
+    this.refs.printForm.onPrint();
+  }
+  prevHandler = () => {
+    const activeTabKey = this.props.activeTabKey;
+    const lastPhase = POS_PHASE.PAY;
+    const targetPhase = POS_PHASE.TABLE;
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
+  }
   checkWaybill = (rule, value, callback) => {
-    const waybillRequiredFiltered = value.filter(item => item.Sku.includes('CGF') || item.Sku.includes('CGF'))
+    const waybillRequiredFiltered = value.filter(item => item.Sku.includes('CGF') || item.Sku.includes('CGF'));
     if (waybillRequiredFiltered.find(item => (item.InvoiceNo)) || waybillRequiredFiltered.length === 0) {
-      callback()
-      return
+      callback();
+      return;
     }
-    callback('SKU 包含 CGF 或 YDF 的奶粉必须抓取订单号')
+    callback('SKU 包含 CGF 或 YDF 的奶粉必须抓取订单号');
   }
   fetchWaybillHandler = () => {
-    const dataJson = JSON.stringify(this.props.form.getFieldValue('waybill'))
+    const dataJson = JSON.stringify(this.props.form.getFieldValue('waybill'));
     const payload = {
       dataJson,
       setFieldsValueCallback: this.props.form.setFieldsValue,
-    }
-    this.props.dispatch({type: 'commodity/fetchWaybill', payload})
+    };
+    this.props.dispatch({ type: 'commodity/fetchWaybill', payload });
   }
   valueHandler = (values) => {
-    const { ID } = this.props.order
-    const newValues = { ...values, ...this.props.order }
-    const valuesJson = JSON.stringify(newValues)
+    const { ID } = this.props.order;
+    const newValues = { ...values, ...this.props.order };
+    const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
       dataJson: valuesJson,
-    }
-    this.props.dispatch({ type: 'commodity/submitOrder', payload })
+    };
+    this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   render() {
-    const { form, order, dispatch } = this.props;
+    const { form, order, dispatch, submitLoading } = this.props;
+    const { receiveMoney, totalPrice } = order;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
-    const { selectedList } = order || []
-    const waybillRequiredFiltered = selectedList.filter(item => item.Sku.includes('CGF') || item.Sku.includes('YDF'))
-    const waybillUnRequiredFiltered = selectedList.filter(item => !item.Sku.includes('CGF') && !item.Sku.includes('YDF'))
-    let selectedListForWaybill = []
-    waybillRequiredFiltered.forEach(item => {
-      for (let i=0; i<item.Count; i++) {
+    const { selectedList } = order || [];
+    const waybillRequiredFiltered = selectedList.filter(item => item.Sku.includes('CGF') || item.Sku.includes('YDF'));
+    const waybillUnRequiredFiltered = selectedList.filter(item => !item.Sku.includes('CGF') && !item.Sku.includes('YDF'));
+    let selectedListForWaybill = [];
+    waybillRequiredFiltered.forEach((item) => {
+      for (let i = 0; i < item.Count; i++) {
         selectedListForWaybill.push({
-          ...item, Key: `${item.Sku}-${i}`, Count: 1
-        })
+          ...item, Key: `${item.Sku}-${i}`, Count: 1,
+        });
       }
-    })
-    selectedListForWaybill = [ ...selectedListForWaybill, ...waybillUnRequiredFiltered ]
+    });
+    selectedListForWaybill = [...selectedListForWaybill, ...waybillUnRequiredFiltered];
     const extraNodeForFetchWaybill = (
       <a onClick={() => this.fetchWaybillHandler()}>抓取订单号</a>
-    )
+    );
     const validate = () => {
       validateFieldsAndScroll((error, values) => {
         if (!error) {
-        this.valueHandler(values)
+          this.valueHandler(values);
         }
       });
     };
@@ -120,15 +148,25 @@ export default class MilkPowderHandler extends PureComponent {
 
     return (
       <div>
-        <Card title="抓取运单号" bordered={false} style={{marginBottom: 24}} extra={extraNodeForFetchWaybill}>
-        {getFieldDecorator('waybill', {
-          initialValue: selectedListForWaybill,
-          rules: [{ validator: this.checkWaybill }]
-        })(
-          <TableForm />
-        )}
+        <Print
+          ref="printForm"
+          title="门店出口/邮寄/代发"
+        >
+          <div style={{ display: 'none' }}>
+            <div style={{ width: '80mm', border: '1px solid' }}>
+              <Receipt />
+            </div>
+          </div>
+        </Print>
+        <Card title="抓取运单号" bordered={false} style={{ marginBottom: 24 }} extra={extraNodeForFetchWaybill}>
+          {getFieldDecorator('waybill', {
+            initialValue: selectedListForWaybill,
+            rules: [{ validator: this.checkWaybill }],
+          })(
+            <TableForm />
+          )}
         </Card>
-        <Card title="奶粉下单地址"  bordered={false} style={{marginBottom: 24}}>
+        <Card title="奶粉下单地址" bordered={false} style={{ marginBottom: 24 }}>
           <Form layout="vertical">
             <Row gutter={16}>
               <Col lg={8} md={12} sm={24}>
@@ -203,7 +241,20 @@ export default class MilkPowderHandler extends PureComponent {
         </Card>
         <FooterToolbar style={{ width: '100%' }}>
           {getErrorInfo()}
-          <Button type="primary" onClick={validate} >
+          <Button onClick={this.prevHandler}>返回</Button>
+          <Button
+            onClick={this.printHandler}
+            disabled={!!(totalPrice - receiveMoney > 0)}
+          >
+            打印
+          </Button>
+          <Button
+            type="primary"
+            onClick={validate}
+            disabled={!!(totalPrice - receiveMoney > 0)}
+            loading={submitLoading}
+            ref={node => (this.submitButton = ReactDOM.findDOMNode(node))}
+          >
             提交
           </Button>
         </FooterToolbar>

@@ -57,7 +57,7 @@ export async function getStoreSaleGoods(params) {
 
 // 获取门店批发商品列表
 
-export async function getStoreWholeSaleGoods(params) {
+export async function getStoreWholesaleGoods(params) {
   return request(`${DOMAIN}/Product/StoreWholeSale`);
 }
 
@@ -147,8 +147,12 @@ export async function getDailyClosing(payload = {}) {
 }
 
 // 大货批发列表
-export async function getWholeSaleGoods(params) {
-  return request(`${DOMAIN}/Product/CargoDistribution`);
+export async function getWholeSaleGoods(payload = {}) {
+  const { Sku = '', EnglishName: EN = '', ChineseName: CN = '' } = payload;
+  const options = {
+    body: `Sku=${Sku}&CN=${CN}&EN=${EN}`,
+  };
+  return request(`${DOMAIN}/Product/CargoDistribution`, options);
 }
 // 发起订货
 export async function addWholeSaleOrder(valueJson) {

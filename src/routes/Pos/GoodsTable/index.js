@@ -145,7 +145,7 @@ HeaderCell = DropTarget('column', columnTarget, (connect, monitor) => ({
   }))(HeaderCell)
 );
 @connect(state => ({
-  commodity: state.commodity,
+  currentOrderGoodsList: state.commodity.currentOrderGoodsList,
   loading: state.loading.effects['commodity/getStoreSaleGoods'] || state.loading.effects['commodity/getMilkPowderGoods'] || state.loading.effects['commodity/getStoreSaleGoods'],
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
 }))
@@ -155,8 +155,8 @@ class GoodsTable extends PureComponent {
     super(props);
     this.state = {
       display: false,
-      originalContent: props.commodity.currentOrderGoodsList,
-      content: props.commodity.currentOrderGoodsList,
+      originalContent: props.currentOrderGoodsList,
+      content: props.currentOrderGoodsList,
       dataSource: [],
       filteredContent: [],
       includedBarcodeContent: [],
@@ -168,49 +168,21 @@ class GoodsTable extends PureComponent {
           title: '商品名-CN',
           dataIndex: 'CN',
           key: 'CN',
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
-          },
         },
         {
           title: '商品名-EN',
           dataIndex: 'EN',
           key: 'EN',
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
-          },
         },
         {
           title: '零售价',
           dataIndex: 'RetailPrice',
           key: 'RetailPrice',
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
-          },
         },
         {
           title: '会员价格',
           dataIndex: 'CustomerPrice',
           key: 'CustomerPrice',
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
-          },
         },
         {
           title: '数量',
@@ -227,13 +199,11 @@ class GoodsTable extends PureComponent {
               />
             );
           },
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
-          },
+        },
+        {
+          title: '库存',
+          dataIndex: 'Stock',
+          key: 'Stock',
         },
         {
           title: '操作',
@@ -250,13 +220,6 @@ class GoodsTable extends PureComponent {
                 onClick={() => props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: record.Key, count: record.Count } })}
               />
             );
-          },
-          onHeaderCell: (columns) => {
-            const index = this.state.columns.findIndex(item => item.key === columns.key);
-            return {
-              index,
-              moveColumn: this.moveColumn,
-            };
           },
         },
       ],
@@ -286,8 +249,53 @@ class GoodsTable extends PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { commodity } = nextProps;
-    const { currentOrderGoodsList = [] } = commodity;
+    const { currentOrderGoodsList, order } = nextProps;
+    const { type } = order;
+    if (type === 3) {
+      const { columns } = this.state;
+      const newColumns = columns.map((item) => {
+        if (item.key === 'RetailPrice') {
+          return ({
+            title: '一级批发价',
+            dataIndex: 'WholesalePrice',
+            key: 'WholesalePrice',
+          });
+        }
+        if (item.key === 'CustomerPrice') {
+          return ({
+            title: '二级批发价',
+            dataIndex: 'SecondWholesalePrice',
+            key: 'SecondWholesalePrice',
+          });
+        }
+        return item;
+      });
+      this.setState({
+        columns: newColumns,
+      });
+    } else {
+      const { columns } = this.state;
+      const newColumns = columns.map((item) => {
+        if (item.key === 'WholesalePrice') {
+          return ({
+            title: '零售价',
+            dataIndex: 'RetailPrice',
+            key: 'RetailPrice',
+          });
+        }
+        if (item.key === 'SecondWholesalePrice') {
+          return ({
+            title: '会员价格',
+            dataIndex: 'CustomerPrice',
+            key: 'CustomerPrice',
+          });
+        }
+        return item;
+      });
+      this.setState({
+        columns: newColumns,
+      });
+    }
     this.setState({
       content: currentOrderGoodsList,
       originalContent: currentOrderGoodsList,
@@ -334,18 +342,18 @@ class GoodsTable extends PureComponent {
     });
     this.setState({ columns: newColumns });
   }
-  clickTableHandler = (activeTabKey, currentPhase) => {
-    if (currentPhase === POS_PHASE.TABLE) {
-      return;
-    }
-    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.TABLE } });
-  }
-  clickListHandler = (activeTabKey, currentPhase) => {
-    if (currentPhase === POS_PHASE.LIST) {
-      return;
-    }
-    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } });
-  }
+  // clickTableHandler = (activeTabKey, currentPhase) => {
+  //   if (currentPhase === POS_PHASE.TABLE) {
+  //     return;
+  //   }
+  //   this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.TABLE } });
+  // }
+  // clickListHandler = (activeTabKey, currentPhase) => {
+  //   if (currentPhase === POS_PHASE.LIST) {
+  //     return;
+  //   }
+  //   this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } });
+  // }
   selectHandler = (value) => {
     if (value === '') {
       this.pressEnterHandler(value);
@@ -361,7 +369,9 @@ class GoodsTable extends PureComponent {
   }
   searchHandler = (value) => {
     const filteredContent = this.state.originalContent.filter(item => item.Barcode === value);
-    const includedBarcodeContent = this.state.originalContent.filter(item => item.Barcode.includes(value));
+    const includedBarcodeContent = this.state.originalContent.filter(item => (
+      item.Barcode.includes(value)
+    ));
     const includedSkuContent = this.state.originalContent.filter(item => item.Sku.includes(value));
     const strArray = value ? value.split(' ').filter(item => item !== '') : [];
     const includedCNContent = this.state.originalContent.filter(item => (strArray.reduce((a, b) => {
@@ -377,7 +387,16 @@ class GoodsTable extends PureComponent {
       return b1 && b2;
     }, true)));
     this.setState({
-      dataSource: value ? searchResult(value, filteredContent.length, includedBarcodeContent.length, includedSkuContent.length, includedCNContent.length, includedENContent.length) : [],
+      dataSource: value ?
+        searchResult(
+          value,
+          filteredContent.length,
+          includedBarcodeContent.length,
+          includedSkuContent.length,
+          includedCNContent.length,
+          includedENContent.length
+        )
+        : [],
       filteredContent,
       includedBarcodeContent,
       includedSkuContent,
@@ -386,7 +405,7 @@ class GoodsTable extends PureComponent {
     });
   }
   clearSearchHandler = () => {
-    this.setState({ content: this.props.commodity.currentOrderGoodsList });
+    this.setState({ content: this.props.currentOrderGoodsList });
   }
   pressEnterHandler = () => {
     this.setState({
@@ -399,10 +418,21 @@ class GoodsTable extends PureComponent {
     }
   }
   render() {
-    const { commodity, dispatch, loading } = this.props;
+    const { order, dispatch, loading } = this.props;
     const { dataSource, content } = this.state;
-    const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
-    const { saleType, type } = currentOrder;
+    console.log('content', content);
+    const drawableContent = content.map(item => ({
+      ...item,
+      onHeaderCell: (columns) => {
+        const index = this.state.columns.findIndex(item => item.key === columns.key);
+        return {
+          index,
+          moveColumn: this.moveColumn,
+        };
+      },
+
+    }));
+    const { saleType, type } = order;
     const defaultValue = this.state.tagList.map(item => item.dataIndex);
     const tagSelectWrapper = cls({
       [styles.tagSelectShow]: this.state.display,
@@ -414,6 +444,7 @@ class GoodsTable extends PureComponent {
         value={saleType}
         onChange={e => dispatch({ type: 'commodity/clickChangeSaleTypeButton', payload: e.target.value })}
         style={{ marginLeft: 24 }}
+        disabled={loading}
       >
         <RadioButton value={SALE_TYPE.LOCAL}>本地</RadioButton>
         <RadioButton value={SALE_TYPE.EXPRESS}>邮寄</RadioButton>
@@ -456,7 +487,7 @@ class GoodsTable extends PureComponent {
           <div className={styles.header}>
             <div>
               <a style={{ marginLeft: 8 }} onClick={this.toggleCollapse}>
-              配置表格 <Icon type={this.state.display ? 'up' : 'down'} />
+                配置表格 <Icon type={this.state.display ? 'up' : 'down'} />
               </a>
             </div>
             { typeSelectRender }
@@ -479,7 +510,7 @@ class GoodsTable extends PureComponent {
             <div>可以拖拽表头进行排序</div>
             <Table
               bordered
-              dataSource={content}
+              dataSource={drawableContent}
               columns={this.state.columns}
               components={this.components}
               rowKey={record => record.Key}

@@ -1,16 +1,19 @@
 import moment from 'moment';
-// import key from 'keymaster';
-import { fetchCommodityList, fetchCustomerList, submitCustomer, getCustomer, deleteCustomer, updateCustomer, getMilkPowderGoods, addOrUpdateCacheOrder, fetchWaybill, submitOrder, getStoreSaleGoods, getStoreWholeSaleGoods, addOrUpdateDailyClosing } from '../services/api';
 import { message } from 'antd';
-import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from '../constant';
-import { calculateExpressOrShippingCost, getGoodsItemCustomerPrice, keepTwoDecimals, setLocalStorage, getLocalStorage } from '../utils/utils';
 import Cookies from 'js-cookie';
+import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from 'constant';
+import { submitCustomer, getCustomer, deleteCustomer, updateCustomer, getMilkPowderGoods, addOrUpdateCacheOrder, fetchWaybill, submitOrder, getStoreSaleGoods, getStoreWholesaleGoods, addOrUpdateDailyClosing } from 'services/api';
+import { calculateExpressOrShippingCost, getGoodsItemCustomerPrice, keepTwoDecimals, setLocalStorage, getLocalStorage, formatToDecimals } from 'utils/utils';
 
 function getCurrentOrder(state) {
   return state.orders.filter(item => item.key === state.activeTabKey)[0];
 }
 
-// 获取每一个订单的商品的逻辑分为： 1.获取商品 fetch 2.保存该商品 3.分页 4.保存当前页商品列表 currentGoodsList
+// 获取每一个订单的商品的逻辑分为：
+// 1.获取商品 fetch
+// 2.保存该商品
+// 3.分页
+// 4.保存当前页商品列表 currentGoodsList
 
 export default {
   namespace: 'commodity',
@@ -23,9 +26,9 @@ export default {
     commonLoading: false,
     newTabIndex: 0,
     customerList: [],
-    storeSaleGoodsList: [],
-    milkPowderGoodsList: [],
-    storeWholesaleGoodsList: [],
+    // storeSaleGoodsList: [],
+    // milkPowderGoodsList: [],
+    // storeWholesaleGoodsList: [],
     currentOrderGoodsList: [],
     pagination: {
       pagingData: [],
@@ -38,6 +41,7 @@ export default {
   subscriptions: {
   },
   effects: {
+    // 提交日结
     *addOrUpdateDailyClosing(action, { put, call }) {
       const { payload } = action;
       const response = yield call(addOrUpdateDailyClosing, payload);
@@ -47,6 +51,7 @@ export default {
         message.error('提交失败');
       }
     },
+    // 改变会员状态及会员价格
     *changeCustomer(action, { put, select }) {
       const { payload } = action;
       yield put({ type: 'saveCurrentCustomer', payload });
@@ -57,14 +62,39 @@ export default {
       const customerType = customer.memberType;
       const newSelectedList = selectedList.map(item => ({
         ...item,
-        CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
+        CustomerPrice: getGoodsItemCustomerPrice(
+          type,
+          saleType,
+          customerType,
+          item.RetailPrice,
+          item.PlatinumPrice,
+          item.DiamondPrice,
+          item.VIPPrice,
+          item.SVIPPrice,
+          item.WholesalePrice,
+          item.secondWholesalePrice,
+        ),
       }));
-      const newCurrentOrderGoodsList = currentOrderGoodsList.map(item => ({
-        ...item, CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
-      }));
+      const newCurrentOrderGoodsList = currentOrderGoodsList.map(item => (
+        {
+          ...item,
+          CustomerPrice: getGoodsItemCustomerPrice(
+            type,
+            saleType,
+            customerType,
+            item.RetailPrice,
+            item.PlatinumPrice,
+            item.DiamondPrice,
+            item.VIPPrice,
+            item.SVIPPrice,
+            item.WholesalePrice,
+            item.secondWholesalePrice,
+          ),
+        }));
       yield put({ type: 'changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
       yield put({ type: 'changeCurrentOrderGoodsList', payload: newCurrentOrderGoodsList });
     },
+    // 缓存订单
     *addOrUpdateCacheOrder(action, { put, call }) {
       const { payload } = action;
       const response = yield call(addOrUpdateCacheOrder, payload);
@@ -73,76 +103,82 @@ export default {
         yield put({ type: 'changeOrderID', payload });
       }
     },
-    *goodsListPagingHandler(action, { put, select }) {
-      const totalData = action.payload;
-      const length = totalData.length;
-      yield put({ type: 'changePaginationTotal', payload: length });
-      const commodity = yield select(state => state.commodity);
-      const { pagination = {} } = commodity || {};
-      const { pageSize } = pagination || {};
-      const pageTotalNumber = Math.ceil(length / pageSize);
-      const newData = [];
-      let startNumber = 0;
-      let endNumber = pageSize;
-      for (let i = 0; i < pageTotalNumber; i++) {
-        newData.push(totalData.slice(startNumber, endNumber));
-        startNumber += pageSize;
-        endNumber += pageSize;
-      }
-      yield put({ type: 'changePaginationPagingData', payload: newData });
-    },
+    // *goodsListPagingHandler(action, { put, select }) {
+    //   const totalData = action.payload;
+    //   const length = totalData.length;
+    //   yield put({ type: 'changePaginationTotal', payload: length });
+    //   const commodity = yield select(state => state.commodity);
+    //   const { pagination = {} } = commodity || {};
+    //   const { pageSize } = pagination || {};
+    //   const pageTotalNumber = Math.ceil(length / pageSize);
+    //   const newData = [];
+    //   let startNumber = 0;
+    //   let endNumber = pageSize;
+    //   for (let i = 0; i < pageTotalNumber; i++) {
+    //     newData.push(totalData.slice(startNumber, endNumber));
+    //     startNumber += pageSize;
+    //     endNumber += pageSize;
+    //   }
+    //   yield put({ type: 'changePaginationPagingData', payload: newData });
+    // },
+
+    // 获取奶粉商品列表
     *getMilkPowderGoods(action, { put, call }) {
-      const { payload } = action;
-      yield put({
-        type: 'changeCommonLoading',
-        payload: true,
-      });
       const response = yield call(getMilkPowderGoods);
-      yield put({
-        type: 'changeCommonLoading',
-        payload: false,
-      });
       if (response.Status) {
         const data = response.Result.Data;
-        const payload = data.map(item => ({ ...item, Key: item.Sku, CustomerPrice: item.RetailPrice, Count: 1 }));
+        const payload = data.map(item => ({
+          ...item,
+          Key: item.Sku,
+          RetailPrice: formatToDecimals(item.RetailPrice, 2),
+          CustomerPrice: formatToDecimals(item.RetailPrice, 2),
+          Count: 1,
+        }));
         yield put({ type: 'saveMilkPowderGoodsList', payload });
-        yield put({ type: 'goodsListPagingHandler', payload });
+        // yield put({ type: 'goodsListPagingHandler', payload });
         yield put({ type: 'changeCurrentOrderGoodsList', payload });
       } else {
         message.error('获取失败');
       }
     },
+    // 获取门店商品列表
     *getStoreSaleGoods(_, { put, call }) {
       const response = yield call(getStoreSaleGoods);
       if (response) {
         const data = response.Result.Data;
-        const payload = data.map(item => ({ ...item, Key: item.Sku, SaleType: SALE_TYPE.LOCAL, CustomerPrice: item.RetailPrice, Count: 1 }));
+        const payload = data.map(item => ({
+          ...item,
+          Key: item.Sku,
+          SaleType: SALE_TYPE.LOCAL,
+          RetailPrice: formatToDecimals(item.RetailPrice, 2),
+          CustomerPrice: formatToDecimals(item.RetailPrice, 2),
+          Count: 1 }));
         yield put({ type: 'saveStoreSaleGoodsList', payload });
         // yield put({ type: 'goodsListPagingHandler', payload })
         yield put({ type: 'changeCurrentOrderGoodsList', payload });
       }
     },
-    *getStoreWholeSaleGoods(action, { put, call }) {
-      const { payload } = action;
-      yield put({
-        type: 'changeCommonLoading',
-        payload: true,
-      });
-      const response = yield call(getStoreWholeSaleGoods);
-      yield put({
-        type: 'changeCommonLoading',
-        payload: false,
-      });
+    // 获取门店批发列表
+    *getStoreWholesaleGoods(_, { put, call }) {
+      const response = yield call(getStoreWholesaleGoods);
       if (response.Status) {
         const data = response.Result.Data;
-        const payload = data.map(item => ({ ...item, Key: item.Sku, CustomerPrice: item.RetailPrice, Count: 1 }));
-        yield put({ type: 'saveStoreWholeSaleGoodsList', payload });
-        yield put({ type: 'goodsListPagingHandler', payload });
+        const payload = data.map(item => ({
+          ...item,
+          Key: item.Sku,
+          CustomerPrice: formatToDecimals(item.WholesalePrice, 2),
+          RetailPrice: formatToDecimals(item.WholesalePrice, 2),
+          Count: 1,
+        }
+        ));
+        yield put({ type: 'saveStoreWholesaleGoodsList', payload });
+        // yield put({ type: 'goodsListPaginsHandler', payload });
         yield put({ type: 'changeCurrentOrderGoodsList', payload });
       } else {
         message.error('获取失败');
       }
     },
+    // 获取所有会员信息
     *getCustomer(action, { put, call }) {
       const { payload } = action;
       const response = yield call(getCustomer, payload);
@@ -151,6 +187,7 @@ export default {
         yield put({ type: 'saveCustomerList', payload });
       }
     },
+    // 提交会员信息
     *submitCustomer(action, { put, call }) {
       const { payload } = action;
       yield put({
@@ -172,6 +209,7 @@ export default {
         payload: false,
       });
     },
+    // 删除会员
     *deleteCustomer(action, { put, call }) {
       const { payload } = action;
       yield put({
@@ -193,6 +231,7 @@ export default {
         payload: false,
       });
     },
+    // 更新会员
     *updateCustomer(action, { put, call }) {
       const { payload } = action;
       yield put({
@@ -214,6 +253,7 @@ export default {
         payload: false,
       });
     },
+    // 获取订单信息
     *fetchWaybill(action, { call, put }) {
       const { dataJson, setFieldsValueCallback } = action.payload;
       yield put({
@@ -235,6 +275,7 @@ export default {
         payload: false,
       });
     },
+    // 提交订单
     *submitOrder(action, { call, put, select, take }) {
       const { payload } = action;
       const response = yield call(submitOrder, payload);
@@ -247,9 +288,7 @@ export default {
         yield put({ type: 'removeTab', payload: activeTabKey });
       }
     },
-    *storageButtonDOM(action, { put }) {
-      const button = action.payload;
-    },
+    // 更改支付方式
     *changePaymentDataAndCheck(action, { put }) {
       const paymentData = action.payload;
       yield put({ type: 'changePaymentData', payload: paymentData });
@@ -406,7 +445,10 @@ export default {
       const { pagingData, current } = pagination || {};
       const currentOrder = getCurrentOrder(commodity);
       const { saleType, targetPhase } = currentOrder;
-      const currentGoodsList = targetPhase === POS_PHASE.TABLE ? currentOrderGoodsList : pagingData[current - 1];
+      const currentGoodsList = targetPhase === POS_PHASE.TABLE ?
+        currentOrderGoodsList
+        :
+        pagingData[current - 1];
       const { selectedList } = currentOrder;
       let { avoidDuplicationIndex } = currentOrder;
       const selectedItem = currentGoodsList.filter(item => (item.Key === selectedKey))[0];
@@ -464,7 +506,10 @@ export default {
       let totalWeight = 0;
       const latestSelectedList = newSelectedList.map((item) => {
         // 单价优先级 => 修改过单价 > 会员价 > 零售价
-        const unitPrice = (item.NewUnitPrice !== undefined) ? item.NewUnitPrice : item.CustomerPrice || item.RetailPrice;
+        const unitPrice = (item.NewUnitPrice !== undefined) ?
+          item.NewUnitPrice
+          :
+          item.CustomerPrice || item.RetailPrice;
         const retailPrice = item.RetailPrice;
         const count = item.Count;
         // 单品折扣
@@ -472,7 +517,9 @@ export default {
         // 单品重量
         const weight = item.Weight;
         // 单品总价
-        const price = unitPrice * count * ((discount || 100) / 100) * ((wholeDiscount || 100) / 100);
+        const price = unitPrice * count * (
+          (discount || 100) / 100
+        ) * ((wholeDiscount || 100) / 100);
         // 单品销售价
         const realPrice = unitPrice * ((discount || 100) / 100) * ((wholeDiscount || 100) / 100);
         goodsPrice += price;
@@ -487,28 +534,39 @@ export default {
       yield put({ type: 'sumTotalPrice' });
     },
     *clickAddTabButton(action, { put, select }) {
+      // 点击挂单按钮
       const tabType = action.payload;
       const commodity = yield select(state => state.commodity);
       const count = commodity.newTabIndex + 1;
       const currentTime = moment().format('HH:mm');
       const createTime = moment().format('YYYY-MM-DD HH:mm');
-      yield put({ type: 'addTab', payload: { count, tabType, currentTime, createTime } });
+      // 初始化新单的信息
+      yield put({
+        type: 'addTab',
+        payload: { count, tabType, currentTime, createTime },
+      });
+      // 根据新挂单的类型去获取对应的商品
       if (tabType === POS_TAB_TYPE.STORESALE) {
+        // 本地销售
         yield put({ type: 'getStoreSaleGoods' });
       }
       if (tabType === POS_TAB_TYPE.MILKPOWDER) {
+        // 奶粉/生鲜订单
         yield put({ type: 'getMilkPowderGoods' });
       }
       if (tabType === POS_TAB_TYPE.WHOLESALE) {
-        yield put({ type: 'getStoreWholeSaleGoods' });
+        // 批发
+        yield put({ type: 'getStoreWholesaleGoods' });
       }
     },
     *changeActiveTabKeyAndCheck(action, { put, select }) {
       const activeTabKey = action.payload;
       yield put({ type: 'changeActiveTabKey', payload: activeTabKey });
       const commodity = yield select(state => state.commodity);
-      const storeSaleGoodsList = getLocalStorage('storeSaleGoodsList');
-      const { milkPowderGoodsList, wholesaleGoodsList } = commodity;
+      const storeSaleGoodsList = getLocalStorage('storeSaleGoodsList') || [];
+      const milkPowderGoodsList = getLocalStorage('milkPowderGoodsList') || [];
+      const storeWholesaleGoodsList = getLocalStorage('storeWholesaleGoodsList') || [];
+      // const { milkPowderGoodsList, storeWholesaleGoodsList } = commodity;
       const currentOrder = getCurrentOrder(commodity);
       const { type } = currentOrder;
       let currentOrderGoodsList = [];
@@ -522,7 +580,7 @@ export default {
           break;
         }
         case POS_TAB_TYPE.WHOLESALE: {
-          currentOrderGoodsList = wholeSaleGoodsList;
+          currentOrderGoodsList = storeWholesaleGoodsList;
           break;
         }
         default: {
@@ -996,17 +1054,21 @@ export default {
     },
     saveMilkPowderGoodsList(state, action) {
       const milkPowderGoodsList = action.payload;
-      return { ...state, milkPowderGoodsList };
+      setLocalStorage('milkPowderGoodsList', milkPowderGoodsList);
+      // return { ...state, milkPowderGoodsList };
+      return state;
     },
     saveStoreSaleGoodsList(state, action) {
       const storeSaleGoodsList = action.payload;
       setLocalStorage('storeSaleGoodsList', storeSaleGoodsList);
-      // return { ...state, storeSaleGoodsList, }
+      // return { ...state, storeSaleGoodsList };
       return state;
     },
-    saveStoreWholeSaleGoodsList(state, action) {
+    saveStoreWholesaleGoodsList(state, action) {
       const storeWholesaleGoodsList = action.payload;
-      return { ...state, storeWholeSaleGoodsList };
+      setLocalStorage('storeWholesaleGoodsList', storeWholesaleGoodsList);
+      // return { ...state, storeWholesaleGoodsList };
+      return state;
     },
     changeOrderID(state, action) {
       const ID = action.payload;

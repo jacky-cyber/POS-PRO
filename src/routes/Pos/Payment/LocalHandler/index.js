@@ -9,17 +9,6 @@ import styles from './index.less';
 import Receipt from '../Receipt';
 import { POS_PHASE } from '../../../../constant';
 
-const dataSource = [{
-  key: '1',
-  name: '胡彦斌',
-  age: 32,
-  address: '西湖区湖底公园1号',
-}, {
-  key: '2',
-  name: '胡彦祖',
-  age: 42,
-  address: '西湖区湖底公园1号',
-}];
 
 const columns = [{
   title: '姓名',
@@ -114,6 +103,7 @@ export default class LocalHandler extends PureComponent {
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
             onClick={this.printHandler}
+            disabled={!!(totalPrice - receiveMoney > 0)}
           >
             打印
           </Button>
@@ -122,7 +112,6 @@ export default class LocalHandler extends PureComponent {
             onClick={this.submitHandler}
             loading={submitLoading}
             disabled={!!(totalPrice - receiveMoney > 0)}
-            // ref="submitButton"
             ref={node => (this.submitButton = ReactDOM.findDOMNode(node))}
           >
             提交

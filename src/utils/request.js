@@ -45,6 +45,7 @@ function checkStatus(response) {
 }
 function checkAgain(responseJson) {
   if (responseJson) {
+    console.log('responseJson', responseJson);
     const { Message, Result, Status } = responseJson;
     if (Status === 1) {
       Cookies.set('token', responseJson.Result.Token || '', { expires: 1, path: '' });
@@ -140,7 +141,11 @@ export default function request(url, options = {}) {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
       },
       method: 'POST',
-      body: encodeURI(`${initBody}&${tempOptions.body || ''}`),
+      body: tempOptions.body ?
+        encodeURI(`${initBody}&${tempOptions.body}`)
+        :
+        encodeURI(`${initBody}`)
+      ,
     };
 
     console.log('newOptions', newOptions);

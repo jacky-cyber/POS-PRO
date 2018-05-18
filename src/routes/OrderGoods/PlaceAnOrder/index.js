@@ -11,7 +11,10 @@ const getValue = obj => Object.keys(obj).map(key => obj[key]).join(',');
 
 @connect(state => ({
   goodsList: state.orderGoods.goodsList,
-  isGetGoodsListLoading: state.orderGoods.isGetGoodsListLoading,
+  allGoodsList: state.orderGoods.allGoodsList,
+  generatedOrder: state.orderGoods.generatedOrder,
+  isGetLoading: state.loading.effects['orderGoods/fetchGoodsList'] || state.loading.effects['orderGoods/generateOrder'],
+  isSubmitLoading: state.loading.effects['orderGoods/addOrder'],
 }))
 @Form.create()
 export default class PlaceAnOrder extends PureComponent {
@@ -28,8 +31,19 @@ export default class PlaceAnOrder extends PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.goodsList && Array.isArray(nextProps.goodsList)) {
+    const { goodsList, generatedOrder, allGoodsList } = nextProps;
+    if (goodsList) {
       this.setState({ goodsList: nextProps.goodsList });
+    }
+    if (generatedOrder) {
+      const fixedGeneratedOrder = generatedOrder.map((item) => {
+        const filteredItem = allGoodsList.filter(subItem => subItem.Sku === item.Sku)[0];
+        if (filteredItem) {
+          return { ...filteredItem, Number: item.Number, Count: item.Number };
+        }
+      });
+      const payload = fixedGeneratedOrder.filter(item => (item));
+      this.setState({ goodsOrderedList: payload });
     }
   }
   submitHandler = () => {
@@ -68,7 +82,7 @@ export default class PlaceAnOrder extends PureComponent {
   }
 
   render() {
-    const { isGetGoodsListLoading } = this.props;
+    const { isGetLoading, isSubmitLoading } = this.props;
     const { modalVisible, goodsList, goodsOrderedList } = this.state;
 
     const columns = [
@@ -119,18 +133,36 @@ export default class PlaceAnOrder extends PureComponent {
           >
             <GoodsList
               goodsList={goodsList}
-              loading={isGetGoodsListLoading}
+              loading={isGetLoading}
               countChangeHandler={this.countChangeHandler.bind(this)}
             />
           </Modal>
           <div className={styles.tableList}>
-            <Row type="flex" justify="space-between">
+            <Row
+              type="flex"
+              justify="space-between"
+              className={styles.operationArea}
+            >
               <Col>
                 <Button
-                  type="primary"
+                  // type="primary"
                   onClick={() => this.setState({ modalVisible: true })}
                 >
                   点击选择商品
+                </Button>
+                <span style={{ margin: '0 6px' }}>
+                  或
+                </span>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    this.props.dispatch({
+                      type: 'orderGoods/clickGenerateOrderButton',
+                    });
+                  }}
+                  loading={isGetLoading}
+                >
+                  一键生成订货单
                 </Button>
               </Col>
               <Col>
@@ -138,6 +170,7 @@ export default class PlaceAnOrder extends PureComponent {
                   type="primary"
                   onClick={this.submitHandler}
                   disabled={goodsOrderedList.length === 0}
+                  loading={isSubmitLoading}
                 >发起订货
                 </Button>
               </Col>
