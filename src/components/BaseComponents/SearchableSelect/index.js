@@ -10,7 +10,6 @@ const generateOptions = (data = [], isSucceeded, label, init = {}) => {
     const array = (init && init[label]) ? [...data, newExtra] : data;
     const options = array.map((item) => {
       return (
-
         <Option
           value={item.ID || item.value}
           key={item.ID || item.value}
@@ -28,11 +27,18 @@ const generateOptions = (data = [], isSucceeded, label, init = {}) => {
 export default class Searchable extends PureComponent {
   static propTypes = {
     fetchData: PropTypes.func,
-    onChange: PropTypes.func,
+    onChange: PropTypes.func.isRequired,
     value: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.object]),
-    data: PropTypes.array,
-    label: PropTypes.string,
+    data: PropTypes.array.isRequired,
+    label: PropTypes.string.isRequired,
     CreateForm: PropTypes.func,
+    payload: PropTypes.string,
+  }
+  static defaultProps = {
+    fetchData: () => {},
+    value: undefined,
+    CreateForm: undefined,
+    payload: undefined,
   }
   constructor() {
     super();
@@ -80,10 +86,7 @@ export default class Searchable extends PureComponent {
       data,
       label,
       CreateForm,
-      onChange,
       disabled,
-      fetchData,
-      ...otherProps
     } = this.props;
     const { isShowModal, searchString, cacheSearchString } = this.state;
     const init = CreateForm && { ID: `create-${searchString}`, [label]: searchString };
@@ -120,7 +123,6 @@ export default class Searchable extends PureComponent {
           notFoundContent="无匹配结果"
           allowClear
           onSelect={this.selectHandler}
-          {...otherProps}
         >
           {generateOptions(data, isSucceeded, label, init)}
         </Select>

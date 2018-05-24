@@ -132,8 +132,9 @@ export default function request(url, options = {}) {
     };
     const token = Cookies.get('token') || '';
     const sysUserID = Cookies.get('sysUserID') || '';
+    const departmentID = Cookies.get('departmentID') || '';
     // let initBody = `Token=!QAZ@WSX12345&SysUserID=administrator`
-    const initBody = `Token=${token}&SysUserID=${sysUserID}`;
+    const initBody = `Token=${token}&SysUserID=${sysUserID}&CurrentDepartmentID=${departmentID}`;
     const tempOptions = { ...defaultOptions, ...options };
     const newOptions = {
       ...tempOptions,

@@ -17,9 +17,15 @@ export const SALE_TYPE = {
   SHIPPING: 3,
 };
 
+export const SALE_TYPE_MAPPING = [
+  { value: 1, labelCN: '本地' },
+  { value: 2, labelCN: '邮寄' },
+  { value: 3, labelCN: '代发' },
+];
 
-export const DOMAIN = 'http://192.168.1.225:8086';
-// export const DOMAIN = 'http://posapi.he2009.nz';
+
+// export const DOMAIN = 'http://192.168.1.225:8086';
+export const DOMAIN = 'http://posapi.he2009.nz';
 // export const DOMAIN = 'http://testposapi.he2009.nz';
 
 export const POS_PHASE = {

@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Row, Col, Card, Form, Input,  Icon, Button, Dropdown, Menu, InputNumber, DatePicker, Modal, message, Table, Select } from 'antd';
+import { Row, Col, Card, Form, Input, Icon, Button, Dropdown, Menu, InputNumber, DatePicker, Modal, message, Table, Select } from 'antd';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
-import TableForm from './TableForm'
+import TableForm from './TableForm';
 
 
 const FormItem = Form.Item;
@@ -14,19 +14,19 @@ const FormItem = Form.Item;
 @Form.create()
 export default class UserCrud extends PureComponent {
   componentDidMount() {
-    this.props.dispatch({type: 'user/getAll'})
+    this.props.dispatch({ type: 'user/getAll' });
   }
   render() {
-    const { userList, loading, form, dispatch } = this.props
-    const newUserList = userList.map(item => {
+    const { userList, loading, form, dispatch } = this.props;
+    const newUserList = userList.map((item) => {
       if (typeof item.Authority === 'string') {
-        return { ...item, Authority: item.Authority.split(',')}
-      } else { return item }
-    })
-    const { getFieldDecorator } = form
-    const onAddCompany = (value) => dispatch({type: 'user/addOrUpdate', payload: value})
-    const onDeleteCompany = (ID) => {}
-    const onUpdateCompany = (value) => dispatch({type: 'user/addOrUpdate', payload: value})
+        return { ...item, Authority: item.Authority.split(',') };
+      } else { return item; }
+    });
+    const { getFieldDecorator } = form;
+    const onAddCompany = value => dispatch({ type: 'user/addOrUpdate', payload: value });
+    const onDeleteCompany = (ID) => {};
+    const onUpdateCompany = value => dispatch({ type: 'user/addOrUpdate', payload: value });
 
     const columns = [{
       title: '账号',
@@ -36,7 +36,7 @@ export default class UserCrud extends PureComponent {
         disabled: true,
       },
       renderWhenUnEditable: null,
-    },{
+    }, {
       title: '密码',
       dataIndex: 'Password',
       renderWhenEditable: Input,
@@ -48,22 +48,22 @@ export default class UserCrud extends PureComponent {
         type: 'password',
       },
       renderWhenUnEditable: null,
-    },{
+    }, {
       title: '部门',
       dataIndex: 'DepartmentID',
       renderWhenEditable: Input,
       renderWhenUnEditable: null,
-    },{
+    }, {
       title: '店名',
       dataIndex: 'ShopName',
       renderWhenEditable: Input,
       renderWhenUnEditable: null,
-    },{
+    }, {
       title: '权限',
       dataIndex: 'Authority',
       renderWhenEditable: null,
       renderWhenUnEditable: null,
-    },{
+    }, {
       title: '操作',
       dataIndex: 'action',
     }];
@@ -72,15 +72,15 @@ export default class UserCrud extends PureComponent {
     return (
       <PageHeaderLayout title="账号管理">
         <Card bordered={false}>
-        {getFieldDecorator('members', {
-          initialValue: newUserList,
-        })(<TableForm
-          columns={columns}
-          onSubmit={onAddCompany}
-          onUpdate={onUpdateCompany}
-          onDelete={onDeleteCompany}
-          loading={loading}
-        />)}
+          {getFieldDecorator('members', {
+            initialValue: newUserList,
+          })(<TableForm
+            columns={columns}
+            onSubmit={onAddCompany}
+            onUpdate={onUpdateCompany}
+            onDelete={onDeleteCompany}
+            loading={loading}
+          />)}
 
         </Card>
       </PageHeaderLayout>

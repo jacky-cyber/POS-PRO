@@ -9,13 +9,16 @@ export default {
     goodsList: [],
     allGoodsList: [],
     generatedOrder: [],
+    commonLoading: false,
   },
 
   effects: {
     *clickGenerateOrderButton(action, { take, put }) {
+      yield put({ type: 'changeLoading', payload: true });
       yield put({ type: 'fetchAllGoodsList' });
       yield take('fetchAllGoodsList/@@end');
       yield put({ type: 'generateOrder' });
+      yield put({ type: 'changeLoading', payload: false });
     },
     *fetchAllGoodsList(_, { call, put }) {
       const response = yield call(getWholeSaleGoods);
@@ -71,6 +74,13 @@ export default {
       return {
         ...state,
         generatedOrder: payload,
+      };
+    },
+    changeLoading(state, action) {
+      const { payload } = action;
+      return {
+        ...state,
+        commonLoading: payload,
       };
     },
   },

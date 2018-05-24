@@ -1,31 +1,66 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Tabs, Button, Badge, Row, Col, Icon, Table, Input, Divider, Form, Select, Modal, InputNumber } from 'antd';
-import styles from './index.less';
-import MessageItem from './MessageItem.js';
-import { routerRedux } from 'dva/router';
-import SwitchableFormItem from '../../../components/SwitchableItem/SwitchableFormItem';
+import { Button, Row, Col, Icon, Table, Input, Divider, Form, InputNumber, Card } from 'antd';
 import classNames from 'classnames';
-import TypeSelect from './TypeSelect';
-import { POS_PHASE } from '../../../constant';
+import { POS_PHASE, CUSTOMER_TYPE } from 'constant';
 import Mousetrap from 'mousetrap';
+import { SwitchableFormItem } from 'components/BaseComponents';
+import { formatToPercentage } from 'utils/utils';
+import styles from './index.less';
+import TypeSelect from './TypeSelect';
 
-const { TabPane } = Tabs;
 const FormItem = Form.Item;
-const { Option } = Select;
 
 const cx = classNames.bind(styles);
 
 const keyboardMapping = ['backspace', 'enter'];
 
-const fieldLabels = {
-  name: '客户名',
-  email: '电子邮箱',
-  address: '地址',
-  phone: '电话',
-  number: '会员卡号',
-  type: '会员类型',
-  discount: '会员折扣',
+const getCustomerTypeLabel = (value) => {
+  const item = CUSTOMER_TYPE.filter(item => item.value === value)[0];
+  if (item) {
+    return item.label;
+  } else {
+    return '/';
+  }
+};
+
+const fieldMapping = {
+  ID: {
+    key: 'ID',
+    label: 'ID',
+  },
+  name: {
+    key: 'Name',
+    label: '客户名',
+  },
+  email: {
+    key: 'Email',
+    label: '电子邮箱',
+  },
+  address: {
+    key: 'Address',
+    label: '地址',
+  },
+  phone: {
+    key: 'Phone',
+    label: '电话',
+  },
+  cardNumber: {
+    key: 'CardNumber',
+    label: '会员卡号',
+  },
+  score: {
+    key: 'Score',
+    label: '积分',
+  },
+  type: {
+    key: 'Type',
+    label: '会员类型',
+  },
+  discount: {
+    key: 'Discount',
+    label: '会员折扣',
+  },
 };
 
 const columns = [
@@ -36,6 +71,7 @@ const columns = [
   {
     title: '会员类型',
     dataIndex: 'Type',
+    render: text => (getCustomerTypeLabel(text)),
   },
   {
     title: '会员卡号',
@@ -51,7 +87,7 @@ const columns = [
   },
   {
     title: '电话',
-    dataIndex: 'PhoneNumber',
+    dataIndex: 'Phone',
   },
   {
     title: '折扣',
@@ -60,7 +96,7 @@ const columns = [
 ];
 
 const formItemLayout = {
-  labelCol: { span: 6 },
+  labelCol: { span: 8 },
   wrapperCol: { span: 16 },
 };
 
@@ -80,8 +116,7 @@ export default class Customer extends PureComponent {
     this.state = {
       showAddCustomerForm: false,
       showCustomerMessage: false,
-      tempRowData: {},
-      isEdit: false,
+      isEditing: false,
       activeIndex: null,
     };
   }
@@ -89,11 +124,48 @@ export default class Customer extends PureComponent {
     Mousetrap.bind('backspace', () => this.prevHandler());
     Mousetrap.bind('enter', () => this.selectHandler());
     this.props.dispatch({ type: 'commodity/getCustomer' });
+    this.showCustomerMessageHandler();
   }
   componentWillUnmount() {
     keyboardMapping.forEach((item) => {
       Mousetrap.unbind(item);
     });
+  }
+  showCustomerMessageHandler = () => {
+    // 如果该单存在客户，则渲染出客户信息
+    const { order } = this.props;
+    const { customer } = order;
+    const { memberID } = customer;
+    const tempCustomer = {};
+    Object.keys(customer).forEach((item) => {
+      Object.assign(tempCustomer, { [item.replace('member', '')]: customer[item] });
+    });
+    if (memberID) {
+      this.setState({
+        showCustomerMessage: true,
+        showAddCustomerForm: false,
+        isEditing: false,
+        activeIndex: memberID,
+      });
+      this.props.form.setFieldsValue(tempCustomer);
+    } else {
+      this.setState({
+        showCustomerMessage: false,
+        showAddCustomerForm: false,
+        isEditing: false,
+        activeIndex: null,
+      });
+    }
+  }
+  showCustomerMessageAfterSubmit = (value, ID) => {
+    const newValue = { ...value, ID };
+    this.setState({
+      showCustomerMessage: true,
+      showAddCustomerForm: false,
+      isEditing: false,
+      activeIndex: ID,
+    });
+    this.props.form.setFieldsValue(newValue);
   }
   prevHandler = () => {
     const { order, activeTabKey } = this.props;
@@ -101,57 +173,38 @@ export default class Customer extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: POS_PHASE.CUSTOMER, targetPhase: lastPhase } });
   }
   selectHandler = () => {
+    const tempCustomer = this.props.form.getFieldsValue();
     const { order, activeTabKey } = this.props;
     const { lastPhase } = order;
-    const { tempRowData } = this.state;
-    // if (this.state.tempRowData.ID) {
     const customer = {
-      memberID: tempRowData.ID || '',
-      memberName: tempRowData.Name || '',
-      memberAddress: tempRowData.Address || '',
-      memberEmail: tempRowData.Email || '',
-      memberPhone: tempRowData.Phone || '',
-      memberType: tempRowData.Type || '',
-      memberScore: tempRowData.Score || '',
-      memberCardNumber: tempRowData.CardNumber || '',
-      memberDiscount: tempRowData.Discount || '',
+      memberID: tempCustomer.ID || '',
+      memberName: tempCustomer.Name || '',
+      memberAddress: tempCustomer.Address || '',
+      memberEmail: tempCustomer.Email || '',
+      memberPhone: tempCustomer.Phone || '',
+      memberType: tempCustomer.Type || '',
+      memberScore: tempCustomer.Score || '',
+      memberCardNumber: tempCustomer.CardNumber || '',
+      memberDiscount: tempCustomer.Discount || '',
     };
     this.props.dispatch({ type: 'commodity/changeCustomer', payload: customer });
-    // } else {
-    //   this.props.dispatch({ type: 'commodity/changeCustomer', payload: {} })
-    // }
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: POS_PHASE.CUSTOMER, targetPhase: lastPhase } });
   }
   cancelHandler = () => {
+    this.props.form.resetFields();
     this.setState({
       activeIndex: null,
-      tempRowData: {},
       showCustomerMessage: false,
       showAddCustomerForm: false,
     });
   }
-  validate = (bool) => {
-    this.setState({
-      isConfirmEnable: bool,
-    });
-  }
-  handleFormSubmit = (e) => {
+  submitHandler = (e) => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
-        // console.log(values)
-      }
-    });
-  }
-  submitHandler = (e) => {
-    // e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        this.props.dispatch({ type: 'commodity/submitCustomer', payload: values });
-        this.setState({
-          showCustomerMessage: false,
-          showAddCustomerForm: false,
-          isEdit: false,
+        this.props.dispatch({
+          type: 'commodity/submitCustomer',
+          payload: { values, callback: this.showCustomerMessageAfterSubmit },
         });
       }
     });
@@ -159,11 +212,22 @@ export default class Customer extends PureComponent {
   updateHandler = () => {
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
-        const newValues = { ...values, ID: this.state.tempRowData.ID };
-        this.props.dispatch({ type: 'commodity/updateCustomer', payload: newValues });
-        this.setState({
-          isEdit: false,
-        });
+        const tempCustomer = this.props.form.getFieldsValue();
+        const { ID } = tempCustomer;
+        const newValues = { ...values, ID };
+        this.props.dispatch({
+          type: 'commodity/updateCustomer',
+          payload: newValues,
+        })
+          .then(() => {
+            this.setState({
+              showCustomerMessage: true,
+              showAddCustomerForm: false,
+              isEditing: false,
+            }, () => {
+              this.props.form.setFieldsValue(newValues);
+            });
+          });
       }
     });
   }
@@ -171,196 +235,277 @@ export default class Customer extends PureComponent {
     this.setState({
       showAddCustomerForm: true,
       showCustomerMessage: false,
-      isEdit: true,
-      tempRowData: {},
+      isEditing: true,
       activeIndex: null,
+    }, () => {
+      this.props.form.resetFields();
     });
   }
-  hideAddCustomerForm = () => {
+  quitEdit = () => {
     this.setState({
-      showAddCustomerForm: false,
-      showCustomerMessage: false,
-      isEdit: false,
-      activeIndex: null,
+      isEditing: false,
     });
-    this.props.form.resetFields();
   }
-  hideCustomerForm = () => {
-    this.setState({
-      showAddCustomerForm: false,
-      showCustomerMessage: true,
-      isEdit: false,
-      // activeIndex: null,
-    });
-    this.props.form.resetFields();
-  }
-  rowClickHandler = (record, index) => {
+  rowClickHandler = (record) => {
     return {
       onClick: () => {
         if (record) {
+          const { ID } = record;
           this.setState({
-            tempRowData: record,
             showCustomerMessage: true,
             showAddCustomerForm: false,
-            isEdit: false,
-            activeIndex: index,
+            isEditing: false,
+            activeIndex: ID,
+          }, () => {
+            this.props.form.setFieldsValue(record);
           });
         }
       },
     };
   }
   deleteCustomerHandler = () => {
-    const { ID } = this.state.tempRowData;
+    const tempCustomer = this.props.form.getFieldsValue();
+    const { ID } = tempCustomer;
+    const { order } = this.props;
+    const { customer } = order;
+    const { memberID } = customer;
     if (ID) {
       this.props.dispatch({ type: 'commodity/deleteCustomer', payload: ID });
+      if (ID === memberID) {
+        this.props.dispatch({ type: 'commodity/changeCustomer', payload: {} });
+      }
+      this.showCustomerMessageHandler();
     }
-    this.setState({
-      isEdit: false,
-      showCustomerMessage: false,
-      activeIndex: null,
-      tempRowData: {},
-    });
   }
   searchHandler = (value) => {
     this.props.dispatch({ type: 'commodity/getCustomer', payload: value });
   }
   toEditHandler = () => {
     this.setState({
-      isEdit: true,
+      isEditing: true,
     });
   }
   render() {
-    const { dispatch, form, getLoading, submitLoading, customerList } = this.props;
-    const { totalPrice } = this.props.order;
-    const { getFieldDecorator, resetFields } = form;
-    const { showAddCustomerForm, showCustomerMessage, tempRowData, isEdit, activeIndex } = this.state;
+    const { form, getLoading, submitLoading, customerList, order } = this.props;
+    const { getFieldDecorator } = form;
+    const {
+      showAddCustomerForm,
+      showCustomerMessage,
+      isEditing,
+      activeIndex,
+    } = this.state;
     const nameRow = cx({
-      [styles.nameRow]: showCustomerMessage && !isEdit,
+      [styles.nameRow]: showCustomerMessage && !isEditing,
     });
+    const tempCustomer = this.props.form.getFieldsValue();
+    const { ID } = tempCustomer;
     const customerForm = (
-      <Form
-        onSubmit={this.submitHandler}
-        className={styles.addCustomerForm}
-        hideRequiredMark={showCustomerMessage}
-      >
-        <Row gutter={16} className={nameRow}>
-          <Col lg={12} sm={24} >
-            <FormItem label={fieldLabels.name} {...formItemLayout}>
-              {getFieldDecorator('name', {
-                rules: [{ required: true, message: '请输入客户名' }],
-                initialValue: tempRowData.Name,
-              })(
-                <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
-              )}
-            </FormItem>
-          </Col>
-          {
-            showAddCustomerForm && (
-              <Col lg={12} sm={24} pull={1} className={styles.submitFormItem}>
-                <FormItem>
-                  <Button shape="circle" onClick={() => this.hideAddCustomerForm()}>
-                    <Icon type="minus-circle" />
-                  </Button>
-                  <Divider type="vertical" />
-                  <Button htmlType="submit" shape="circle" loading={submitLoading} >
-                    <Icon type="save" />
-                  </Button>
-                </FormItem>
-              </Col>
-            )
-          }
-          {
-            showCustomerMessage && (
-              <Col lg={12} sm={24} pull={1} className={styles.submitFormItem}>
-                {
-                  isEdit ? (
-                    <FormItem>
-                      <Button shape="circle" onClick={() => this.hideCustomerForm()}>
-                        <Icon type="minus-circle" />
-                      </Button>
-                      <Divider type="vertical" />
-                      <Button shape="circle" onClick={() => this.updateHandler()}>
-                        <Icon type="save" />
-                      </Button>
-                    </FormItem>
-                  )
+      <Card>
+        <Form
+          onSubmit={this.submitHandler}
+          className={styles.addCustomerForm}
+          hideRequiredMark={showCustomerMessage}
+        >
+          <Row gutter={16} className={nameRow}>
+            <Col lg={8} sm={24} >
+              <FormItem
+                label={fieldMapping.name.label}
+                {...formItemLayout}
+              >
+                {getFieldDecorator(fieldMapping.name.key, {
+                  rules: [{ required: true, message: '请输入客户名' }],
+                })(
+                  <SwitchableFormItem
+                    formItemElement={Input}
+                    isEditing={isEditing}
+                  />
+                )}
+              </FormItem>
+            </Col>
+            <Col style={{ display: 'none' }}>
+              <FormItem>
+                {getFieldDecorator(fieldMapping.ID.key, {
+                })(
+                  <SwitchableFormItem
+                    formItemElement={Input}
+                    isEditing={isEditing}
+                  />
+                )}
+              </FormItem>
+              <FormItem>
+                {getFieldDecorator(fieldMapping.cardNumber.key, {
+                })(
+                  <SwitchableFormItem
+                    formItemElement={Input}
+                    isEditing={isEditing}
+                  />
+                )}
+              </FormItem>
+              <FormItem>
+                {getFieldDecorator(fieldMapping.score.key, {
+                })(
+                  <SwitchableFormItem
+                    formItemElement={Input}
+                    isEditing={isEditing}
+                  />
+                )}
+              </FormItem>
+            </Col>
+            {
+              showAddCustomerForm && (
+                <Col lg={16} sm={24} pull={1} className={styles.submitFormItem}>
+                  <FormItem>
+                    <Button
+                      shape="circle"
+                      onClick={this.showCustomerMessageHandler}
+                    >
+                      <Icon type="minus-circle" />
+                    </Button>
+                    <Divider type="vertical" />
+                    <Button
+                      htmlType="submit"
+                      shape="circle"
+                      loading={submitLoading}
+                    >
+                      <Icon type="save" />
+                    </Button>
+                  </FormItem>
+                </Col>
+              )
+            }
+            {
+              showCustomerMessage && (
+                <Col lg={16} sm={24} pull={1} className={styles.submitFormItem}>
+                  {
+                    isEditing ? (
+                      <FormItem>
+                        <Button
+                          shape="circle"
+                          onClick={this.quitEdit}
+                        >
+                          <Icon type="minus-circle" />
+                        </Button>
+                        <Divider type="vertical" />
+                        <Button
+                          shape="circle"
+                          onClick={this.updateHandler}
+                        >
+                          <Icon type="save" />
+                        </Button>
+                      </FormItem>
+                    )
                     :
                     (
                       <FormItem>
-                        <Button shape="circle" onClick={() => this.toEditHandler()}>
+                        <Button
+                          shape="circle"
+                          onClick={this.toEditHandler}
+                        >
                           <Icon type="edit" />
                         </Button>
                         <Divider type="vertical" />
-                        <Button shape="circle" loading={submitLoading} onClick={() => this.deleteCustomerHandler()} >
+                        <Button
+                          shape="circle"
+                          loading={submitLoading}
+                          onClick={this.deleteCustomerHandler}
+                        >
                           <Icon type="delete" />
                         </Button>
                       </FormItem>
                     )
-                }
-              </Col>
-            )
-          }
-        </Row>
-        <Row gutter={16}>
-          <Col lg={12} sm={24} >
-            <FormItem label={fieldLabels.address} {...formItemLayout}>
-              {getFieldDecorator('address', {
-                rules: [{ required: true, message: '请输入地址' }],
-                initialValue: tempRowData.Address,
-              })(
-                <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
-              )}
-            </FormItem>
-          </Col>
-          <Col lg={12} sm={24}>
-            <FormItem label={fieldLabels.phone} {...formItemLayout}>
-              {getFieldDecorator('phone', {
-                rules: [{ required: true, message: '请输入电话' }],
-                initialValue: tempRowData.Phone,
-              })(
-                <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
-              )}
-            </FormItem>
-          </Col>
-          <Col lg={12} sm={24} >
-            <FormItem label={fieldLabels.type} {...formItemLayout}>
-              {getFieldDecorator('type', {
-                rules: [{ required: true, message: '请选择会员类型' }],
-                initialValue: tempRowData.Type,
-              })(
-                <SwitchableFormItem FormItemElement={TypeSelect} editable={isEdit} />
-              )}
-            </FormItem>
-          </Col>
-          <Col lg={12} sm={24}>
-            <FormItem label={fieldLabels.email} {...formItemLayout}>
-              {getFieldDecorator('email', {
-                initialValue: tempRowData.Email,
-              })(
-                <SwitchableFormItem FormItemElement={Input} editable={isEdit} />
-              )}
-            </FormItem>
-          </Col>
-          <Col lg={12} sm={24}>
-            <FormItem label={fieldLabels.discount} {...formItemLayout}>
-              {getFieldDecorator('discount', {
-                initialValue: tempRowData.Discount,
+                  }
+                </Col>
+              )
+            }
+          </Row>
+          <Row gutter={16}>
+            <Col lg={8} sm={24} >
+              <FormItem
+                label={fieldMapping.address.label}
+                {...formItemLayout}
+              >
+                {getFieldDecorator(fieldMapping.address.key, {
+                  rules: [{ required: true, message: '请输入地址' }],
+                })(
+                  <SwitchableFormItem
+                    formItemElement={Input}
+                    isEditing={isEditing}
+                  />
+                )}
+              </FormItem>
+            </Col>
+            <Col lg={8} sm={24}>
+              <FormItem
+                label={fieldMapping.phone.label}
+                {...formItemLayout}
+              >
+                {getFieldDecorator(fieldMapping.phone.key, {
+                  rules: [{ required: true, message: '请输入电话' }],
+                })(
+                  <SwitchableFormItem
+                    formItemElement={Input}
+                    isEditing={isEditing}
+                  />
+                )}
+              </FormItem>
+            </Col>
+            <Col lg={8} sm={24} >
+              <FormItem
+                label={fieldMapping.type.label}
+                {...formItemLayout}
+              >
+                {getFieldDecorator(fieldMapping.type.key, {
+                  rules: [{ required: true, message: '请选择会员类型' }],
+                })(
+                  <SwitchableFormItem
+                    formItemElement={TypeSelect}
+                    isEditing={isEditing}
+                    format={getCustomerTypeLabel}
+                  />
+                )}
+              </FormItem>
+            </Col>
+            <Col lg={8} sm={24}>
+              <FormItem
+                label={fieldMapping.email.label}
+                {...formItemLayout}
+              >
+                {getFieldDecorator(fieldMapping.email.key, {
+                })(
+                  <SwitchableFormItem
+                    formItemElement={Input}
+                    isEditing={isEditing}
+                  />
+                )}
+              </FormItem>
+            </Col>
+            <Col lg={8} sm={24}>
+              <FormItem
+                label={fieldMapping.discount.label}
+                {...formItemLayout}
+              >
+                {getFieldDecorator(fieldMapping.discount.key, {
+                  initialValue: 1,
               })(
                 <SwitchableFormItem
-                  FormItemElement={InputNumber}
-                  editable={isEdit}
-                  min={0}
-                  max={100}
-                  step={5}
-                  precision={0}
-                  formatter={value => `${value}%`}
-                  parser={value => value.replace('%', '')}
+                  formItemElement={InputNumber}
+                  isEditing={isEditing}
+                  format={formatToPercentage}
+                  formItemElementProps={{
+                    min: 0,
+                    max: 1,
+                    step: 0.05,
+                    precision: 2,
+                    formatter: value => `${value * 100}%`,
+                    parser: value => ((parseFloat(value.replace('%', '')) || 0) / 100),
+                  }}
                 />
               )}
-            </FormItem>
-          </Col>
-        </Row>
-      </Form>
+              </FormItem>
+            </Col>
+          </Row>
+        </Form>
+      </Card>
     );
     return (
       <div className={styles.customerWrapper}>
@@ -380,19 +525,27 @@ export default class Customer extends PureComponent {
               style={{ width: 260 }}
             />
             <Divider type="vertical" />
-            <Button className={styles.addCustomer} onClick={this.showAddCustomerFormHandler}>
-              <Icon type="user" onClick={() => this.showAddCustomerFormHandler()} />
+            <Button
+              className={styles.addCustomer}
+              onClick={this.showAddCustomerFormHandler}
+            >
+              <Icon type="user" />
               <Icon type="plus" />
             </Button>
           </Col>
           <Col style={{ textAlign: 'right' }}>
             {
-              activeIndex !== null &&
-              <Button onClick={this.cancelHandler}>取消选择</Button>
-            }
+              ID && (
+                <Button
+                  onClick={this.cancelHandler}
+                >
+                  取消选择
+                </Button>
+              )}
             <Divider type="vertical" />
             <Button
               onClick={this.selectHandler}
+              type={`${ID ? 'primary' : ''}`}
             >
               确认
             </Button>
@@ -410,8 +563,8 @@ export default class Customer extends PureComponent {
             dataSource={customerList}
             size="small"
             onRow={this.rowClickHandler}
-            rowClassName={(record, index) => {
-              if (index === activeIndex) {
+            rowClassName={(record) => {
+              if (record.ID === activeIndex) {
                 return styles.activeRow;
               }
             }}
@@ -421,7 +574,3 @@ export default class Customer extends PureComponent {
     );
   }
 }
-// export default connect(state => ({
-//   order: state.commodity.orders.filter(item => item.key === state.commodity.activeKey)[0],
-//   activeTabKey: state.commodity.activeKey
-// }))(Customer)

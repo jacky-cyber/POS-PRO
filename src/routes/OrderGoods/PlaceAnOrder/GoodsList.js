@@ -46,6 +46,7 @@ export default class GoodsList extends PureComponent {
       <div>
         <SearchSelect />
         <Table
+          size="small"
           rowKey={record => record.Sku}
           columns={columns}
           dataSource={goodsList}

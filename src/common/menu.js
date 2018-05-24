@@ -32,9 +32,6 @@ const menuData = [{
     {
       name: '发起订货',
       path: 'placeAnOrder',
-    }, {
-      name: '订单管理',
-      path: 'orderManagement',
     },
   ],
 },

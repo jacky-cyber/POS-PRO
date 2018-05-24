@@ -2,6 +2,19 @@ import moment from 'moment';
 import { POS_TAB_TYPE, SALE_TYPE } from '../constant';
 
 
+export function generateParameterInUrl(payload) {
+  if (!payload) {
+    return '';
+  }
+  const array = Object.keys(payload);
+  const newArray = array.map(
+    item => (
+      `${item}=${payload[item] === undefined ? '' : payload[item]}`
+    )
+  );
+  return newArray.join('&');
+}
+
 export function formatToDecimals(val, count = 0) {
   const value = parseFloat(val);
   if (value === 0) return 0;
@@ -44,7 +57,18 @@ export function keepTwoDecimals(val) {
   return parseFloat(val).toFixed(2) - 0;
 }
 
-export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPrice, platinumPrice, diamondPrice, VIPPrice, SVIPPrice, wholesalePrice, secondWholesalePrice) {
+export function getGoodsItemCustomerPrice(
+  type,
+  saleType,
+  customerType,
+  retailPrice,
+  platinumPrice,
+  diamondPrice,
+  VIPPrice,
+  SVIPPrice,
+  wholesalePrice,
+  secondWholesalePrice
+) {
   if (type === POS_TAB_TYPE.WHOLESALE) {
     return formatToDecimals(wholesalePrice, 2);
   }
@@ -53,10 +77,10 @@ export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPr
   }
   let customerPrice = 0;
   if (type === POS_TAB_TYPE.STORESALE || type === POS_TAB_TYPE.MILKPOWDER) {
-    if (saleType === SALE_TYPE.LOCAL || saleType === SALE_TYPE.EXPRESS) {
+    if (saleType === SALE_TYPE.LOCAL) {
       switch (customerType) {
         case 1:
-          customerPrice = reatilPrice;
+          customerPrice = retailPrice;
           break;
         case 2:
           customerPrice = platinumPrice;
@@ -65,16 +89,16 @@ export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPr
           customerPrice = diamondPrice;
           break;
         case 4:
-          customerPrice = SVVIPPrice;
+          customerPrice = diamondPrice;
           break;
         default:
           customerPrice = retailPrice;
           break;
       }
-    } else if (saleType === SALE_TYPE.SHIPPING) {
+    } else if (saleType === SALE_TYPE.EXPRESS || saleType === SALE_TYPE.SHIPPING) {
       switch (customerType) {
         case 1:
-          customerPrice = reatilPrice;
+          customerPrice = retailPrice;
           break;
         case 2:
           customerPrice = platinumPrice;
@@ -83,7 +107,7 @@ export function getGoodsItemCustomerPrice(type, saleType, customerType, retailPr
           customerPrice = VIPPrice;
           break;
         case 4:
-          customerPrice = SVVIPPrice;
+          customerPrice = SVIPPrice;
           break;
         default:
           customerPrice = retailPrice;

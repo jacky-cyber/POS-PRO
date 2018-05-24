@@ -95,7 +95,7 @@ export const getRouterData = (app) => {
       component: dynamicWrapper(app, ['historyOrders'], () => import('../routes/HistoryOrders/HistoryOrdersTable')),
     },
     '/userManagement/crud': {
-      component: dynamicWrapper(app, ['user'], () => import('../routes/User/Crud')),
+      component: dynamicWrapper(app, ['user'], () => import('../routes/User/Crud/index.js')),
     },
     '/analysis': {
       component: dynamicWrapper(app, ['user'], () => import('../routes/Drag')),

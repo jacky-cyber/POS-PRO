@@ -7,13 +7,13 @@ import GoodsList from './GoodsList';
 
 import styles from './index.less';
 
-const getValue = obj => Object.keys(obj).map(key => obj[key]).join(',');
 
 @connect(state => ({
   goodsList: state.orderGoods.goodsList,
   allGoodsList: state.orderGoods.allGoodsList,
   generatedOrder: state.orderGoods.generatedOrder,
-  isGetLoading: state.loading.effects['orderGoods/fetchGoodsList'] || state.loading.effects['orderGoods/generateOrder'],
+  isGetLoading: state.loading.effects['orderGoods/fetchGoodsList'],
+  isGenerateLoading: state.loading.effects['orderGoods/generateOrder'],
   isSubmitLoading: state.loading.effects['orderGoods/addOrder'],
 }))
 @Form.create()
@@ -22,7 +22,6 @@ export default class PlaceAnOrder extends PureComponent {
     goodsOrderedList: [],
     goodsList: [],
     modalVisible: false,
-    formValues: {},
   };
 
   componentDidMount() {
@@ -82,7 +81,7 @@ export default class PlaceAnOrder extends PureComponent {
   }
 
   render() {
-    const { isGetLoading, isSubmitLoading } = this.props;
+    const { isGetLoading, isSubmitLoading, isGenerateLoading } = this.props;
     const { modalVisible, goodsList, goodsOrderedList } = this.state;
 
     const columns = [
@@ -147,6 +146,7 @@ export default class PlaceAnOrder extends PureComponent {
                 <Button
                   // type="primary"
                   onClick={() => this.setState({ modalVisible: true })}
+                  loading={isGetLoading}
                 >
                   点击选择商品
                 </Button>
@@ -160,7 +160,7 @@ export default class PlaceAnOrder extends PureComponent {
                       type: 'orderGoods/clickGenerateOrderButton',
                     });
                   }}
-                  loading={isGetLoading}
+                  loading={isGenerateLoading}
                 >
                   一键生成订货单
                 </Button>
@@ -176,6 +176,7 @@ export default class PlaceAnOrder extends PureComponent {
               </Col>
             </Row>
             <Table
+              size="small"
               onChange={this.handleStandardTableChange}
               rowKey={record => record.Sku}
               columns={columns}

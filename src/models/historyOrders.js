@@ -1,5 +1,4 @@
-import { getHistoryOrders, getHistoryOrderDetails } from '../services/api';
-import { message } from 'antd'
+import { getHistoryOrdersAPI, getHistoryOrderDetailsAPI } from 'services/historyOrders';
 
 export default {
   namespace: 'historyOrders',
@@ -16,26 +15,31 @@ export default {
 
   effects: {
     *getHistoryOrders(action, { call, put, select }) {
-      const { payload } = action
-      const response = yield call(getHistoryOrders, payload);
-      const orderList = response.Result.Data
-      const count = response.Result.Count
-      const pagination = yield select(state => state.historyOrders.pagination)
-      const newPagination = { ...pagination, total: count, }
-      yield put({
-        type: 'changePagination',
-        payload: newPagination,
-      })
-      yield put({
-        type: 'saveHistoryOrders',
-        payload: Array.isArray(orderList) ? orderList : [],
-      });
+      const { payload } = action;
+      const { pagination } = payload;
+      const response = yield call(getHistoryOrdersAPI, payload);
+      if (response.Status) {
+        const orderList = response.Result.Data;
+        const count = response.Result.Count;
+        const newPagination = { ...pagination, total: count };
+        yield put({
+          type: 'changePagination',
+          payload: newPagination,
+        });
+        yield put({
+          type: 'saveHistoryOrders',
+          payload: Array.isArray(orderList) ? orderList : [],
+        });
+        yield put({
+          type: 'saveOrderDetails',
+          patyload: [],
+        });
+      }
     },
     *getOrderDetails(action, { call, put }) {
-      const { payload } = action
-      const response = yield call(getHistoryOrderDetails, payload);
-      const orderDetails = response.Result.Data
-      console.log('orderDetails', orderDetails)
+      const { payload } = action;
+      const response = yield call(getHistoryOrderDetailsAPI, payload);
+      const orderDetails = response.Result.Data;
       yield put({
         type: 'saveOrderDetails',
         payload: Array.isArray(orderDetails) ? orderDetails : [],
@@ -57,11 +61,11 @@ export default {
       };
     },
     changePagination(state, action) {
-      const { payload } = action
+      const { payload } = action;
       return {
         ...state,
         pagination: payload,
-      }
-    }
+      };
+    },
   },
 };

@@ -19,7 +19,9 @@ export default {
       if (response) {
         const { Result = {} } = response;
         const { Data = {} } = Result;
+        const { DepartmentID } = Data;
         Cookies.set('currentUser', Data, { expires: 1, path: '' });
+        Cookies.set('departmentID', DepartmentID, { expires: 1, path: '' });
         yield put({
           type: 'user/saveCurrentUser',
           payload: Data,

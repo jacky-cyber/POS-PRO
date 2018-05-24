@@ -190,24 +190,17 @@ export default {
     // 提交会员信息
     *submitCustomer(action, { put, call }) {
       const { payload } = action;
-      yield put({
-        type: 'changeCommonLoading',
-        payload: true,
-      });
-      try {
-        const response = yield call(submitCustomer, payload);
-        if (response.Status) {
-          message.success('提交成功');
-        } else {
-          message.error('提交失败');
+      const { values, callback } = payload;
+      const response = yield call(submitCustomer, values);
+      if (response.Status) {
+        const { Result } = response;
+        const { Data } = Result;
+        message.success('提交成功');
+        if (Data) {
+          callback(values, Data);
         }
-        yield put({ type: 'getCustomer' });
-      } catch (e) {
       }
-      yield put({
-        type: 'changeCommonLoading',
-        payload: false,
-      });
+      yield put({ type: 'getCustomer' });
     },
     // 删除会员
     *deleteCustomer(action, { put, call }) {

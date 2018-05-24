@@ -1,6 +1,7 @@
 import { stringify } from 'qs';
-import request from '../utils/request';
-import { DOMAIN } from '../constant';
+import request from 'utils/request';
+import { DOMAIN } from 'constant';
+import { generateParameterInUrl } from 'utils/utils';
 
 // 登陆
 
@@ -15,9 +16,11 @@ export async function login(payload) {
 
 // 客户管理的增删改查
 
-export async function submitCustomer(formValue = {}) {
+export async function submitCustomer(payload) {
+  const parameterString = generateParameterInUrl(payload);
   const options = {
-    body: `Name=${formValue.name}&Address=${formValue.address}&Email=${formValue.email}&Phone=${formValue.phone}&CardNumber=${formValue.CardNumber || ''}&Type=${formValue.type}&Score=${formValue.score}`,
+    // body: `Name=${formValue.name}&Address=${formValue.address}&Email=${formValue.email}&Phone=${formValue.phone}&CardNumber=${formValue.CardNumber || ''}&Type=${formValue.type}&Score=${formValue.score}&Discount=${formValue.discount}`,
+    body: `${parameterString}`,
   };
   return request(`${DOMAIN}/Member/Add`, options);
 }
@@ -36,9 +39,11 @@ export async function deleteCustomer(ID) {
   return request(`${DOMAIN}/Member/Delete`, options);
 }
 
-export async function updateCustomer(formValue) {
+export async function updateCustomer(payload) {
+  const parameterString = generateParameterInUrl(payload);
+  console.log('parameterString', parameterString);
   const options = {
-    body: `ID=${formValue.ID}&Name=${formValue.name}&Address=${formValue.address}&Email=${formValue.email}&Phone=${formValue.phone}&CardNumber=${formValue.CardNumber}&Type=${formValue.type}&Score=${formValue.score}`,
+    body: `${parameterString}`,
   };
   return request(`${DOMAIN}/Member/UpdateByID`, options);
 }
@@ -116,19 +121,6 @@ export async function getCompany() {
   return request(`${DOMAIN}/LogisticsCompany/GetAll`, options);
 }
 
-// 用户账号管理-查询
-export async function getUser() {
-  const options = {};
-  return request(`${DOMAIN}/SysUser/GetAll`, options);
-}
-// 用户账号管理-添加
-export async function addOrUpdateUser({ Username, Password, DepartmentID, ShopName, Authority }) {
-  const options = {
-    body: `Username=${Username || ''}&Password=${Password || ''}&DepartmentID=${DepartmentID || ''}&ShopName=${ShopName || ''}&Authority=${Authority || ''}`,
-  };
-  return request(`${DOMAIN}/SysUser/AddOrUpdate`, options);
-}
-
 // 日结-提交
 export async function addOrUpdateDailyClosing(payload = {}) {
   const array = Object.keys(payload);
@@ -160,20 +152,6 @@ export async function addWholeSaleOrder(valueJson) {
     body: `Data=${valueJson}`,
   };
   return request(`${DOMAIN}/Cargo/Add`, options);
-}
-
-// 查询历史订单
-export async function getHistoryOrders({ PayTime, MemberID, pagination }) {
-  const options = {
-    body: `PayTime=${PayTime}&MemberID=${MemberID || -1}&PageSize=${pagination.pageSize}&PageNum=${pagination.current}`,
-  };
-  return request(`${DOMAIN}/Order/getOrder`, options);
-}
-export async function getHistoryOrderDetails(ID) {
-  const options = {
-    body: `ID=${ID}`,
-  };
-  return request(`${DOMAIN}/Order/getOrderDetail`, options);
 }
 
 export async function fetchCommodityList() {
