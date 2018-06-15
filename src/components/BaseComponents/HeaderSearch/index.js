@@ -26,14 +26,19 @@ export default class HeaderSearch extends PureComponent {
     searchMode: false,
     value: '',
   };
-  // listen(e) {
-  //   if (e.keyCode === 27) this.leaveSearchMode()
-  // }
   componentDidMount() {
     Mousetrap.bind('alt+s', () => {
       this.enterSearchMode();
     });
-    // window.addEventListener('keyup', this.listen.bind(this))
+    this.enterSearchMode();
+    // window.addEventListener('keyup', this.listen.bind(this));
+  }
+  componentWillReceiveProps(nextProps) {
+    const { activeTabKey: oldActiveTabKey } = this.props;
+    const { activeTabKey: newActiveTabKey } = nextProps;
+    if (oldActiveTabKey !== newActiveTabKey) {
+      this.enterSearchMode();
+    }
   }
   componentWillUnmount() {
     clearTimeout(this.timeout);
@@ -52,6 +57,9 @@ export default class HeaderSearch extends PureComponent {
     if (this.props.onChange) {
       this.props.onChange();
     }
+  }
+  listen(e) {
+    if (e.keyCode === 27) this.leaveSearchMode();
   }
   enterSearchMode = () => {
     this.setState({ searchMode: true }, () => {
@@ -87,9 +95,11 @@ export default class HeaderSearch extends PureComponent {
         >
           <Input
             placeholder={placeholder}
-            ref={(node) => { this.input = node; }}
+            ref={(node) => {
+              this.input = node;
+            }}
             onKeyDown={this.onKeyDown}
-            onBlur={this.leaveSearchMode}
+            // onBlur={this.leaveSearchMode}
           />
         </AutoComplete>
       </span>

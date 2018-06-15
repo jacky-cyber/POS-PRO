@@ -111,35 +111,35 @@ class ChooseCalculator extends PureComponent {
     this.button = {};
   }
     dispatchClick = () => {
-        button[item.key].querySelector('button').blur();
-        button[item.key].querySelector('button').focus();
-        button[item.key].querySelector('button').click();
+      button[item.key].querySelector('button').blur();
+      button[item.key].querySelector('button').focus();
+      button[item.key].querySelector('button').click();
     }
-  componentDidMount() {
-    const { button } = this;
-    numPad.forEach((item) => {
-      Mousetrap.bind(item.keyboard, () => {
-        this.dispatchClick()
+    componentDidMount() {
+      const { button } = this;
+      numPad.forEach((item) => {
+        Mousetrap.bind(item.keyboard, () => {
+          this.dispatchClick();
+        });
       });
-    });
-    actionPad.forEach((item) => {
-      Mousetrap.bind(item.keyboard, () => {
-        this.dispatchClick()
+      actionPad.forEach((item) => {
+        Mousetrap.bind(item.keyboard, () => {
+          this.dispatchClick();
+        });
       });
-    });
-  }
-  componentWillUnmount() {
-    numPad.forEach((item) => {
-      if (item.keyboard) {
-        Mousetrap.unbind(item.keyboard);
-      }
-    });
-    actionPad.forEach((item) => {
-      if (item.keyboard) {
-        Mousetrap.unbind(item.keyboard);
-      }
-    });
-  }
+    }
+    componentWillUnmount() {
+      numPad.forEach((item) => {
+        if (item.keyboard) {
+          Mousetrap.unbind(item.keyboard);
+        }
+      });
+      actionPad.forEach((item) => {
+        if (item.keyboard) {
+          Mousetrap.unbind(item.keyboard);
+        }
+      });
+    }
   clickHandler = (buttonName) => {
     calculate(this.props.commodity, this.props.dispatch, buttonName);
   }
@@ -161,7 +161,7 @@ class ChooseCalculator extends PureComponent {
                   key={item.key}
                   name={item.key}
                   clickHandler={this.clickHandler}
-                  ref={(node) => {this.button[item.key] = ReactDOM.findDOMNode(node)}}
+                  ref={(node) => { this.button[item.key] = ReactDOM.findDOMNode(node); }}
                 >
                   {item.label}
                 </Cbutton>
@@ -195,12 +195,12 @@ class ChooseCalculator extends PureComponent {
                     name={item.key}
                     clickHandler={this.clickHandler}
                     ref={(node) => {
-                       this.button[item.key] = ReactDOM.findDOMNode(node);
-                       }}
+                      this.button[item.key] = ReactDOM.findDOMNode(node);
+                    }}
                   >
                     {item.label}
                   </Cbutton>
-);
+                );
               } else {
                 return (
                   <Cbutton
@@ -214,7 +214,7 @@ class ChooseCalculator extends PureComponent {
                   >
                     {item.label}
                   </Cbutton>
-);
+                );
               }
             })
           }

@@ -33,6 +33,7 @@
     "fastclick": "^1.0.6",
     "immutability-helper": "^2.6.5",
     "js-cookie": "^2.2.0",
+    "jsbarcode": "^3.9.0",
     "lodash": "^4.17.4",
     "lodash-decorators": "^4.4.1",
     "numeral": "^2.0.6",

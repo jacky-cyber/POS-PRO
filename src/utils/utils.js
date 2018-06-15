@@ -1,6 +1,24 @@
 import moment from 'moment';
 import { POS_TAB_TYPE, SALE_TYPE } from '../constant';
 
+export function isValueValid(value) {
+  // 处理 null 和 undefined
+  if (value == null) { return false; }
+  // 数组
+  if (value.constructor.name === 'Array') { return value.length > 0; }
+  // 字符串
+  if (value.constructor.name === 'String') { return !!value; }
+  // 对象
+  if (value.constructor.name === 'Object') {
+    return Object.keys(value).length > 0;
+  }
+  // 数值
+  if (value.constructor.name === 'Number') {
+    return !!value || value === 0;
+  }
+  // 函数和布尔值
+  return !!value;
+}
 
 export function generateParameterInUrl(payload) {
   if (!payload) {

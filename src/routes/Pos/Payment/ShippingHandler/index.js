@@ -122,12 +122,9 @@ export default class ShippingHandler extends PureComponent {
     });
   }
   render() {
-    const { form, order, dispatch, loading, priceListNode, submitLoading } = this.props;
+    const { form, order, dispatch, loading, submitLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
-    const { shippingData, totalWeight } = order || [];
-    // const newShippingData = shippingData.map(item => ({
-    //   ...item, Name: item.Name.Name
-    // }))
+    const { shippingData, totalWeight, receiveMoney, totalPrice } = order || [];
     const validate = () => {
     };
     const errors = getFieldsError();
@@ -177,7 +174,7 @@ export default class ShippingHandler extends PureComponent {
           title="门店出口/邮寄/代发"
         >
           <div style={{ display: 'none' }}>
-            <div style={{ width: '80mm', border: '1px solid' }}>
+            <div>
               <Receipt />
             </div>
           </div>
@@ -268,12 +265,12 @@ export default class ShippingHandler extends PureComponent {
             </Row>
           </Form>
         </Card>
-        {/* <FooterToolbar style={{ width: '100%' }} extra={priceListNode}> */}
-        <FooterToolbar style={{ width: '100%' }} extra={priceListNode}>
+        <FooterToolbar style={{ width: '100%' }}>
           {getErrorInfo()}
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
             onClick={this.printHandler}
+            disabled={!!(totalPrice - receiveMoney > 0)}
           >
             打印
           </Button>
@@ -281,6 +278,7 @@ export default class ShippingHandler extends PureComponent {
             type="primary"
             onClick={this.validate}
             loading={submitLoading}
+            disabled={!!(totalPrice - receiveMoney > 0)}
           >
             提交
           </Button>

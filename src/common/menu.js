@@ -12,6 +12,12 @@ const menuData = [{
   path: 'express',
   ID: 'express',
 }, {
+  name: '上架管理',
+  icon: 'barcode',
+  path: 'putaway',
+  ID: 'putaway',
+},
+{
   name: '日结管理',
   icon: 'line-chart',
   path: 'dailyClosing',
@@ -23,7 +29,8 @@ const menuData = [{
     name: '现金收款复查',
     path: 'cashStatistics',
   }],
-}, {
+},
+{
   name: '订货管理',
   icon: 'shop',
   path: 'orderGoods',

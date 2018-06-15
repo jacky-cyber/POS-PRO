@@ -3,6 +3,16 @@ export const GOODS_DISPLAY_TYPE = {
   TABLE: Symbol(),
 };
 
+export const PRODUCT_LEVEL_SELECT = [
+  { value: 'A', label: 'A' },
+  { value: 'B', label: 'B' },
+  { value: 'C', label: 'C' },
+  { value: 'D', label: 'D' },
+  { value: 'E', label: 'E' },
+  { value: 'F', label: 'F' },
+  { value: 'X', label: 'X' },
+];
+
 export const POS_TAB_TYPE = {
   STORESALE: 1,
   MILKPOWDER: 2,
@@ -24,7 +34,7 @@ export const SALE_TYPE_MAPPING = [
 ];
 
 
-// export const DOMAIN = 'http://192.168.1.225:8086';
+// export const DOMAIN = 'http://192.168.1.18:8086';
 export const DOMAIN = 'http://posapi.he2009.nz';
 // export const DOMAIN = 'http://testposapi.he2009.nz';
 

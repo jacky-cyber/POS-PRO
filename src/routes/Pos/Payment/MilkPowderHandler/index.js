@@ -8,7 +8,7 @@ import { POS_PHASE } from 'constant';
 import TableForm from './TableForm';
 import CascaderInFormItem from './CascaderInFormItem';
 import FooterToolbar from '../../../../components/FooterToolbar';
-import Receipt from '../Receipt';
+import MilkPowderReceipt from '../Receipt/MilkPowderReceipt';
 import styles from './index.less';
 
 const keyboardMapping = ['backspace', 'p', 'enter'];
@@ -34,6 +34,9 @@ const fieldLabels = {
 @Form.create()
 
 export default class MilkPowderHandler extends PureComponent {
+  state = {
+    milkPowderData: {},
+  }
   componentDidMount() {
     Mousetrap.bind('backspace', () => this.prevHandler());
     Mousetrap.bind('p', () => this.printHandler());
@@ -45,8 +48,12 @@ export default class MilkPowderHandler extends PureComponent {
       Mousetrap.unbind(item);
     });
   }
-  printHandler = () => {
-    this.refs.printForm.onPrint();
+  printHandler = (values) => {
+    this.setState({ milkPowderData: values });
+    const { printForm } = this.refs;
+    window.setTimeout(() => {
+      printForm.onPrint();
+    }, 0);
   }
   prevHandler = () => {
     const activeTabKey = this.props.activeTabKey;
@@ -79,6 +86,16 @@ export default class MilkPowderHandler extends PureComponent {
       dataJson: valuesJson,
     };
     this.props.dispatch({ type: 'commodity/submitOrder', payload });
+  }
+  validate = (callback) => {
+    const { form } = this.props;
+    const { validateFieldsAndScroll } = form;
+    validateFieldsAndScroll((error, values) => {
+      if (!error) {
+        // this.valueHandler(values);
+        callback && callback(values);
+      }
+    });
   }
   render() {
     const { form, order, dispatch, submitLoading } = this.props;
@@ -153,8 +170,8 @@ export default class MilkPowderHandler extends PureComponent {
           title="门店出口/邮寄/代发"
         >
           <div style={{ display: 'none' }}>
-            <div style={{ width: '80mm', border: '1px solid' }}>
-              <Receipt />
+            <div>
+              <MilkPowderReceipt milkPowderData={this.state.milkPowderData} />
             </div>
           </div>
         </Print>
@@ -243,14 +260,14 @@ export default class MilkPowderHandler extends PureComponent {
           {getErrorInfo()}
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
-            onClick={this.printHandler}
+            onClick={() => this.validate(this.printHandler)}
             disabled={!!(totalPrice - receiveMoney > 0)}
           >
             打印
           </Button>
           <Button
             type="primary"
-            onClick={validate}
+            onClick={() => this.validate(this.valueHandler)}
             disabled={!!(totalPrice - receiveMoney > 0)}
             loading={submitLoading}
             ref={node => (this.submitButton = ReactDOM.findDOMNode(node))}

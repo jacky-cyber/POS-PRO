@@ -95,12 +95,17 @@ export default {
       yield put({ type: 'changeCurrentOrderGoodsList', payload: newCurrentOrderGoodsList });
     },
     // 缓存订单
-    *addOrUpdateCacheOrder(action, { put, call }) {
+    *addOrUpdateCacheOrder(action, { put, call, select }) {
+      const commodity = yield select(state => state.commodity);
+      const { activeTabKey } = commodity;
+      const currentOrder = getCurrentOrder(commodity);
+      const { currentPhase } = currentOrder;
       const { payload } = action;
       const response = yield call(addOrUpdateCacheOrder, payload);
       if (response) {
         const payload = response.Result.Data;
         yield put({ type: 'changeOrderID', payload });
+        yield put({ type: 'changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.PAY } });
       }
     },
     // *goodsListPagingHandler(action, { put, select }) {
@@ -322,7 +327,6 @@ export default {
     },
     *clickPaymentMethodButton(action, { put, select }) {
       const paymentMethod = action.payload;
-      console.log('paymentMethod', paymentMethod);
       const commodity = yield select(state => state.commodity);
       const currentOrder = getCurrentOrder(commodity);
       const { paymentData, paymentDataIndex, totalPrice } = currentOrder;
@@ -629,7 +633,16 @@ export default {
       const newSelectedList = selectedList.map(item => ({
         ...item,
         SaleType: saleType,
-        CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),
+        CustomerPrice: getGoodsItemCustomerPrice(
+          type,
+          saleType,
+          customerType,
+          item.RetailPrice,
+          item.PlatinumPrice,
+          item.DiamondPrice,
+          item.VIPPrice,
+          item.SVIPPrice
+        ),
       }));
       const newCurrentOrderGoodsList = currentOrderGoodsList.map(item => ({
         ...item, CustomerPrice: getGoodsItemCustomerPrice(type, saleType, customerType, item.RetailPrice, item.PlatinumPrice, item.DiamondPrice, item.VIPPrice, item.SVIPPrice),

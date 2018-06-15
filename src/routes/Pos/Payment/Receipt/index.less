@@ -1,4 +1,7 @@
 .receiptWrapper {
+  font-size: 12px;
+  font-family: "Times New Roman",Georgia,Serif;
+  color: #000 !important;
   padding: 4px;
     .bolder {
       font-weight: bolder;
@@ -7,6 +10,11 @@
     .ant-divider-horizontal {
       margin: 6px 0;
     }
+  }
+  .tableHeader {
+    display: flex;
+    align-items: centjker;
+    justify-content: space-around;
   }
   .head {
     text-align: center;
@@ -25,6 +33,39 @@
           content: ':';
         }
       }
+    }
+  }
+}
+
+.milkPowderReceiptWrapper {
+  .title {
+    text-align: center;
+  }
+  .content {
+    margin-bottom: 8px;
+    padding-left: 18px;
+  }
+  .item {
+    margin-bottom: 6px;
+    span {
+      word-wrap: break-word;
+      &:first-child {
+        margin-right: 4px;
+        &:after {
+          content: ':';
+        }
+      }
+    }
+  }
+  :global {
+    .ant-card-wider-padding .ant-card-body {
+      padding: 12px !important;
+    }
+    .ant-card-head {
+      min-height: 0px !important;
+    }
+    .ant-card-head-title {
+      padding: 3px 0 !important;
     }
   }
 }

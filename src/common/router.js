@@ -79,6 +79,9 @@ export const getRouterData = (app) => {
     '/express': {
       component: dynamicWrapper(app, ['express'], () => import('../routes/Express/Company')),
     },
+    '/putaway': {
+      component: dynamicWrapper(app, ['putaway'], () => import('../routes/Putaway/Putaway/index')),
+    },
     '/dailyClosing/statistics': {
       component: dynamicWrapper(app, ['express'], () => import('../routes/DailyClosing/Statistics')),
     },

@@ -1,6 +1,5 @@
 import isNumber from '../../isNumber';
-import { routerRedux } from 'dva/router';
-import { POS_PHASE } from '../../../../constant'
+import { POS_PHASE } from '../../../../constant';
 
 function generateNewSelectedList(activeSelectedKey, selectedList, cache, number, type) {
   return selectedList.map((item) => {
@@ -29,7 +28,7 @@ function numberHandler(oldCache, buttonName, activeTabKey, selectedList, activeS
   }
   const number = cache - 0;
   const newSelectedList = generateNewSelectedList(activeSelectedKey, selectedList, cache, number, type);
-  console.log('newSelectedList', newSelectedList)
+  console.log('newSelectedList', newSelectedList);
   dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
 }
 
@@ -77,29 +76,29 @@ function countHandler(dispatch, buttonName, activeTabKey, selectedList, selected
   let CacheCount;
   if (isNumber(buttonName)) {
     numberHandler(oldCacheCount, buttonName, activeTabKey, selectedList, activeSelectedKey, 'count', dispatch);
-    return
+    return;
   }
   if (buttonName === 'clear') {
     let filterIndex;
     let tempActiveKey;
-      newSelectedList = selectedList.filter((item, index) => {
-        if (item.Key === selectedItem.Key) {
-          filterIndex = index;
+    newSelectedList = selectedList.filter((item, index) => {
+      if (item.Key === selectedItem.Key) {
+        filterIndex = index;
+      }
+      return (item.Key !== selectedItem.Key);
+    }).map((item, index) => {
+      if (filterIndex === 0) {
+        if (index === 0) {
+          tempActiveKey = item.Key;
         }
-        return (item.Key !== selectedItem.Key);
-      }).map((item, index) => {
-        if (filterIndex === 0) {
-          if (index === 0) {
-            tempActiveKey = item.Key;
-          }
-          return item;
-        } else {
-          if (index === filterIndex - 1) {
-            tempActiveKey = item.Key;
-          }
-          return item;
+        return item;
+      } else {
+        if (index === filterIndex - 1) {
+          tempActiveKey = item.Key;
         }
-      });
+        return item;
+      }
+    });
     dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList, activeSelectedKey } });
     if (tempActiveKey !== undefined) {
       dispatch({ type: 'commodity/changeActiveSelectedKey', payload: tempActiveKey });
@@ -166,7 +165,7 @@ export default function calculate(commodity, dispatch, buttonName) {
   const { selectedList, targetPhase: currentPhase } = currentOrder;
   // 跳转到选择客户界面
   if (buttonName === 'customer') {
-    dispatch({type: 'commodity/changePosPhase', payload: {activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.CUSTOMER}});
+    dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.CUSTOMER } });
     return;
   }
   // 如果购物车里面没东西，直接 return
@@ -187,29 +186,24 @@ export default function calculate(commodity, dispatch, buttonName) {
     return;
   }
   if (buttonName === 'payment') {
-    const { ID='' } = currentOrder
-    const { chooseCalculatorButton, ...newCurrentOrder } = currentOrder
-    const currentOrderJson = JSON.stringify(newCurrentOrder)
-    dispatch({type: 'commodity/addOrUpdateCacheOrder', payload: { ID, order: currentOrderJson }})
-    const targetPhase = POS_PHASE.PAY
-    dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase }})
-    // dispatch(routerRedux.push('/pos/payment'));
+    const { ID = '' } = currentOrder;
+    const { chooseCalculatorButton, ...newCurrentOrder } = currentOrder;
+    const currentOrderJson = JSON.stringify(newCurrentOrder);
+    dispatch({ type: 'commodity/addOrUpdateCacheOrder', payload: { ID, order: currentOrderJson } });
     return;
   }
   // 数量计算逻辑
   if (calculateType === 'count') {
     countHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
-    return
+    return;
   }
   // 折扣计算逻辑
   if (calculateType === 'discount') {
     discountHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
-    return
+    return;
   }
   // 单价计算逻辑
   if (calculateType === 'unitPrice') {
     unitPriceHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
-    return
   }
 }
-

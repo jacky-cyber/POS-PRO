@@ -116,8 +116,8 @@ export default class ExpressHandler extends PureComponent {
     });
   }
   render() {
-    const { form, order, dispatch, priceListNode, submitLoading } = this.props;
-    const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
+    const { form, order, dispatch, submitLoading } = this.props;
+    const { getFieldDecorator, getFieldsError } = form;
     const { expressData, receiveMoney, totalPrice } = order || [];
     const errors = getFieldsError();
     const getErrorInfo = () => {
@@ -167,7 +167,7 @@ export default class ExpressHandler extends PureComponent {
           title="门店出口/邮寄/代发"
         >
           <div style={{ display: 'none' }}>
-            <div style={{ width: '80mm', border: '1px solid' }}>
+            <div>
               <Receipt />
             </div>
           </div>
@@ -175,19 +175,20 @@ export default class ExpressHandler extends PureComponent {
         <Card title="邮寄包裹管理" bordered={false} style={{ marginBottom: 24 }} >
           {getFieldDecorator('expressData', {
               initialValue: expressData,
-              rules: [{ validator: this.checkExpressData }],
-            })(
-              <TableForm
-                dispatch={dispatch}
-                express={this.props.express}
-              />
-              )}
+            rules: [{ validator: this.checkExpressData }],
+          })(
+            <TableForm
+              dispatch={dispatch}
+              express={this.props.express}
+            />
+          )}
         </Card>
-        <FooterToolbar style={{ width: '100%' }} extra={priceListNode}>
+        <FooterToolbar style={{ width: '100%' }} >
           {getErrorInfo()}
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
             onClick={this.printHandler}
+            disabled={!!(totalPrice - receiveMoney > 0)}
           >
             打印
           </Button>

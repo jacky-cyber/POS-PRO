@@ -1,0 +1,56 @@
+@import "~antd/lib/style/themes/default.less";
+
+.tableWrapper {
+  :global {
+  .ant-table-tbody {
+    * {
+    font-size: 10px !important;
+    }
+  }
+  .ant-input-number {
+    .ant-input-number-handler-wrap {
+      width: 15px !important;
+    }
+    .ant-input-number-handler-up-inner, .ant-input-number-handler-down-inner {
+      right: 2px !important;
+    }
+  }
+    td, th {
+    padding: 8px !important;
+    text-align: center !important;
+    }
+    .ant-input-number {
+      width: 65px;
+    }
+    .ant-input-number-sm {
+    width: 55px;
+    }
+    .ant-divider-horizontal {
+      margin: 6px 0 !important;
+    }
+  }
+  .searchBar {
+    margin-bottom: @padding-md;
+    button {
+      margin-left: @padding-sm;
+    }
+  }
+  .editable {
+    td {
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+    }
+  }
+  .tableItem {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2px;
+    .addonAfter {
+      margin-left: 6px;
+    }
+  }
+  .priceDetail {
+    font-size: 6px;
+  }
+}

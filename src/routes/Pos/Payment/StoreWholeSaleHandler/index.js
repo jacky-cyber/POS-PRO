@@ -62,7 +62,6 @@ export default class StoreWholeSaleHandler extends PureComponent {
       orderID: ID,
       dataJson: valuesJson,
     };
-    console.log('valuesJson', valuesJson);
     this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   render() {
@@ -75,7 +74,7 @@ export default class StoreWholeSaleHandler extends PureComponent {
           title="门店出口/邮寄/代发"
         >
           <div style={{ display: 'none' }}>
-            <div style={{ width: '80mm', border: '1px solid' }}>
+            <div>
               <Receipt />
             </div>
           </div>

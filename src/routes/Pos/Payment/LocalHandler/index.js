@@ -5,24 +5,9 @@ import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } f
 import Print from 'rc-print';
 import { connect } from 'dva';
 import FooterToolbar from '../../../../components/FooterToolbar';
-import styles from './index.less';
 import Receipt from '../Receipt';
 import { POS_PHASE } from '../../../../constant';
 
-
-const columns = [{
-  title: '姓名',
-  dataIndex: 'name',
-  key: 'name',
-}, {
-  title: '年龄',
-  dataIndex: 'age',
-  key: 'age',
-}, {
-  title: '住址',
-  dataIndex: 'address',
-  key: 'address',
-}];
 
 const keyboardMapping = ['backspace', 'p', 'enter'];
 
@@ -83,9 +68,8 @@ export default class LocalHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   render() {
-    const { priceListNode, submitLoading, order } = this.props;
+    const { submitLoading, order } = this.props;
     const { receiveMoney, totalPrice } = order;
-
     return (
       <div>
         <Print
@@ -93,12 +77,11 @@ export default class LocalHandler extends PureComponent {
           title="门店出口/邮寄/代发"
         >
           <div style={{ display: 'none' }}>
-            <div style={{ width: '80mm', border: '1px solid' }}>
-              <Receipt />
+            <div>
+              <Receipt isShowTax />
             </div>
           </div>
         </Print>
-        {/* <FooterToolbar style={{ width: '100%', paddingLeft: 440, }} extra={priceListNode} > */}
         <FooterToolbar style={{ width: '100%', paddingLeft: 440 }}>
           <Button onClick={this.prevHandler}>返回</Button>
           <Button

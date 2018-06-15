@@ -1,18 +1,48 @@
 import React, { PureComponent } from 'react';
 import { Row, Col, Divider } from 'antd';
 import { connect } from 'dva';
-import DescriptionList from 'components/DescriptionList';
-import styles from './index.less';
 import { TAX_RATE } from 'constant';
+import { formatToDecimals } from 'utils/utils';
+import JsBarcode from 'jsbarcode';
+import styles from './index.less';
 
-const { Description } = DescriptionList;
+const gstNo = '103685648';
+
 
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
   activeTabKey: state.commodity.activeTabKey,
+  ID: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0].ID,
 }))
 
 export default class Receipt extends PureComponent {
+  componentDidMount() {
+    const { isShowTax, ID } = this.props;
+    if (ID) {
+      JsBarcode('#no', ID, {
+        width: 1,
+        height: 30,
+        displayValue: false,
+      });
+    }
+    if (isShowTax) {
+      JsBarcode('#gst', gstNo, {
+        height: 30,
+        displayValue: false,
+      });
+    }
+  }
+  componentWillReceiveProps(nextProps) {
+    const { ID: nextID } = nextProps;
+    const { ID: prevID } = this.props;
+    if (nextID && nextID !== prevID) {
+      JsBarcode('#no', nextID, {
+        width: 1,
+        height: 30,
+        displayValue: false,
+      });
+    }
+  }
   calcTotalCount = () => {
     const { order } = this.props;
     const { selectedList = [] } = order;
@@ -25,8 +55,7 @@ export default class Receipt extends PureComponent {
     }, 0);
   }
   render() {
-    console.log('order', this.props.order);
-    const { order } = this.props;
+    const { order, isShowTax } = this.props;
     const { ID, createTime, shop, selectedList, totalPrice, paymentData } = order;
     const { departmentID } = shop || {};
     return (
@@ -36,6 +65,7 @@ export default class Receipt extends PureComponent {
           <span>NO</span>
           <span>{ID}</span>
         </div>
+        <img id="no" />
         <div className={styles.item}>
           <span>Sales</span>
           <span>{departmentID}</span>
@@ -50,7 +80,7 @@ export default class Receipt extends PureComponent {
           <Col span={6}>Sku</Col>
           <Col span={5}>Retail</Col>
           <Col span={3}>Qty</Col>
-          <Col span={5}>Transition</Col>
+          <Col span={5}>Closing</Col>
           <Col span={5}>Total</Col>
         </Row>
         {
@@ -74,36 +104,45 @@ export default class Receipt extends PureComponent {
           <Col span={5} />
           <Col span={5}>${totalPrice}</Col>
         </Row>
-        <div className={styles.tax}>
-          <Divider />
-          <h2 className={styles.head}>TAX INVOICE</h2>
-          <div className={styles.item}>
-            <span>Invoice No</span>
-            <span>{ID}</span>
-          </div>
-          <div className={styles.item}>
-            <span>Sales</span>
-            <span>{departmentID}</span>
-          </div>
-          <div className={styles.item}>
-            <span>Time</span>
-            <span>{createTime}</span>
-          </div>
-          {
-            paymentData.map(item => (
-              <div className={styles.list} key={item.key}>
-                <Row>
-                  <Col span={12}>{item.methodEN}</Col>
-                  <Col span={12}>${item.cash}</Col>
-                </Row>
+        {
+          isShowTax && (
+            <div className={styles.tax}>
+              <Divider />
+              <h2 className={styles.head}>TAX INVOICE</h2>
+              <div className={styles.item}>
+                <span>Invoice No</span>
+                <span>{ID}</span>
               </div>
-            ))
-          }
-          <div className={`${styles.item} ${styles.bolder}`}>
-            <span>Includes SGT of</span>
-            <span>${totalPrice * TAX_RATE}</span>
-          </div>
-        </div>
+              <div className={styles.item}>
+                <span>Sales</span>
+                <span>{departmentID}</span>
+              </div>
+              <div className={styles.item}>
+                <span>Time</span>
+                <span>{createTime}</span>
+              </div>
+              {
+                paymentData.map(item => (
+                  <div className={styles.list} key={item.key}>
+                    <Row>
+                      <Col span={12}>{item.methodEN}</Col>
+                      <Col span={12}>${item.cash}</Col>
+                    </Row>
+                  </div>
+                ))
+              }
+              <div className={`${styles.item} ${styles.bolder}`}>
+                <span>Includes GST of</span>
+                <span>${formatToDecimals(totalPrice * TAX_RATE, 2)}</span>
+              </div>
+              <div className={styles.item}>
+                <span>GST NO</span>
+                <span>{gstNo}</span>
+              </div>
+              <img id="gst" />
+            </div>
+          )
+        }
       </div>
     );
   }

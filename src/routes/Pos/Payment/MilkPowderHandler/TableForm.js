@@ -4,7 +4,7 @@ import { Table } from 'antd';
 export default class TableForm extends PureComponent {
   render() {
     const columns = [{
-      title: '产品名称',
+      title: '商品名',
       dataIndex: 'EN',
     }, {
       title: 'SKU',
