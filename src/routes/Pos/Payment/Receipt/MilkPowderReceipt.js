@@ -51,15 +51,32 @@ export default class Receipt extends PureComponent {
     const { City, District, Province } = ReceiverAddress;
     const { ID, createTime } = order;
     const { waybill = [] } = milkPowderData;
-    return (
-      <div className={styles.milkPowderReceiptWrapper}>
-        <h1 className={styles.title}>奶粉下单</h1>
-        <h3>订单信息</h3>
-        <DescriptionList col={2} className={styles.content}>
-          <Description term="订单号">{ID}</Description>
-          <Description term="下单时间">{createTime}</Description>
-        </DescriptionList>
-        <h3>商品信息</h3>
+    const info = (
+      <div>
+        <div className={styles.subTitle}>订单信息</div>
+        <Row className={styles.content}>
+          <Col span={24}>
+            <div className={styles.item}>
+              <span>
+                订单号
+              </span>
+              <span>
+                {ID}
+              </span>
+            </div>
+          </Col>
+          <Col span={24}>
+            <div className={styles.item}>
+              <span>
+                下单时间
+              </span>
+              <span>
+                {createTime}
+              </span>
+            </div>
+          </Col>
+        </Row>
+        <div className={styles.subTitle}>商品信息</div>
         <Table
           size="small"
           columns={this.columns}
@@ -67,12 +84,12 @@ export default class Receipt extends PureComponent {
           rowKey={record => record.Key}
           pagination={false}
         />
-        <h3>收件人信息</h3>
+        <div className={styles.subTitle}>收件人信息</div>
         <Row className={styles.content}>
           <Col span={12}>
             <div className={styles.item}>
               <span>
-                姓名
+          收件人
               </span>
               <span>
                 {ReceiverName}
@@ -82,50 +99,40 @@ export default class Receipt extends PureComponent {
           <Col span={12}>
             <div className={styles.item}>
               <span>
-                号码
+          收件人电话
               </span>
               <span>
                 {ReceiverPhoneNumber}
               </span>
             </div>
           </Col>
-          <Col span={12}>
+          <Col span={24}>
             <div className={styles.item}>
               <span>
-                身份证号
+          收件人地址
               </span>
               <span>
-                {ReceiverIDNumber}
+                { City } { District } { Province } - { ReceiverDetailedAddress }
               </span>
             </div>
           </Col>
           <Col span={12}>
             <div className={styles.item}>
               <span>
-                地址
+          收件人身份证号
               </span>
               <span>
-                { City } { District } { Province }
-              </span>
-            </div>
-          </Col>
-          <Col span={12}>
-            <div className={styles.item}>
-              <span>
-                详细地址
-              </span>
-              <span>
-                { ReceiverDetailedAddress }
+                {ReceiverIDNumber} (必须是收件人本人身份证)
               </span>
             </div>
           </Col>
         </Row>
-        <h3>寄件人信息</h3>
+        <div className={styles.subTitle}>寄件人信息</div>
         <Row className={styles.content}>
           <Col span={12}>
             <div className={styles.item}>
               <span>
-                姓名
+          寄件人姓名
               </span>
               <span>
                 {SenderName}
@@ -135,7 +142,7 @@ export default class Receipt extends PureComponent {
           <Col span={12}>
             <div className={styles.item}>
               <span>
-                电话
+          寄件人电话
               </span>
               <span>
                 {SenderPhoneNumber}
@@ -143,6 +150,60 @@ export default class Receipt extends PureComponent {
             </div>
           </Col>
         </Row>
+      </div>
+    );
+    return (
+      <div className={styles.milkPowderReceiptWrapper}>
+        <div className={styles.title}>奶粉下单</div>
+        <div className={styles.panel}>
+          { info }
+        </div>
+        <div className={styles.panel}>
+          { info }
+          <div className={styles.subTitle}>请确认以上信息无误并签字</div>
+          <Row className={styles.content}>
+            <Col span={12} className={styles.item}>
+              <span>
+          客户签字
+              </span>
+              <span className={styles.underline} />
+            </Col>
+            <Col span={12} className={styles.item}>
+              <span>
+          日期
+              </span>
+              <span className={styles.underline} />
+            </Col>
+          </Row>
+        </div>
+        <div>
+          <Row className={styles.content}>
+            <Col span={12} className={styles.item}>
+              <span>
+          店铺编码
+              </span>
+              <span className={styles.underline} />
+            </Col>
+            <Col span={12} className={styles.item}>
+              <span>
+          信息录入人
+              </span>
+              <span className={styles.underline} />
+            </Col>
+            <Col span={12} className={styles.item}>
+              <span>
+          签名
+              </span>
+              <span className={styles.underline} />
+            </Col>
+            <Col span={12} className={styles.item}>
+              <span>
+          日期
+              </span>
+              <span className={styles.underline} />
+            </Col>
+          </Row>
+        </div>
       </div>
     );
   }

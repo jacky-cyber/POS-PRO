@@ -13,6 +13,9 @@ export default class TableForm extends PureComponent {
       title: '数量',
       dataIndex: 'Count',
     }, {
+      title: '运输公司',
+      dataIndex: 'TransportName',
+    }, {
       title: '运单号',
       dataIndex: 'InvoiceNo',
     }];

@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Row, Col, Divider } from 'antd';
+import { Row, Col } from 'antd';
 import { connect } from 'dva';
 import { TAX_RATE } from 'constant';
 import { formatToDecimals } from 'utils/utils';
@@ -57,7 +57,7 @@ export default class Receipt extends PureComponent {
   render() {
     const { order, isShowTax } = this.props;
     const { ID, createTime, shop, selectedList, totalPrice, paymentData } = order;
-    const { departmentID } = shop || {};
+    const { shopName } = shop || {};
     return (
       <div className={styles.receiptWrapper}>
         <h2 className={styles.head}>Health Element</h2>
@@ -68,46 +68,58 @@ export default class Receipt extends PureComponent {
         <img id="no" />
         <div className={styles.item}>
           <span>Sales</span>
-          <span>{departmentID}</span>
+          <span>{shopName}</span>
         </div>
         <div className={styles.item}>
-          <span>Time</span>
+          <span>Date Time</span>
           <span>{createTime}</span>
         </div>
-        <Divider />
+        <div>
+          Unit R, 63 Hugo Johnston Dr, Penrose
+        </div>
         <div className={styles.bolder}>Product</div>
-        <Row>
+        <Row className={styles.bill}>
           <Col span={6}>Sku</Col>
-          <Col span={5}>Retail</Col>
+          <Col span={4}>RRP</Col>
           <Col span={3}>Qty</Col>
-          <Col span={5}>Closing</Col>
-          <Col span={5}>Total</Col>
+          <Col span={6}>LowPrice</Col>
+          <Col span={5} style={{ textAlign: 'right' }}>Total</Col>
         </Row>
         {
           selectedList.map(item => (
-            <div className={styles.list} key={item.Sku}>
+            <div className={`${styles.list} ${styles.bb} ${styles.mb}`} key={item.Sku}>
               <div className={styles.bolder}>{item.EN}</div>
               <Row>
-                <Col span={6}>{item.Sku}</Col>
-                <Col span={5}>${item.RetailPrice}</Col>
+                <Col span={8}>{item.Sku}</Col>
+                <Col span={4}>${item.RetailPrice}</Col>
                 <Col span={3}>{item.Count}</Col>
-                <Col span={5}>${item.RealPrice}</Col>
-                <Col span={5}>${item.RealPrice * item.Count}</Col>
+                <Col span={4}>${item.RealPrice}</Col>
+                <Col span={5} style={{ textAlign: 'right' }}>${item.RealPrice * item.Count}</Col>
               </Row>
             </div>
           ))
         }
-        <Row className={styles.bolder}>
-          <Col span={6}>Total</Col>
-          <Col span={5} />
+        <Row className={`${styles.bolder} ${styles.mb}`}>
+          <Col span={8}>Total</Col>
+          <Col span={4} />
           <Col span={3}>{this.calcTotalCount()}</Col>
-          <Col span={5} />
-          <Col span={5}>${totalPrice}</Col>
+          <Col span={4} />
+          <Col span={5} style={{ textAlign: 'right' }}>${totalPrice}</Col>
         </Row>
+        <div className={`${styles.bb} ${styles.mb}`}>
+          <div>
+            Thanks For Your Shopping!
+          </div>
+          <div>
+            Please keep your receipt for exchange
+          </div>
+          <div>
+            We do not provide refund service if you change your mind We only accept exchange within 7 days
+          </div>
+        </div>
         {
           isShowTax && (
             <div className={styles.tax}>
-              <Divider />
               <h2 className={styles.head}>TAX INVOICE</h2>
               <div className={styles.item}>
                 <span>Invoice No</span>
@@ -115,15 +127,15 @@ export default class Receipt extends PureComponent {
               </div>
               <div className={styles.item}>
                 <span>Sales</span>
-                <span>{departmentID}</span>
+                <span>{shopName}</span>
               </div>
               <div className={styles.item}>
-                <span>Time</span>
+                <span>Date Time</span>
                 <span>{createTime}</span>
               </div>
               {
                 paymentData.map(item => (
-                  <div className={styles.list} key={item.key}>
+                  <div className={`${styles.list}`} key={item.key}>
                     <Row>
                       <Col span={12}>{item.methodEN}</Col>
                       <Col span={12}>${item.cash}</Col>

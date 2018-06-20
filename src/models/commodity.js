@@ -771,6 +771,7 @@ export default {
           totalWeight: 0,
           wholeDiscount: 100,
           chooseCalculatorButton: {},
+          // hasFetchMilkPowderWaybill: false,
         },
       ];
       const activeTabKey = `orders-${count}`;
@@ -1127,5 +1128,15 @@ export default {
       });
       return { ...state, orders: newOrders };
     },
+    // changeHasFetchMilkPowderWaybill(state, _) {
+    //   const { activeTabKey } = state;
+    //   const newOrders = state.orders.map((item) => {
+    //     if (item.key === activeTabKey) {
+    //       return { ...item, hasFetchMilkPowderWaybill: true };
+    //     }
+    //     return item;
+    //   });
+    //   return { ...state, orders: newOrders };
+    // },
   },
 };

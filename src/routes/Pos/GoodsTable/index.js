@@ -341,20 +341,30 @@ export default class GoodsTable extends PureComponent {
       }
     }
     searchHandler = (value) => {
-      const filteredContent = this.state.originalContent.filter(item => item.Barcode.split(',').includes(value));
+      const processedValue = value.trim().toLowerCase();
+      // 等于一品多码中的一个
+      const filteredContent = this.state.originalContent.filter(item => item.Barcode.split(',').map(item => item.toLowerCase()).includes(processedValue));
+      // 包含条码
       const includedBarcodeContent = this.state.originalContent.filter(item => (
-        item.Barcode.includes(value)
+        item.Barcode.toLowerCase().includes(processedValue)
       ));
-      const includedSkuContent = this.state.originalContent.filter(item => item.Sku.includes(value));
-      const strArray = value ? value.split(' ').filter(item => item !== '') : [];
+      // 包含 sku
+      const includedSkuContent = this.state.originalContent.filter(
+        item => (
+          item.Sku.toLowerCase().includes(processedValue))
+      );
+      // 品名
+      const strArray = value ?
+        value.split(' ').filter(item => item !== '').map(item => item.toLowerCase())
+        : [];
       const includedCNContent = this.state.originalContent.filter(item => (strArray.reduce((a, b) => {
-        const s = item.CN || '';
+        const s = item.CN.toLowerCase() || '';
         const b1 = typeof a === 'boolean' ? a : s.includes(a);
         const b2 = s.includes(b);
         return b1 && b2;
       }, true)));
       const includedENContent = this.state.originalContent.filter(item => (strArray.reduce((a, b) => {
-        const s = item.EN || '';
+        const s = item.EN.toLowerCase() || '';
         const b1 = typeof a === 'boolean' ? a : s.includes(a);
         const b2 = s.includes(b);
         return b1 && b2;

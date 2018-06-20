@@ -38,10 +38,12 @@ export default class MilkPowderHandler extends PureComponent {
     milkPowderData: {},
   }
   componentDidMount() {
+    const { hasFetchMilkPowderWaybill } = this.props.order;
     Mousetrap.bind('backspace', () => this.prevHandler());
     Mousetrap.bind('p', () => this.printHandler());
     // Mousetrap.bind('enter', () => this.submitHandler())
     Mousetrap.bind('enter', () => this.submitButton.click());
+    this.fetchWaybillHandler();
   }
   componentWillUnmount() {
     keyboardMapping.forEach((item) => {
@@ -167,7 +169,7 @@ export default class MilkPowderHandler extends PureComponent {
       <div>
         <Print
           ref="printForm"
-          title="门店出口/邮寄/代发"
+          title="奶粉/生鲜"
         >
           <div style={{ display: 'none' }}>
             <div>
