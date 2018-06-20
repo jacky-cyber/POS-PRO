@@ -261,6 +261,7 @@ export default {
       try {
         const response = yield call(fetchWaybill, dataJson);
         if (response.Status) {
+          console.log('response.Result.Data', response.Result.Data);
           message.success('抓取成功');
           setFieldsValueCallback({ waybill: response.Result.Data });
         } else {

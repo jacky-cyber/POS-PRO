@@ -34,6 +34,9 @@ export default class Receipt extends PureComponent {
     title: '数量',
     dataIndex: 'Count',
   }, {
+    title: '运输公司',
+    dataIndex: 'TransportName',
+  }, {
     title: '运单号',
     dataIndex: 'InvoiceNo',
   }]
@@ -55,7 +58,7 @@ export default class Receipt extends PureComponent {
       <div>
         <div className={styles.subTitle}>订单信息</div>
         <Row className={styles.content}>
-          <Col span={24}>
+          <Col span={12}>
             <div className={styles.item}>
               <span>
                 订单号
@@ -64,8 +67,6 @@ export default class Receipt extends PureComponent {
                 {ID}
               </span>
             </div>
-          </Col>
-          <Col span={24}>
             <div className={styles.item}>
               <span>
                 下单时间
@@ -74,6 +75,11 @@ export default class Receipt extends PureComponent {
                 {createTime}
               </span>
             </div>
+          </Col>
+          <Col span={12}>
+            <img src={require('assets/img/cg.jpg')} alt="" className={styles.expressImg} />
+            <img src={require('assets/img/nsf.png')} alt="" className={styles.expressImg} />
+            <img src={require('assets/img/qr.jpg')} alt="" className={styles.expressImg} />
           </Col>
         </Row>
         <div className={styles.subTitle}>商品信息</div>
