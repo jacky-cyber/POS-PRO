@@ -110,7 +110,7 @@ export default class Receipt extends PureComponent {
           <Col span={12}>
             <div className={styles.item}>
               <span>
-          收件人
+                收件人
               </span>
               <span>
                 {ReceiverName}
@@ -120,7 +120,7 @@ export default class Receipt extends PureComponent {
           <Col span={12}>
             <div className={styles.item}>
               <span>
-          收件人电话
+                收件人电话
               </span>
               <span>
                 {ReceiverPhoneNumber}
@@ -130,17 +130,17 @@ export default class Receipt extends PureComponent {
           <Col span={24}>
             <div className={styles.item}>
               <span>
-          收件人地址
+                收件人地址
               </span>
               <span>
                 { City } { District } { Province } - { ReceiverDetailedAddress }
               </span>
             </div>
           </Col>
-          <Col span={12}>
+          <Col span={24}>
             <div className={styles.item}>
               <span>
-          收件人身份证号
+                收件人身份证号
               </span>
               <span>
                 {ReceiverIDNumber} (必须是收件人本人身份证)

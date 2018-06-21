@@ -166,9 +166,9 @@ export default class ExpressHandler extends PureComponent {
           ref="printForm"
           title="门店出口/邮寄/代发"
         >
-          <div style={{ display: 'none' }}>
+          <div style={{ display: 'block' }}>
             <div>
-              <Receipt />
+              <Receipt isExpress />
             </div>
           </div>
         </Print>
