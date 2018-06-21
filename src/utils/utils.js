@@ -87,33 +87,28 @@ export function getGoodsItemCustomerPrice(
   wholesalePrice,
   secondWholesalePrice
 ) {
+  let customerPrice = 0;
+  // 批发价暂时只有一个一级批发价
   if (type === POS_TAB_TYPE.WHOLESALE) {
     return formatToDecimals(wholesalePrice, 2);
   }
-  if (!customerType) {
-    return formatToDecimals(retailPrice, 2);
+  // 奶粉生鲜只有一个价格体系，先用 VIP 如果 VIP 没有就用零售价
+  if (type === POS_TAB_TYPE.MILKPOWDER) {
+    if (VIPPrice) {
+      return formatToDecimals(VIPPrice, 2);
+    } else {
+      return formatToDecimals(retailPrice, 2);
+    }
   }
-  let customerPrice = 0;
-  if (type === POS_TAB_TYPE.STORESALE || type === POS_TAB_TYPE.MILKPOWDER) {
+  // 门店销售分为本地拿走/直邮/代发
+  if (type === POS_TAB_TYPE.STORESALE) {
+    // 本地拿走销售
     if (saleType === SALE_TYPE.LOCAL) {
-      switch (customerType) {
-        case 1:
-          customerPrice = retailPrice;
-          break;
-        case 2:
-          customerPrice = platinumPrice;
-          break;
-        case 3:
-          customerPrice = diamondPrice;
-          break;
-        case 4:
-          customerPrice = diamondPrice;
-          break;
-        default:
-          customerPrice = retailPrice;
-          break;
+      // 本地拿走销售没有会员就是零售价
+      if (!customerType) {
+        return formatToDecimals(retailPrice, 2);
       }
-    } else if (saleType === SALE_TYPE.EXPRESS || saleType === SALE_TYPE.SHIPPING) {
+      // 本地销售的会员价格体系
       switch (customerType) {
         case 1:
           customerPrice = retailPrice;
@@ -122,7 +117,7 @@ export function getGoodsItemCustomerPrice(
           customerPrice = platinumPrice;
           break;
         case 3:
-          customerPrice = VIPPrice;
+          customerPrice = diamondPrice;
           break;
         case 4:
           customerPrice = SVIPPrice;
@@ -131,12 +126,63 @@ export function getGoodsItemCustomerPrice(
           customerPrice = retailPrice;
           break;
       }
-    } else if (!saleType) {
-      customerPrice = retailPrice;
+    }
+    // 直邮和代发走一个价格体系
+    if (saleType === SALE_TYPE.EXPRESS || saleType === SALE_TYPE.SHIPPING) {
+      switch (customerType) {
+        case 4:
+          customerPrice = SVIPPrice;
+          break;
+        default:
+          customerPrice = VIPPrice;
+          break;
+      }
     }
   }
   return formatToDecimals(customerPrice, 2);
 }
+// 分界线
+// if (type === POS_TAB_TYPE.STORESALE || type === POS_TAB_TYPE.MILKPOWDER) {
+//   if (saleType === SALE_TYPE.LOCAL) {
+//     switch (customerType) {
+//       case 1:
+//         customerPrice = retailPrice;
+//         break;
+//       case 2:
+//         customerPrice = platinumPrice;
+//         break;
+//       case 3:
+//         customerPrice = diamondPrice;
+//         break;
+//       case 4:
+//         customerPrice = diamondPrice;
+//         break;
+//       default:
+//         customerPrice = retailPrice;
+//         break;
+//     }
+//   } else if (saleType === SALE_TYPE.EXPRESS || saleType === SALE_TYPE.SHIPPING) {
+//     switch (customerType) {
+//       case 1:
+//         customerPrice = retailPrice;
+//         break;
+//       case 2:
+//         customerPrice = platinumPrice;
+//         break;
+//       case 3:
+//         customerPrice = VIPPrice;
+//         break;
+//       case 4:
+//         customerPrice = SVIPPrice;
+//         break;
+//       default:
+//         customerPrice = retailPrice;
+//         break;
+//     }
+//   } else if (!saleType) {
+//     customerPrice = retailPrice;
+//   }
+// }
 
 export function calculateExpressOrShippingCost(unitPrice, weight, weightedWeight) {
   const totalWeight = weight + weightedWeight;

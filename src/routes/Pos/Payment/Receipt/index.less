@@ -49,13 +49,31 @@
   font-size: 12px;
   font-weight: 500;
   color: #000 !important;
+  .expressImgWrapper {
+    display: flex;
+    justify-content: start;
+  }
   .expressImg {
-    width: 50px;
-    height: 50px;
-    transform: scale(1.5);
-    margin-right: 30px;
-    position: relative;
-    top: -12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    height: 80px;
+    margin: 0 10px;
+    img {
+      text-align: center;
+      vertical-align: center;
+      width: 70px;
+      height: 70px;
+    }
+    imgDesc {
+      font-size: 8px;
+      text-align: center;
+    }
+  }
+  .remark {
+    font-size: 8px;
+    padding-left: 32px;
   }
   .panel {
     border-bottom: 1px solid #000;

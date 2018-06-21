@@ -63,12 +63,17 @@ export default class MilkPowderHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   checkWaybill = (rule, value, callback) => {
-    const waybillRequiredFiltered = value.filter(item => item.Sku.includes('CGF') || item.Sku.includes('CGF'));
-    if (waybillRequiredFiltered.find(item => (item.InvoiceNo)) || waybillRequiredFiltered.length === 0) {
+    // const waybillRequiredFiltered = value.filter(item => item.Sku.includes('CGF') || item.Sku.includes('CGF'));
+    // if (waybillRequiredFiltered.find(item => (item.InvoiceNo)) || waybillRequiredFiltered.length === 0) {
+    //   callback();
+    //   return;
+    // }
+    // callback('SKU 包含 CGF 或 YDF 的奶粉必须抓取订单号');
+    if (value.find(item => (item.InvoiceNo)) || value.length === 0) {
       callback();
       return;
     }
-    callback('SKU 包含 CGF 或 YDF 的奶粉必须抓取订单号');
+    callback('奶粉订单提交前必须抓取订单号');
   }
   fetchWaybillHandler = () => {
     const dataJson = JSON.stringify(this.props.form.getFieldValue('waybill'));
@@ -170,7 +175,7 @@ export default class MilkPowderHandler extends PureComponent {
           ref="printForm"
           title="奶粉/生鲜"
         >
-          <div style={{ display: 'block' }}>
+          <div style={{ display: 'none' }}>
             <div>
               <MilkPowderReceipt milkPowderData={this.state.milkPowderData} />
             </div>

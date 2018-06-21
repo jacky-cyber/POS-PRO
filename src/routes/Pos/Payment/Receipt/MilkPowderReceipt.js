@@ -41,7 +41,7 @@ export default class Receipt extends PureComponent {
     dataIndex: 'InvoiceNo',
   }]
   render() {
-    const { order, milkPowderData } = this.props;
+    const { order, milkPowderData = {} } = this.props;
     const {
       SenderName,
       SenderPhoneNumber,
@@ -57,7 +57,7 @@ export default class Receipt extends PureComponent {
     const info = (
       <div>
         <div className={styles.subTitle}>订单信息</div>
-        <Row className={styles.content}>
+        <Row className={styles.content} type="flex" justify="space-between" align="middle">
           <Col span={12}>
             <div className={styles.item}>
               <span>
@@ -76,10 +76,22 @@ export default class Receipt extends PureComponent {
               </span>
             </div>
           </Col>
-          <Col span={12}>
-            <img src={require('assets/img/cg.jpg')} alt="" className={styles.expressImg} />
-            <img src={require('assets/img/nsf.png')} alt="" className={styles.expressImg} />
-            <img src={require('assets/img/qr.jpg')} alt="" className={styles.expressImg} />
+          <Col span={12} className={styles.expressImgWrapper}>
+            <div className={styles.expressImg} >
+              <img src={require('assets/img/cg.jpg')} alt="" />
+              <div className={styles.imgDesc}>www.flywayex.com</div>
+              <div className={styles.imgDesc}>程光</div>
+            </div>
+            <div className={styles.expressImg} >
+              <img src={require('assets/img/nsf.png')} alt="" className={styles.expressImg} />
+              <div className={styles.imgDesc}>www.nsf.nz</div>
+              <div className={styles.imgDesc}>新顺丰</div>
+            </div>
+            <div className={styles.expressImg} >
+              <img src={require('assets/img/qr.jpg')} alt="" className={styles.expressImg} />
+              <div className={styles.imgDesc}>www.qexpress.co.nz</div>
+              <div className={styles.imgDesc}>易达通</div>
+            </div>
           </Col>
         </Row>
         <div className={styles.subTitle}>商品信息</div>
@@ -90,6 +102,9 @@ export default class Receipt extends PureComponent {
           rowKey={record => record.Key}
           pagination={false}
         />
+        <div className={styles.remark}>
+          物流信息一般48小时后，可在对应的快递公司微信公帐号上查询，二维码见表格上方
+        </div>
         <div className={styles.subTitle}>收件人信息</div>
         <Row className={styles.content}>
           <Col span={12}>
