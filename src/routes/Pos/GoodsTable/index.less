@@ -14,10 +14,47 @@
 
 .rightContent {
     padding-left: 440px;
+    .header {
+      padding: 0 12px 0 0;
+      background: #fff;
+      /* box-shadow: 0 1px 4px rgba(0, 21, 41, .08); */
+      border-bottom: 1px solid #BFBFBF;
+      position: relative;
+      height: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+}
+
+.tabContent {
+  padding: 10px;
+  .normalOrder {
+    :global(.ant-table-wrapper) {
+      background-color: #fff;
+    }
+  }
+  .refundOrder {
+    margin-top: 10px;
+    background-color: lighten(#ff4d4f, 30%);
+    .refundOrderInfo {
+      margin-left: 12px;
+    }
+    :global {
+      .ant-table-thead {
+        th {
+          background-color: lighten(#ff4d4f, 20%) !important;
+        }
+      }
+    }
+  }
 }
 
 .commodityListWrapper {
     padding: 10px;
+    :global(.ant-table-wrapper) {
+      background-color: #fff;
+    }
     /* margin: 0 auto;  */
     /* margin-left: 440px; */
     .commodityItem {
@@ -107,16 +144,6 @@
     }
 }
 
-.header {
-    padding: 0 12px 0 0;
-    background: #fff;
-    /* box-shadow: 0 1px 4px rgba(0, 21, 41, .08); */
-    border-bottom: 1px solid #BFBFBF;
-    position: relative;
-    height: 48px;
-    display: flex;
-    align-items: center;
-}
 
 .tabHeader {
     padding: 0 12px 0 0;

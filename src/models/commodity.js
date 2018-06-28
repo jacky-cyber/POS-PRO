@@ -3,6 +3,7 @@ import { message } from 'antd';
 import Cookies from 'js-cookie';
 import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from 'constant';
 import { submitCustomer, getCustomer, deleteCustomer, updateCustomer, getMilkPowderGoods, addOrUpdateCacheOrder, fetchWaybill, submitOrder, getStoreSaleGoods, getStoreWholesaleGoods, addOrUpdateDailyClosing } from 'services/api';
+import { getHistoryOrderDetailsAPI } from 'services/historyOrders';
 import { calculateExpressOrShippingCost, getGoodsItemCustomerPrice, keepTwoDecimals, setLocalStorage, getLocalStorage, formatToDecimals } from 'utils/utils';
 
 function getCurrentOrder(state) {
@@ -41,6 +42,18 @@ export default {
   subscriptions: {
   },
   effects: {
+    // 获取退换货订单的详情
+    *getRefundOrderDetail(action, { call, put }) {
+      const { payload } = action;
+      const response = yield call(getHistoryOrderDetailsAPI, payload);
+      if (response.Status) {
+        const orderDetails = response.Result.Data;
+        yield put({
+          type: 'saveRefundOrderDetail',
+          payload: Array.isArray(orderDetails) ? orderDetails : [],
+        });
+      }
+    },
     // 提交日结
     *addOrUpdateDailyClosing(action, { put, call }) {
       const { payload } = action;
@@ -1124,6 +1137,17 @@ export default {
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
           return { ...item, wholeDiscount };
+        }
+        return item;
+      });
+      return { ...state, orders: newOrders };
+    },
+    saveRefundOrderDetail(state, action) {
+      const refundOrderDetail = action.payload;
+      const { activeTabKey } = state;
+      const newOrders = state.orders.map((item) => {
+        if (item.key === activeTabKey) {
+          return { ...item, refundOrderDetail };
         }
         return item;
       });

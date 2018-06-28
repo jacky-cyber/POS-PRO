@@ -34,8 +34,8 @@ export const SALE_TYPE_MAPPING = [
 ];
 
 
-// export const DOMAIN = 'http://192.168.1.18:8086';
-export const DOMAIN = 'http://posapi.he2009.nz';
+export const DOMAIN = 'http://192.168.1.18:8086';
+// export const DOMAIN = 'http://posapi.he2009.nz';
 // export const DOMAIN = 'http://testposapi.he2009.nz';
 
 export const POS_PHASE = {

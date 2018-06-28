@@ -173,16 +173,20 @@ export default class PosLayout extends PureComponent {
                 rightExtra={rightExtra}
               >
                 {
-                orders.map(orderItem => (
-                  createTabTitle(orderItem.title, orderItem.type, orderItem.key, orderItem.currentTime)
-                ))
-              }
+                  orders.map(orderItem => (
+                    createTabTitle(
+                      orderItem.title,
+                      orderItem.type,
+                      orderItem.key,
+                    orderItem.currentTime)
+                  ))
+                }
                 {
-                plusButton
-              }
+                  plusButton
+                }
                 {
-                minusButton
-              }
+                  minusButton
+                }
               </TabOne>
             </div>
           </div>
