@@ -1,11 +1,18 @@
+@import "~antd/lib/style/themes/default.less";
+
+  @brand-refund-primary: #ff4d4f; // 涉及退货的颜色
+
 .card {
     font-size: 16px;
     cursor: pointer;
 }
-.itemInCard {
+.cardTitle {
     font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+.refundCardTitle {
+    color: @brand-refund-primary;
 }
 .selected {
     background-color: #E8E9F1;

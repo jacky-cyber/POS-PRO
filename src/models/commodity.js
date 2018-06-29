@@ -449,8 +449,13 @@ export default {
       });
       yield put({ type: 'changeReceiveMoney', payload: receiveMoney });
     },
+    *addBatchToSelectedList(action, { put, select, take }) {
+      const { batchGoodsList } = action.payload;
+      const commodity = yield select(state => state.commodity);
+      const currentOrder = getCurrentOrder(commodity);
+    },
     *addToSelectedList(action, { put, select, take }) {
-      const { key: selectedKey, count } = action.payload;
+      const { key: selectedKey, count, refundGoodsItem = {} } = action.payload;
       const commodity = yield select(state => state.commodity);
       const { activeTabKey, pagination, currentOrderGoodsList } = commodity;
       const { pagingData, current } = pagination || {};
@@ -462,30 +467,40 @@ export default {
         pagingData[current - 1];
       const { selectedList } = currentOrder;
       let { avoidDuplicationIndex } = currentOrder;
-      const selectedItem = currentGoodsList.filter(item => (item.Key === selectedKey))[0];
+      // 针对于退换货，如果购物车列表里面有的话也算有该商品
+      const selectedItem = currentGoodsList.filter(item => (item.Key === selectedKey))[0]
+      || selectedList.filter(item => (item.Key === selectedKey))[0]
+      || {};
       let newSelectedList;
+      // 添加新商品到购物车
       function addNewToSelectedList(selectedItem, selectedList) {
         const newSelectedItem = {
           ...selectedItem,
           Count: count || 1,
           CalculateType: 'count',
           SaleType: saleType,
+          ...refundGoodsItem,
         };
         return [...selectedList, newSelectedItem];
       }
+      // 查看购物车里是否有该商品
       const index = selectedList.find(item => item.Key === selectedItem.Key);
       if (!index) {
+        // 没有就新添加一个
         newSelectedList = addNewToSelectedList(selectedItem, selectedList);
         yield put({ type: 'changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
       } else {
+        // 有的话需要做个判断
         let isLocked = false;
         newSelectedList = selectedList.map((item) => {
           if (item.Key === selectedKey) {
+            // 修改过折扣的商品算新的
             if (item.CacheDiscount) {
               avoidDuplicationIndex += 1;
               isLocked = true;
               return { ...item, Key: `avoidDuplication-${avoidDuplicationIndex}-${item.Key}` };
             }
+            // 修改过单价的商品算新的
             if (item.NewUnitPrice) {
               avoidDuplicationIndex += 1;
               isLocked = true;

@@ -6,7 +6,8 @@ function generateNewSelectedList(activeSelectedKey, selectedList, cache, number,
     if (item.Key === activeSelectedKey) {
       switch (type) {
         case 'count':
-          return { ...item, CacheCount: cache, Count: number };
+        // 退货的话数量是负数
+          return { ...item, CacheCount: cache, Count: item.isRefund ? -number : number };
         case 'discount':
           return { ...item, CacheDiscount: cache, Discount: number };
         case 'unitPrice':
@@ -208,4 +209,3 @@ export default function calculate(commodity, dispatch, buttonName) {
     unitPriceHandler(dispatch, buttonName, activeTabKey, selectedList, selectedItem, activeSelectedKey);
   }
 }
-

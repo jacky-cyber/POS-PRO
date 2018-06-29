@@ -62,16 +62,16 @@ export default class TableList extends PureComponent {
     });
   }
 
-
-  rowClickHandler = (record, index) => {
-    return {
-      onClick: () => {
-        if (record.ID) {
-          this.props.dispatch({ type: 'historyOrders/getOrderDetails', payload: record.ID });
-        }
-      },
-    };
+  getOrderDetailHandler = (ID) => {
+    if (ID) {
+      return this.props.dispatch({ type: 'historyOrders/getOrderDetails', payload: ID });
+    }
   }
+
+  fillReceiptHandler = (ID) => {
+    this.getOrderDetailHandler(ID).then(() => console.log(this.props.orderDetails));
+  }
+
   renderForm() {
     return this.state.expandForm ? this.renderAdvancedForm() : this.renderSimpleForm();
   }
@@ -167,6 +167,7 @@ export default class TableList extends PureComponent {
 
   render() {
     const { orderList } = this.props;
+    console.log('orderList', orderList);
 
     const orderColumns = [
       {
@@ -179,10 +180,12 @@ export default class TableList extends PureComponent {
           {
             title: '应收金额',
             dataIndex: 'OriginPrice',
+            align: 'center',
           },
           {
             title: '实收金额',
             dataIndex: 'RealPrice',
+            align: 'center',
           },
         ],
       },
@@ -192,6 +195,7 @@ export default class TableList extends PureComponent {
           {
             title: '收款金额',
             dataIndex: 'Collections',
+            align: 'center',
             render: (text, record) => {
               return (
                 record.Cash
@@ -208,6 +212,7 @@ export default class TableList extends PureComponent {
           {
             title: '找零金额',
             dataIndex: 'ChangeMoney',
+            align: 'center',
           },
         ],
       },
@@ -217,34 +222,42 @@ export default class TableList extends PureComponent {
           {
             title: '现金',
             dataIndex: 'Cash',
+            align: 'center',
           },
           {
             title: 'EFTPOS',
             dataIndex: 'EFTPOS',
+            align: 'center',
           },
           {
             title: '银联',
             dataIndex: 'UnionPay',
+            align: 'center',
           },
           {
             title: '转账',
             dataIndex: 'Transfer',
+            align: 'center',
           },
           {
             title: '信用卡',
             dataIndex: 'CreditCard',
+            align: 'center',
           },
           {
             title: 'LatiPay',
             dataIndex: 'LatiPay',
+            align: 'center',
           },
           {
             title: '支付宝',
             dataIndex: 'AliPay',
+            align: 'center',
           },
           {
             title: '微信',
             dataIndex: 'WeChatPay',
+            align: 'center',
           },
         ],
       },
@@ -254,6 +267,7 @@ export default class TableList extends PureComponent {
           {
             title: '日期',
             dataIndex: 'PayTime',
+            align: 'center',
           },
         ],
       },
@@ -263,12 +277,33 @@ export default class TableList extends PureComponent {
           {
             title: '客户编号',
             dataIndex: 'MemberID',
+            align: 'center',
           },
         ],
       },
       {
         title: '操作',
         dataIndex: 'Operation',
+        align: 'center',
+        render: (text, record) => {
+          return (
+            <div className={styles.orderOperation}>
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => this.getOrderDetailHandler(record.ID)}
+              >
+              详情
+              </Button>
+              <Button
+                size="small"
+                onClick={() => this.fillReceiptHandler(record.ID)}
+              >
+              补小票
+              </Button>
+            </div>
+          );
+        },
       },
     ];
 
@@ -276,34 +311,42 @@ export default class TableList extends PureComponent {
       {
         title: '商品编码',
         dataIndex: 'Sku',
+        align: 'center',
       },
       {
         title: '条码',
         dataIndex: 'Barcode',
+        align: 'center',
       },
       {
         title: '品名',
         dataIndex: 'ProductName',
+        align: 'center',
       },
       {
         title: '单位',
         dataIndex: 'Unit',
+        align: 'center',
       },
       {
         title: '数量',
         dataIndex: 'CountQuantity',
+        align: 'center',
       },
       {
         title: '零售金额',
         dataIndex: 'OriginPrice',
+        align: 'center',
       },
       {
         title: '销售金额',
         dataIndex: 'RealPrice',
+        align: 'center',
       },
       {
         title: '销售方式',
         dataIndex: 'SellType',
+        align: 'center',
         render: (text) => {
           return (
             <span>
@@ -336,7 +379,6 @@ export default class TableList extends PureComponent {
               onChange={this.tableChangeHandler}
               rowKey={record => record.ID}
               columns={orderColumns}
-              onRow={this.rowClickHandler}
               dataSource={orderList}
               pagination={this.props.pagination}
               loading={this.props.getOrderLoading}

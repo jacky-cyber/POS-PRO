@@ -27,30 +27,119 @@ export default class SelectedGoods extends PureComponent {
   }
   generateSelectedListNode = (selectedList, activeSelectedKey, customerType, wholeDiscount) => (
     selectedList.map((item) => {
-      const className = cx({
+      const { isRefund } = item;
+      const cardCls = cx({
         card: true,
         selected: item.Key === activeSelectedKey,
+      });
+      const cardTitle = cx({
+        cardTitle: true,
+        refundCardTitle: !!isRefund,
       });
       const count = item.Count;
       const discount = item.Discount;
       // const price = unitPrice * count * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
       const price = item.RealPrice * count;
       const saleType = item.SaleType;
+      const cartItemPrice = (
+        <span>
+          <Divider type="vertical" className={styles.divider} />
+          <span>零售价：{keepTwoDecimals(item.RetailPrice)}</span>
+          <Divider type="vertical" className={styles.divider} />
+          <span>折后单价：{keepTwoDecimals(item.RealPrice)}</span>
+        </span>
+      );
+      const cartItemRefundPrice = (
+        <span>
+          <Divider type="vertical" className={styles.divider} />
+          <span>退款价：{keepTwoDecimals(item.RetailPrice)}</span>
+        </span>
+      );
+      const tagList = [
+        {
+          id: 'customerType',
+          value: customerType,
+          color: '#f0dc00',
+          formatFunc: value => (`${CUSTOMER_TYPE.filter(item => item.value === value)[0].label}会员`),
+          isShow: !!customerType,
+        },
+        {
+          id: 'saleType',
+          value: item.SaleType,
+          color: '#87d068',
+          formatFunc: value => (saleTypeLabelMapping[value]),
+          isShow: !!item.SaleType,
+        },
+        {
+          id: 'newPrice',
+          value: item.NewUnitPrice,
+          color: '#f50',
+          formatFunc: () => ('修改过单价'),
+          isShow: item.NewUnitPrice != null,
+        },
+        {
+          id: 'discount',
+          value: discount,
+          color: '#2db7f5',
+          formatFunc: () => (`${discount}% 单品折扣`),
+          isShow: !!discount,
+        },
+        {
+          id: 'wholeDiscount',
+          value: wholeDiscount,
+          color: '#8ca0a0',
+          formatFunc: () => (`${wholeDiscount}% 整单折扣`),
+          isShow: wholeDiscount !== null && wholeDiscount !== 100,
+        },
+      ];
+      const commonTagListNode = (
+        tagList.map((tagItem) => {
+          if (!tagItem.isShow) { return null; }
+          return (
+            <Tag
+              color={tagItem.color}
+            >
+              {tagItem.formatFunc(tagItem.value)}
+            </Tag>
+          );
+        })
+      );
+      const goodsTagList = (
+        <div>
+          {
+                isRefund ?
+                (
+                  <Tag color="#ff4d4f">
+                  退款商品
+                  </Tag>
+                )
+                :
+                commonTagListNode
+          }
+        </div>
+      );
       return (
         <Card
           key={item.Key}
           bodyStyle={{ padding: '3px 15px 10px 15px' }}
           bordered={false}
-          className={className}
+          className={`${cardCls} he-bb`}
           selected={item.Key === activeSelectedKey}
           onClick={() => this.handleClick(item.Key)}
         >
           <Row>
-            <Col span={18} className={styles.itemInCard}>{item.EN}</Col>
+            <Col span={18} className={cardTitle}>
+              {
+                isRefund ?
+                `【退货】 ${item.EN}`
+                :
+                item.EN
+              }
+            </Col>
             <Col
               span={6}
               style={{ textAlign: 'right' }}
-              className={styles.itemInCard}
+              className={cardTitle}
             >
               { keepTwoDecimals(price) }
             </Col>
@@ -60,52 +149,12 @@ export default class SelectedGoods extends PureComponent {
               <span>
                 数量：{count}
               </span>
-              <Divider type="vertical" className={styles.divider} />
-              <span>零售价：{keepTwoDecimals(item.RetailPrice)}</span>
-              <Divider type="vertical" className={styles.divider} />
-              <span>折后单价：{keepTwoDecimals(item.RealPrice)}</span>
-
-              {/* <span className={(item.NewUnitPrice || item.NewUnitPrice === 0) ? styles.deletedText : null}>
-                {item.CustomerPrice || item.RetailPrice}
-              </span> */}
               {
-                // (item.NewUnitPrice || item.NewUnitPrice === 0) ? (
-                //   <span style={{ marginLeft: 6 }}>
-                //     {
-                //       item.NewUnitPrice
-                //     }
-                //   </span>
-                // )
-                //   : null
+                isRefund ? cartItemRefundPrice : cartItemPrice
               }
             </Col>
             <Col span={24} style={{ textAlign: 'right' }}>
-              {
-                (customerType) ? (
-                  <Tag color="#f0dc00">{CUSTOMER_TYPE.filter(item => item.value === customerType)[0].label}会员</Tag>
-                )
-                  : null
-              }
-              {
-                (item.SaleType || item.SaleType === 0) ? (
-                  <Tag color="#87d068">{saleTypeLabelMapping[saleType]}</Tag>
-                )
-                  : null
-              }
-              {
-                (item.NewUnitPrice || item.NewUnitPrice === 0) ? (
-                  <Tag color="#f50">修改过单价</Tag>
-                )
-                  : null
-              }
-              {
-                discount ? (
-                  <Tag color="#2db7f5">{discount}% 单品折扣</Tag>
-                ) : null
-              }
-              {
-                typeof wholeDiscount === 'number' && wholeDiscount !== 100 && <Tag color="#8ca0a0">{wholeDiscount}% 整单折扣</Tag>
-              }
+              { goodsTagList }
             </Col>
           </Row>
         </Card>

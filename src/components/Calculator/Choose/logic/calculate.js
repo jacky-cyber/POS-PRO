@@ -6,7 +6,7 @@ function generateNewSelectedList(activeSelectedKey, selectedList, cache, number,
     if (item.Key === activeSelectedKey) {
       switch (type) {
         case 'count':
-          return { ...item, CacheCount: cache, Count: number };
+          return { ...item, CacheCount: cache, Count: item.Count > 0 ? number : -number };
         case 'discount':
           return { ...item, CacheDiscount: cache, Discount: number };
         case 'unitPrice':
@@ -28,7 +28,6 @@ function numberHandler(oldCache, buttonName, activeTabKey, selectedList, activeS
   }
   const number = cache - 0;
   const newSelectedList = generateNewSelectedList(activeSelectedKey, selectedList, cache, number, type);
-  console.log('newSelectedList', newSelectedList);
   dispatch({ type: 'commodity/changeSelectedListAndCheck', payload: { activeTabKey, newSelectedList } });
 }
 

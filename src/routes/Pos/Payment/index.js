@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
 import { Button, Badge, Row, Col, Icon, Table, Radio, List, Card, Divider, Layout } from 'antd';
+import { SelectedGoods } from 'components/PosComponents';
 import styles from './index.less';
 import Pay from './Pay';
 import { POS_TAB_TYPE, POS_PHASE, CUSTOMER_TYPE } from '../../../constant';
@@ -9,7 +10,7 @@ import MilkPowderHandler from './MilkPowderHandler/';
 import StoreSaleHandler from './StoreSaleHandler';
 import StoreWholeSaleHandler from './StoreWholeSaleHandler/';
 import DescriptionList from '../../../components/DescriptionList';
-import SelectedGoods from '../../../components/List/SelectedGoods/';
+// import SelectedGoods from '../../../components/List/SelectedGoods/';
 // import WareHouse from './WareHouse';
 
 const { Sider, Content } = Layout;

@@ -1,3 +1,9 @@
+@import "~antd/lib/style/themes/default.less";
+
+:global {
+  @brand-refund-primary: #ff4d4f; // 涉及退货的颜色
+}
+
 html,
 body,
 :global(#root) {
@@ -27,5 +33,24 @@ body {
 :global {
   .ant-spin-container {
     overflow: visible !important;
+  }
+}
+
+// he 全局样式
+:global {
+  .he-bb {
+    position: relative;
+    &:after {
+      content: "";
+      width: 100%;
+      height: @border-width-base;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: @border-color-base;
+      transform: scaleY(.667);
+      transform-origin: 0 100%;
+    }
   }
 }

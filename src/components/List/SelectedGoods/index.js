@@ -3,7 +3,7 @@ import classNames from 'classnames/bind';
 import { Card, Row, Col, Divider, Tag, InputNumber } from 'antd';
 import { connect } from 'dva';
 import styles from './index.less';
-import { CUSTOMER_TYPE } from '../../../constant'
+import { CUSTOMER_TYPE } from '../../../constant';
 
 const cx = classNames.bind(styles);
 
@@ -11,14 +11,14 @@ const saleTypeLabelMapping = {
   1: '本地',
   2: '邮寄',
   3: '代发',
-}
+};
 
 class SelectedGoods extends PureComponent {
   handleClick = (key) => {
     this.props.dispatch({ type: 'commodity/toggleSelectedGoods', payload: key });
   }
   discountChangeHandler = (value) => {
-    this.props.dispatch({ type: 'commodity/changeWholeDiscountInput', payload: value})
+    this.props.dispatch({ type: 'commodity/changeWholeDiscountInput', payload: value });
   }
   generateSelectedListNode = (selectedList, activeSelectedKey, customerType, wholeDiscount) => (
     selectedList.map((item) => {
@@ -30,8 +30,8 @@ class SelectedGoods extends PureComponent {
       const count = item.Count;
       const discount = item.Discount;
       // const price = unitPrice * count * (discount || 100) * (wholeDiscount || 100) / 100 / 100;
-      const price = item.RealPrice
-      const saleType = item.SaleType
+      const price = item.RealPrice;
+      const saleType = item.SaleType;
       return (
         <Card
           key={item.Key}
@@ -97,7 +97,7 @@ class SelectedGoods extends PureComponent {
                 ) : null
               }
               {
-                typeof wholeDiscount === 'number' && wholeDiscount !== 100  && <Tag color="#8ca0a0">{wholeDiscount}% 整单折扣</Tag>
+                typeof wholeDiscount === 'number' && wholeDiscount !== 100 && <Tag color="#8ca0a0">{wholeDiscount}% 整单折扣</Tag>
               }
             </Col>
           </Row>
@@ -109,8 +109,9 @@ class SelectedGoods extends PureComponent {
   render() {
     const { activeTabKey, orders } = this.props;
     const currentOrder = orders.filter(item => item.key === activeTabKey)[0];
-    const { activeSelectedKey, selectedList, customer, wholeDiscount } = currentOrder
-    const { memberType: customerType } = customer
+    console.log('currentOrder', currentOrder);
+    const { activeSelectedKey, selectedList, customer, wholeDiscount } = currentOrder;
+    const { memberType: customerType } = customer;
     if (!selectedList || (Array.isArray(selectedList) && selectedList.length === 0)) {
       return <div>购物车是空的</div>;
     }

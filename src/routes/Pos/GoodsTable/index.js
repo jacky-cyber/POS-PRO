@@ -194,7 +194,7 @@ export default class GoodsTable extends PureComponent {
                           type="danger"
                           shape="circle"
                           icon="rollback"
-                          onClick={() => props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: `refund-${record.Sku}`, count: -record.Count } })}
+                          onClick={() => props.dispatch({ type: 'commodity/addToSelectedList', payload: { key: record.Key, count: -1, refundGoodsItem: record } })}
                         />
                       );
                     },
@@ -328,10 +328,20 @@ export default class GoodsTable extends PureComponent {
               const { order = {} } = this.props;
               const { refundOrderDetail } = order;
               if (Array.isArray(refundOrderDetail) && refundOrderDetail.length > 0) {
-                return refundOrderDetail;
+                return this.formatRefundOrderDetail(refundOrderDetail);
               } else {
                 return false;
               }
+            }
+            formatRefundOrderDetail = (refundOrderDetail) => {
+              return refundOrderDetail.map(item => ({
+                ...item,
+                Key: `refund-${item.Sku}`,
+                EN: item.ProductName,
+                Stock: item.CountQuantity,
+                RetailPrice: item.RealPrice,
+                isRefund: true,
+              }));
             }
             searchOrderIDHandler = (value) => {
               this.props.dispatch({
@@ -397,7 +407,7 @@ export default class GoodsTable extends PureComponent {
                   <h3 className={styles.refundOrderInfo}>正在退货的订单号：{this.getRefundOrderDetail() && refundOrderDetail[0].OrderID}</h3>
                   <Table
                     bordered
-                    dataSource={refundOrderDetail}
+                    dataSource={this.getRefundOrderDetail() || []}
                     columns={refundColumns}
                     rowKey={record => record.ID}
                     loading={loading}
