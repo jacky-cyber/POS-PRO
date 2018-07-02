@@ -48,12 +48,16 @@ export default {
     *getOrderReceipt(action, { call, put }) {
       const { payload } = action;
       const response = yield call(getHistoryOrderReceiptAPI, payload);
-      const orderReceipt = response.Result.Data || '';
-      const formattedReceipt = JSON.parse(orderReceipt);
-      yield put({
-        type: 'saveOrderReceipt',
-        payload: formattedReceipt || {},
-      });
+      try {
+        const orderReceipt = response.Result.Data || '';
+        const formattedReceipt = JSON.parse(orderReceipt);
+        yield put({
+          type: 'saveOrderReceipt',
+          payload: formattedReceipt || {},
+        });
+      } catch (e) {
+        console.log('e', e);
+      }
     },
   },
 
