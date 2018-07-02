@@ -3,6 +3,9 @@ import { connect } from 'dva';
 import moment from 'moment';
 import { SALE_TYPE_MAPPING } from 'constant';
 import { Row, Col, Card, Form, Input, Icon, Button, DatePicker, Table } from 'antd';
+import Print from 'rc-print';
+import { Receipt } from 'components/BaseComponents';
+// import Receipt from '../Receipt';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 
 import styles from './HistoryOrdersTable.less';
@@ -21,6 +24,7 @@ const { RangePicker } = DatePicker;
 export default class TableList extends PureComponent {
   state = {
     expandForm: false,
+    remoteOrder: {},
   };
 
   componentDidMount() {
@@ -68,8 +72,25 @@ export default class TableList extends PureComponent {
     }
   }
 
-  fillReceiptHandler = (ID) => {
-    this.getOrderDetailHandler(ID).then(() => console.log(this.props.orderDetails));
+  formatOrderDetails = (orderList) => {
+    return orderList.map(item => ({
+      ...item,
+      EN: item.ProductName,
+      RetailPrice: item.OriginPrice,
+      Count: item.CountQuantity,
+    }));
+  }
+
+  fillReceiptHandler = (record) => {
+    this.getOrderDetailHandler(record.ID).then(() => {
+      this.setState({
+        remoteOrder: { ...record, selectedList: this.formatOrderDetails(this.props.orderDetails) },
+      }, () => this.printHandler());
+    });
+  }
+
+  printHandler = () => {
+    this.refs.printForm.onPrint();
   }
 
   renderForm() {
@@ -166,8 +187,9 @@ export default class TableList extends PureComponent {
   }
 
   render() {
-    const { orderList } = this.props;
-    console.log('orderList', orderList);
+    const { orderList, orderDetails } = this.props;
+    const { remoteOrder } = this.state;
+    console.log('orderDetails', orderDetails);
 
     const orderColumns = [
       {
@@ -297,7 +319,7 @@ export default class TableList extends PureComponent {
               </Button>
               <Button
                 size="small"
-                onClick={() => this.fillReceiptHandler(record.ID)}
+                onClick={() => this.fillReceiptHandler(record)}
               >
               补小票
               </Button>
@@ -387,7 +409,7 @@ export default class TableList extends PureComponent {
               bordered
               size="small"
               columns={goodsColumns}
-              dataSource={this.props.orderDetails}
+              dataSource={orderDetails}
               loading={this.props.getDetailsLoading}
               rowKey={record => record.ID}
               local={{ emptyText: '请先选择订单' }}
@@ -395,6 +417,15 @@ export default class TableList extends PureComponent {
             />
           </div>
         </Card>
+        <Print
+          ref="printForm"
+        >
+          <div style={{ display: 'none' }}>
+            <div>
+              <Receipt remoteOrder={remoteOrder} isShowTax />
+            </div>
+          </div>
+        </Print>
       </PageHeaderLayout>
     );
   }
