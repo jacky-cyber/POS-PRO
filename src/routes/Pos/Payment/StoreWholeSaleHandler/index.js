@@ -4,7 +4,7 @@ import Mousetrap from 'mousetrap';
 import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover } from 'antd';
 import { connect } from 'dva';
 import Print from 'rc-print';
-import Receipt from '../Receipt';
+import { Receipt } from 'components/BaseComponents';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import { POS_PHASE } from '../../../../constant';
 
@@ -20,6 +20,9 @@ const keyboardMapping = ['backspace', 'p', 'enter'];
 @Form.create()
 
 export default class StoreWholeSaleHandler extends PureComponent {
+  state = {
+    printInfo: {},
+  }
   componentDidMount() {
     Mousetrap.bind('backspace', () => this.prevHandler());
     Mousetrap.bind('p', () => this.printHandler());
@@ -31,8 +34,30 @@ export default class StoreWholeSaleHandler extends PureComponent {
       Mousetrap.unbind(item);
     });
   }
+
+  generatePrint = () => {
+    const { order = {} } = this.props;
+    const print = {
+      ID: order.ID,
+      createTime: order.createTime,
+      shop: order.shop,
+      selectedList: order.selectedList,
+      totalPrice: order.totalPrice,
+      expressCost: order.expressCost,
+      shippingCost: order.shippingCost,
+      expressData: order.expressData,
+      shippingData: order.shippingData,
+      paymentData: order.paymentData,
+      type: order.type,
+      saleType: order.saleType,
+    };
+    return print;
+  }
   printHandler = () => {
-    this.refs.printForm.onPrint();
+    const print = this.generatePrint();
+    this.setState({ printInfo: print }, () => {
+      this.refs.printForm.onPrint();
+    });
   }
   prevHandler = () => {
     const activeTabKey = this.props.activeTabKey;
@@ -41,8 +66,9 @@ export default class StoreWholeSaleHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   submitHandler = () => {
-    const { ID } = this.props.order;
-    const { selectedList, expressData, shippingData, ...restOrder } = this.props.order;
+    const { order = {} } = this.props;
+    const { ID } = order;
+    const { selectedList, expressData, shippingData, ...restOrder } = order;
     const address = {
       SenderName: '',
       SenderPhoneNumber: '',
@@ -56,7 +82,9 @@ export default class StoreWholeSaleHandler extends PureComponent {
       },
       ReceiverDetailedAddress: '',
     };
-    const newValues = { ...restOrder, waybill: selectedList, ...address };
+    // 构造打印对象
+    const print = this.generatePrint();
+    const newValues = { ...restOrder, waybill: selectedList, ...address, print };
     const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
@@ -65,6 +93,7 @@ export default class StoreWholeSaleHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   render() {
+    const { printInfo } = this.state;
     const { order, submitLoading } = this.props;
     const { receiveMoney, totalPrice } = order;
     return (
@@ -75,7 +104,7 @@ export default class StoreWholeSaleHandler extends PureComponent {
         >
           <div style={{ display: 'none' }}>
             <div>
-              <Receipt />
+              <Receipt order={printInfo} />
             </div>
           </div>
         </Print>

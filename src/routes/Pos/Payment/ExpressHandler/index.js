@@ -1,12 +1,12 @@
 import React, { PureComponent } from 'react';
 import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd';
 import { connect } from 'dva';
+import { Receipt } from 'components/BaseComponents';
 import TableForm from './TableForm';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import { POS_PHASE } from '../../../../constant';
 import styles from './index.less';
 import Print from 'rc-print';
-import Receipt from '../Receipt';
 
 
 const fieldLabels = {
@@ -14,33 +14,6 @@ const fieldLabels = {
 };
 
 const keyboardMapping = ['backspace', 'p', 'enter'];
-
-
-const dataSource = [{
-  key: '1',
-  name: '胡彦斌',
-  age: 32,
-  address: '西湖区湖底公园1号',
-}, {
-  key: '2',
-  name: '胡彦祖',
-  age: 42,
-  address: '西湖区湖底公园1号',
-}];
-
-const columns = [{
-  title: '姓名',
-  dataIndex: 'name',
-  key: 'name',
-}, {
-  title: '年龄',
-  dataIndex: 'age',
-  key: 'age',
-}, {
-  title: '住址',
-  dataIndex: 'address',
-  key: 'address',
-}];
 
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
@@ -53,6 +26,9 @@ const columns = [{
 @Form.create()
 
 export default class ExpressHandler extends PureComponent {
+  state = {
+    printInfo: {},
+  }
   componentDidMount() {
     Mousetrap.bind('backspace', () => this.prevHandler());
     Mousetrap.bind('p', () => this.printHandler());
@@ -70,7 +46,10 @@ export default class ExpressHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   printHandler = () => {
-    this.refs.printForm.onPrint();
+    const print = this.generatePrint();
+    this.setState({ printInfo: print }, () => {
+      this.refs.printForm.onPrint();
+    });
   }
   checkExpressData = (rule, value, callback) => {
     if (value[0]) {
@@ -84,9 +63,28 @@ export default class ExpressHandler extends PureComponent {
       callback();
     }
   }
+  generatePrint = () => {
+    const { order = {} } = this.props;
+    const print = {
+      ID: order.ID,
+      createTime: order.createTime,
+      shop: order.shop,
+      selectedList: order.selectedList,
+      totalPrice: order.totalPrice,
+      expressCost: order.expressCost,
+      shippingCost: order.shippingCost,
+      expressData: order.expressData,
+      shippingData: order.shippingData,
+      paymentData: order.paymentData,
+      type: order.type,
+      saleType: order.saleType,
+    };
+    return print;
+  }
   valueHandler = (values) => {
-    const { ID } = this.props.order;
-    const { selectedList, ...restOrder } = this.props.order;
+    const { order = {} } = this.props;
+    const { ID } = order;
+    const { selectedList, ...restOrder } = order;
     const address = {
       SenderName: '',
       SenderPhoneNumber: '',
@@ -100,7 +98,9 @@ export default class ExpressHandler extends PureComponent {
       },
       ReceiverDetailedAddress: '',
     };
-    const newValues = { ...values, ...restOrder, waybill: selectedList, ...address };
+    // 构造打印对象
+    const print = this.generatePrint();
+    const newValues = { ...values, ...restOrder, waybill: selectedList, ...address, print };
     const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
@@ -116,6 +116,7 @@ export default class ExpressHandler extends PureComponent {
     });
   }
   render() {
+    const { printInfo } = this.state;
     const { form, order, dispatch, submitLoading } = this.props;
     const { getFieldDecorator, getFieldsError } = form;
     const { expressData, receiveMoney, totalPrice } = order || [];
@@ -166,9 +167,9 @@ export default class ExpressHandler extends PureComponent {
           ref="printForm"
           title="门店出口/邮寄/代发"
         >
-          <div style={{ display: 'block' }}>
+          <div style={{ display: 'none' }}>
             <div>
-              <Receipt isExpress />
+              <Receipt order={printInfo} />
             </div>
           </div>
         </Print>

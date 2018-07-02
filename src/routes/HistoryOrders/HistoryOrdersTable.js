@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
+import ReactDOM from 'react-dom';
 import { connect } from 'dva';
 import moment from 'moment';
-import { SALE_TYPE_MAPPING } from 'constant';
+import { SALE_TYPE_MAPPING, POS_TYPE } from 'constant';
 import { Row, Col, Card, Form, Input, Icon, Button, DatePicker, Table } from 'antd';
 import Print from 'rc-print';
-import { Receipt } from 'components/BaseComponents';
+import { Receipt, MilkPowderReceipt } from 'components/BaseComponents';
 // import Receipt from '../Receipt';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 
@@ -18,13 +19,14 @@ const { RangePicker } = DatePicker;
   getOrderLoading: state.loading.effects['historyOrders/getHistoryOrders'],
   orderDetails: state.historyOrders.orderDetails,
   getDetailsLoading: state.loading.effects['historyOrders/getOrderDetails'],
+  orderReceipt: state.historyOrders.orderReceipt,
+  getReceiptLoading: state.loading.effects['historyOrders/getOrderReceipt'],
   pagination: state.historyOrders.pagination,
 }))
 @Form.create()
 export default class TableList extends PureComponent {
   state = {
     expandForm: false,
-    remoteOrder: {},
   };
 
   componentDidMount() {
@@ -81,16 +83,31 @@ export default class TableList extends PureComponent {
     }));
   }
 
+  getOrderReceiptHandler = (ID) => {
+    if (ID) {
+      return this.props.dispatch({ type: 'historyOrders/getOrderReceipt', payload: ID });
+    }
+  }
+
   fillReceiptHandler = (record) => {
-    this.getOrderDetailHandler(record.ID).then(() => {
-      this.setState({
-        remoteOrder: { ...record, selectedList: this.formatOrderDetails(this.props.orderDetails) },
-      }, () => this.printHandler());
+    const { Type } = record;
+    this.getOrderReceiptHandler(record.ID).then(() => {
+      this.printHandler(Type);
     });
   }
 
-  printHandler = () => {
-    this.refs.printForm.onPrint();
+  printHandler = (type) => {
+    if (type === POS_TYPE.MILKPOWDER.value) {
+      this.milkPowderReceiptDOM.onPrint();
+      return;
+    }
+    this.receiptDOM.onPrint();
+  }
+  storeReceiptDOM = (node) => {
+    this.receiptDOM = node;
+  }
+  storeMilkReceiptDOM = (node) => {
+    this.milkPowderReceiptDOM = node;
   }
 
   renderForm() {
@@ -187,9 +204,7 @@ export default class TableList extends PureComponent {
   }
 
   render() {
-    const { orderList, orderDetails } = this.props;
-    const { remoteOrder } = this.state;
-    console.log('orderDetails', orderDetails);
+    const { orderList, orderDetails, orderReceipt } = this.props;
 
     const orderColumns = [
       {
@@ -418,11 +433,24 @@ export default class TableList extends PureComponent {
           </div>
         </Card>
         <Print
-          ref="printForm"
+          ref={this.storeReceiptDOM}
         >
           <div style={{ display: 'none' }}>
             <div>
-              <Receipt remoteOrder={remoteOrder} isShowTax />
+              <Receipt
+                order={orderReceipt}
+              />
+            </div>
+          </div>
+        </Print>
+        <Print
+          ref={this.storeMilkReceiptDOM}
+        >
+          <div style={{ display: 'none' }}>
+            <div>
+              <MilkPowderReceipt
+                order={orderReceipt}
+              />
             </div>
           </div>
         </Print>

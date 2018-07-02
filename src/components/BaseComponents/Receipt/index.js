@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Row, Col } from 'antd';
-import { connect } from 'dva';
-import { TAX_RATE } from 'constant';
+import { TAX_RATE, POS_TYPE, SALE_TYPE } from 'constant';
 import { formatToDecimals } from 'utils/utils';
 import JsBarcode from 'jsbarcode';
 import styles from './index.less';
@@ -15,22 +14,21 @@ export default class Receipt extends PureComponent {
     const { ID } = order;
     if (ID) {
       JsBarcode('#no', ID, {
-        height: 50,
+        width: 1,
+        height: 20,
         displayValue: false,
       });
     }
   }
   componentWillReceiveProps(nextProps) {
-    const { order = {}, remoteOrder = {} } = nextProps;
-    const currentOrder = order.ID ? order : remoteOrder;
-    const { prevOrder = {}, prevRemoteOrder = {} } = this.props;
-    const currentPrevOrder = prevOrder.ID ? prevOrder : prevRemoteOrder;
-    const { ID: nextID } = currentOrder;
-    const { ID: prevID } = currentPrevOrder;
+    const { order = {} } = nextProps;
+    const { prevOrder = {} } = this.props;
+    const { ID: nextID } = order;
+    const { ID: prevID } = prevOrder;
     if (nextID && nextID !== prevID) {
       JsBarcode('#no', nextID, {
         width: 1,
-        height: 30,
+        height: 20,
         displayValue: false,
       });
     }
@@ -45,23 +43,26 @@ export default class Receipt extends PureComponent {
     }, 0);
   }
   render() {
-    const { order = {}, remoteOrder = {}, isShowTax, isExpress, isShipping } = this.props;
-    const formattedOrder = {
-      ID: remoteOrder.ID,
-      createTime: remoteOrder.CreateTime,
-      shop: remoteOrder.Shop,
-      selectedList: remoteOrder.SelectedList,
-      goodsPrice: remoteOrder.GoodsPrice,
-      totalPrice: remoteOrder.RealPrice,
-      expressCost: remoteOrder.ExpressCost,
-      shippingCost: remoteOrder.ShippingCost,
-      expressData: remoteOrder.ExpressData,
-      shippingData: remoteOrder.ShippingData,
-      paymentData: remoteOrder.PaymentData,
-    };
-    const currentOrder = order.ID ? order : remoteOrder;
-    const { ID, createTime, shop, selectedList = [], totalPrice, expressCost, shippingCost, expressData = [], shippingData = [], paymentData = [] } = currentOrder;
+    const { order = {} } = this.props;
+    console.log('order', order);
+    const {
+      ID,
+      createTime,
+      shop,
+      selectedList = [],
+      totalPrice,
+      expressCost,
+      shippingCost,
+      expressData = [],
+      shippingData = [],
+      paymentData = [],
+      type,
+      saleType,
+    } = order;
     const { shopName } = shop || {};
+    const isShowTax = type === POS_TYPE.WHOLESALE.value || saleType === SALE_TYPE.LOCAL;
+    const isExpress = saleType === SALE_TYPE.EXPRESS;
+    const isShipping = saleType === SALE_TYPE.SHIPPING;
     const basicInfo = (
       <div>
 
@@ -252,8 +253,8 @@ export default class Receipt extends PureComponent {
     return (
       <div className={styles.receiptWrapper}>
         {goodsInfo}
-        {taxInfo}
-        {postageInfo}
+        { isShowTax && taxInfo}
+        {(isExpress || isShipping) && postageInfo}
       </div>
     );
   }

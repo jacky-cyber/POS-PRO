@@ -1,4 +1,4 @@
-import { getHistoryOrdersAPI, getHistoryOrderDetailsAPI } from 'services/historyOrders';
+import { getHistoryOrdersAPI, getHistoryOrderDetailsAPI, getHistoryOrderReceiptAPI } from 'services/historyOrders';
 
 export default {
   namespace: 'historyOrders',
@@ -45,6 +45,16 @@ export default {
         payload: Array.isArray(orderDetails) ? orderDetails : [],
       });
     },
+    *getOrderReceipt(action, { call, put }) {
+      const { payload } = action;
+      const response = yield call(getHistoryOrderReceiptAPI, payload);
+      const orderReceipt = response.Result.Data || '';
+      const formattedReceipt = JSON.parse(orderReceipt);
+      yield put({
+        type: 'saveOrderReceipt',
+        payload: formattedReceipt || {},
+      });
+    },
   },
 
   reducers: {
@@ -58,6 +68,12 @@ export default {
       return {
         ...state,
         orderDetails: action.payload,
+      };
+    },
+    saveOrderReceipt(state, action) {
+      return {
+        ...state,
+        orderReceipt: action.payload,
       };
     },
     changePagination(state, action) {

@@ -18,3 +18,11 @@ export async function getHistoryOrderDetailsAPI(ID) {
   };
   return request(`${DOMAIN}/Order/getOrderDetail`, options);
 }
+
+// 查询订单小票必须参数
+export async function getHistoryOrderReceiptAPI(ID) {
+  const options = {
+    body: `OrderID=${ID}`,
+  };
+  return request(`${DOMAIN}/Order/getPrint`, options);
+}

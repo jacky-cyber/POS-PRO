@@ -5,6 +5,7 @@ import SwitchableFormItem from './SwitchableFormItem';
 import SearchableSelect from './SearchableSelect';
 import TooltipInput from './TooltipInput';
 import Receipt from './Receipt';
+import MilkPowderReceipt from './Receipt/MilkPowderReceipt';
 
 export {
   TabOne,
@@ -14,4 +15,5 @@ export {
   SearchableSelect,
   TooltipInput,
   Receipt,
+  MilkPowderReceipt,
 };

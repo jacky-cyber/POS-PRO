@@ -21,6 +21,21 @@ export const POS_TAB_TYPE = {
   RETURNSALE: 'RETURNSALE',
 };
 
+export const POS_TYPE = {
+  STORESALE: {
+    value: 1,
+    labelCN: '门店销售订单',
+  },
+  MILKPOWDER: {
+    value: 2,
+    labelCN: '奶粉/生鲜订单',
+  },
+  WHOLESALE: {
+    value: 3,
+    labelCN: '批发订单',
+  },
+};
+
 export const SALE_TYPE = {
   LOCAL: 1,
   EXPRESS: 2,

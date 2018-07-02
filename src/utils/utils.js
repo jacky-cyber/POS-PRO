@@ -1,6 +1,10 @@
 import moment from 'moment';
 import { POS_TAB_TYPE, SALE_TYPE } from '../constant';
 
+export function escapeCharacter(value) {
+  return value.replace('&', '%26');
+}
+
 export function isValueValid(value) {
   // 处理 null 和 undefined
   if (value == null) { return false; }
@@ -27,7 +31,7 @@ export function generateParameterInUrl(payload) {
   const array = Object.keys(payload);
   const newArray = array.map(
     item => (
-      `${item}=${payload[item] === undefined ? '' : payload[item]}`
+      `${item}=${encodeURIComponent(payload[item] === undefined ? '' : payload[item])}`
     )
   );
   return newArray.join('&');

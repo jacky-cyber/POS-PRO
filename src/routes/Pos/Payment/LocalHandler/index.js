@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom';
 import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd';
 import Print from 'rc-print';
 import { connect } from 'dva';
+import { Receipt } from 'components/BaseComponents';
 import FooterToolbar from '../../../../components/FooterToolbar';
-import Receipt from '../Receipt';
 import { POS_PHASE } from '../../../../constant';
 
 
@@ -23,6 +23,9 @@ const keyboardMapping = ['backspace', 'p', 'enter'];
 
 
 export default class LocalHandler extends PureComponent {
+  state = {
+    printInfo: {},
+  }
   componentDidMount() {
     Mousetrap.bind('backspace', () => this.prevHandler());
     Mousetrap.bind('p', () => this.printHandler());
@@ -34,18 +37,41 @@ export default class LocalHandler extends PureComponent {
       Mousetrap.unbind(item);
     });
   }
+  generatePrint = () => {
+    const { order = {} } = this.props;
+    const print = {
+      ID: order.ID,
+      createTime: order.createTime,
+      shop: order.shop,
+      selectedList: order.selectedList,
+      totalPrice: order.totalPrice,
+      expressCost: order.expressCost,
+      shippingCost: order.shippingCost,
+      expressData: order.expressData,
+      shippingData: order.shippingData,
+      paymentData: order.paymentData,
+      type: order.type,
+      saleType: order.saleType,
+    };
+    return print;
+  }
   printHandler = () => {
-    this.refs.printForm.onPrint();
+    const print = this.generatePrint();
+    this.setState({ printInfo: print }, () => {
+      this.refs.printForm.onPrint();
+    });
   }
   prevHandler = () => {
-    const activeTabKey = this.props.activeTabKey;
+    const { activeTabKey } = this.props;
     const lastPhase = POS_PHASE.PAY;
     const targetPhase = POS_PHASE.TABLE;
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   submitHandler = () => {
-    const { ID } = this.props.order;
-    const { selectedList, expressData, shippingData, ...restOrder } = this.props.order;
+    const { order = {} } = this.props;
+    const { ID } = order;
+    const { selectedList, expressData, shippingData, ...restOrder } = order;
+    // 构造奶粉订单必要的地址
     const address = {
       SenderName: '',
       SenderPhoneNumber: '',
@@ -59,7 +85,8 @@ export default class LocalHandler extends PureComponent {
       },
       ReceiverDetailedAddress: '',
     };
-    const newValues = { ...restOrder, waybill: selectedList, ...address };
+    const print = this.generatePrint();
+    const newValues = { ...restOrder, waybill: selectedList, ...address, print };
     const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
@@ -68,6 +95,7 @@ export default class LocalHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/submitOrder', payload });
   }
   render() {
+    const { printInfo } = this.state;
     const { submitLoading, order } = this.props;
     const { receiveMoney, totalPrice } = order;
     return (
@@ -78,7 +106,7 @@ export default class LocalHandler extends PureComponent {
         >
           <div style={{ display: 'none' }}>
             <div>
-              <Receipt isShowTax />
+              <Receipt order={printInfo} />
             </div>
           </div>
         </Print>

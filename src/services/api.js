@@ -71,7 +71,7 @@ export async function getStoreWholesaleGoods(params) {
 
 export async function addOrUpdateCacheOrder({ ID, order }) {
   const options = {
-    body: `OrderID=${ID || ''}&Data=${order}`,
+    body: `OrderID=${ID || ''}&Data=${encodeURIComponent(order)}`,
   };
   return request(`${DOMAIN}/Order/AddOrUpdateCache`, options);
 }
@@ -89,7 +89,7 @@ export async function fetchWaybill(dataJson) {
 
 export async function submitOrder({ orderID, dataJson }) {
   const options = {
-    body: `OrderID=${orderID}&Data=${dataJson}`,
+    body: `OrderID=${orderID}&Data=${encodeURIComponent(dataJson)}`,
   };
   return request(`${DOMAIN}/Order/Commit`, options);
 }

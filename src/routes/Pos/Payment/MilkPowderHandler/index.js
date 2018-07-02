@@ -5,10 +5,10 @@ import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover } from 'an
 import { connect } from 'dva';
 import Print from 'rc-print';
 import { POS_PHASE } from 'constant';
+import { MilkPowderReceipt } from 'components/BaseComponents';
 import TableForm from './TableForm';
 import CascaderInFormItem from './CascaderInFormItem';
 import FooterToolbar from '../../../../components/FooterToolbar';
-import MilkPowderReceipt from '../Receipt/MilkPowderReceipt';
 import styles from './index.less';
 
 const keyboardMapping = ['backspace', 'p', 'enter'];
@@ -35,7 +35,7 @@ const fieldLabels = {
 
 export default class MilkPowderHandler extends PureComponent {
   state = {
-    milkPowderData: {},
+    printInfo: {},
   }
   componentDidMount() {
     Mousetrap.bind('backspace', () => this.prevHandler());
@@ -50,7 +50,13 @@ export default class MilkPowderHandler extends PureComponent {
     });
   }
   printHandler = (values) => {
-    this.setState({ milkPowderData: values });
+    const { order = {} } = this.props;
+    const printInfo = {
+      ...values,
+      ID: order.ID,
+      createTime: order.createTime,
+    };
+    this.setState({ printInfo });
     const { printForm } = this.refs;
     window.setTimeout(() => {
       printForm.onPrint();
@@ -84,8 +90,19 @@ export default class MilkPowderHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/fetchWaybill', payload });
   }
   valueHandler = (values) => {
-    const { ID } = this.props.order;
-    const newValues = { ...values, ...this.props.order };
+    const { order = {} } = this.props;
+    const { ID } = order;
+    // 构造打印对象
+    const print = {
+      ID: order.ID,
+      createTime: order.createTime,
+      ...values,
+    };
+    const newValues = {
+      ...values,
+      ...this.props.order,
+      print,
+    };
     const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
@@ -98,12 +115,12 @@ export default class MilkPowderHandler extends PureComponent {
     const { validateFieldsAndScroll } = form;
     validateFieldsAndScroll((error, values) => {
       if (!error) {
-        // this.valueHandler(values);
         callback && callback(values);
       }
     });
   }
   render() {
+    const { printInfo } = this.state;
     const { form, order, dispatch, submitLoading } = this.props;
     const { receiveMoney, totalPrice } = order;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
@@ -177,7 +194,7 @@ export default class MilkPowderHandler extends PureComponent {
         >
           <div style={{ display: 'none' }}>
             <div>
-              <MilkPowderReceipt milkPowderData={this.state.milkPowderData} />
+              <MilkPowderReceipt order={printInfo} />
             </div>
           </div>
         </Print>
