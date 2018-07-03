@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { routerRedux } from 'dva/router';
-import { Button, Badge, Row, Col, Icon, Table, Radio, List, Card, Divider, Layout } from 'antd';
+import { List, Card, Divider, Layout } from 'antd';
 import { SelectedGoods } from 'components/PosComponents';
 import styles from './index.less';
 import Pay from './Pay';
@@ -27,31 +26,6 @@ const typeLabelMapping = {
   3: '批发',
 };
 
-const dataSource = [{
-  key: '1',
-  name: '胡彦斌',
-  age: 32,
-  address: '西湖区湖底公园1号',
-}, {
-  key: '2',
-  name: '胡彦祖',
-  age: 42,
-  address: '西湖区湖底公园1号',
-}];
-
-const columns = [{
-  title: '姓名',
-  dataIndex: 'name',
-  key: 'name',
-}, {
-  title: '年龄',
-  dataIndex: 'age',
-  key: 'age',
-}, {
-  title: '住址',
-  dataIndex: 'address',
-  key: 'address',
-}];
 
 @connect(state => ({
   order: state.commodity.orders.filter(item => item.key === state.commodity.activeTabKey)[0],
@@ -132,7 +106,11 @@ export default class Payment extends PureComponent {
           >
             <List
               dataSource={priceList}
-              renderItem={item => (<List.Item className={styles.item}>{item.title}： {item.value}</List.Item>)}
+              renderItem={item => (
+                <List.Item className={styles.item}>
+                  {item.title}： {item.value}
+                </List.Item>
+              )}
             />
           </div>
         </Sider>

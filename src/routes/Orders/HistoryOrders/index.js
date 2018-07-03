@@ -1,27 +1,25 @@
 import React, { PureComponent } from 'react';
-import ReactDOM from 'react-dom';
 import { connect } from 'dva';
 import moment from 'moment';
 import { SALE_TYPE_MAPPING, POS_TYPE } from 'constant';
 import { Row, Col, Card, Form, Input, Icon, Button, DatePicker, Table } from 'antd';
 import Print from 'rc-print';
 import { Receipt, MilkPowderReceipt } from 'components/BaseComponents';
-// import Receipt from '../Receipt';
-import PageHeaderLayout from '../../layouts/PageHeaderLayout';
+import PageHeaderLayout from 'layouts/PageHeaderLayout';
 
-import styles from './HistoryOrdersTable.less';
+import styles from './index.less';
 
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
 @connect(state => ({
-  orderList: state.historyOrders.orderList,
-  getOrderLoading: state.loading.effects['historyOrders/getHistoryOrders'],
-  orderDetails: state.historyOrders.orderDetails,
-  getDetailsLoading: state.loading.effects['historyOrders/getOrderDetails'],
-  orderReceipt: state.historyOrders.orderReceipt,
-  getReceiptLoading: state.loading.effects['historyOrders/getOrderReceipt'],
-  pagination: state.historyOrders.pagination,
+  orderList: state.orders.orderList,
+  getOrderLoading: state.loading.effects['orders/getHistoryOrders'],
+  orderDetails: state.orders.orderDetails,
+  getDetailsLoading: state.loading.effects['orders/getOrderDetails'],
+  orderReceipt: state.orders.orderReceipt,
+  getReceiptLoading: state.loading.effects['orders/getOrderReceipt'],
+  pagination: state.orders.pagination,
 }))
 @Form.create()
 export default class TableList extends PureComponent {
@@ -64,13 +62,13 @@ export default class TableList extends PureComponent {
         value,
         pagination: pagination || this.props.pagination,
       };
-      dispatch({ type: 'historyOrders/getHistoryOrders', payload });
+      dispatch({ type: 'orders/getHistoryOrders', payload });
     });
   }
 
   getOrderDetailHandler = (ID) => {
     if (ID) {
-      return this.props.dispatch({ type: 'historyOrders/getOrderDetails', payload: ID });
+      return this.props.dispatch({ type: 'orders/getOrderDetails', payload: ID });
     }
   }
 
@@ -85,7 +83,7 @@ export default class TableList extends PureComponent {
 
   getOrderReceiptHandler = (ID) => {
     if (ID) {
-      return this.props.dispatch({ type: 'historyOrders/getOrderReceipt', payload: ID });
+      return this.props.dispatch({ type: 'orders/getOrderReceipt', payload: ID });
     }
   }
 

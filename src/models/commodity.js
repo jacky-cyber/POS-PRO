@@ -3,7 +3,7 @@ import { message } from 'antd';
 import Cookies from 'js-cookie';
 import { POS_TAB_TYPE, POS_PHASE, SALE_TYPE } from 'constant';
 import { submitCustomer, getCustomer, deleteCustomer, updateCustomer, getMilkPowderGoods, addOrUpdateCacheOrder, fetchWaybill, submitOrder, getStoreSaleGoods, getStoreWholesaleGoods, addOrUpdateDailyClosing } from 'services/api';
-import { getHistoryOrderDetailsAPI } from 'services/historyOrders';
+import { getHistoryOrderDetailsAPI } from 'services/orders';
 import { calculateExpressOrShippingCost, getGoodsItemCustomerPrice, keepTwoDecimals, setLocalStorage, getLocalStorage, formatToDecimals } from 'utils/utils';
 
 function getCurrentOrder(state) {

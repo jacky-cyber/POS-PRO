@@ -334,13 +334,16 @@ export default class GoodsTable extends PureComponent {
               }
             }
             formatRefundOrderDetail = (refundOrderDetail) => {
+              console.log('refundOrderDetail', refundOrderDetail);
               return refundOrderDetail.map(item => ({
                 ...item,
                 Key: `refund-${item.Sku}`,
                 EN: item.ProductName,
+                CN: item.ProductName,
                 Stock: item.CountQuantity,
                 RetailPrice: item.RealPrice,
                 isRefund: true,
+                Weight: 0,
               }));
             }
             searchOrderIDHandler = (value) => {

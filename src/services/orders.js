@@ -26,3 +26,12 @@ export async function getHistoryOrderReceiptAPI(ID) {
   };
   return request(`${DOMAIN}/Order/getPrint`, options);
 }
+
+// 查询每日销售数据
+export async function getDailyOrdersAPI(payload) {
+  const { value } = payload;
+  const options = {
+    body: `${generateParameterInUrl(value)}`,
+  };
+  return request(`${DOMAIN}/Order/getOrderByTime`, options);
+}

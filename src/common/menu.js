@@ -43,10 +43,19 @@ const menuData = [{
   ],
 },
 {
-  name: '历史订单',
+  name: '订单管理',
   icon: 'exception',
-  path: 'historyOrders',
-  ID: 'historyOrders',
+  path: 'orders',
+  ID: 'orders',
+  children: [
+    {
+      name: '历史订单',
+      path: 'historyOrders',
+    }, {
+      name: '销控表',
+      path: 'dailyOrders',
+    },
+  ],
 },
 {
   name: '用户管理',

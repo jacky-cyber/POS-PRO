@@ -94,8 +94,11 @@ export const getRouterData = (app) => {
     '/orderGoods/orderManagement': {
       component: dynamicWrapper(app, ['orderGoods'], () => import('../routes/OrderGoods/PlaceAnOrder')),
     },
-    '/historyOrders': {
-      component: dynamicWrapper(app, ['historyOrders'], () => import('../routes/HistoryOrders/HistoryOrdersTable')),
+    '/orders/historyOrders': {
+      component: dynamicWrapper(app, ['orders'], () => import('../routes/Orders/HistoryOrders/')),
+    },
+    '/orders/dailyOrders': {
+      component: dynamicWrapper(app, ['orders'], () => import('../routes/Orders/DailyOrders/')),
     },
     '/userManagement/crud': {
       component: dynamicWrapper(app, ['user'], () => import('../routes/User/Crud/index.js')),

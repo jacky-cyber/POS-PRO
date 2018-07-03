@@ -13,9 +13,9 @@ export default class Receipt extends PureComponent {
     const { order = {} } = this.props;
     const { ID } = order;
     if (ID) {
-      JsBarcode('#no', ID, {
+      JsBarcode('.no', ID, {
         width: 1,
-        height: 20,
+        height: 25,
         displayValue: false,
       });
     }
@@ -26,9 +26,9 @@ export default class Receipt extends PureComponent {
     const { ID: nextID } = order;
     const { ID: prevID } = prevOrder;
     if (nextID && nextID !== prevID) {
-      JsBarcode('#no', nextID, {
+      JsBarcode('.no', nextID, {
         width: 1,
-        height: 20,
+        height: 25,
         displayValue: false,
       });
     }
@@ -42,9 +42,18 @@ export default class Receipt extends PureComponent {
       }
     }, 0);
   }
+  judgeIsShowTaxInfo = (order) => {
+    const { type, saleType } = order;
+    return type === POS_TYPE.WHOLESALE.value || saleType === SALE_TYPE.LOCAL;
+  }
+  judgeIsShowPostageInfo = (order) => {
+    const { saleType } = order;
+    const isShowExpress = saleType === SALE_TYPE.EXPRESS;
+    const isShowShipping = saleType === SALE_TYPE.SHIPPING;
+    return isShowExpress || isShowShipping;
+  }
   render() {
     const { order = {} } = this.props;
-    console.log('order', order);
     const {
       ID,
       createTime,
@@ -60,17 +69,17 @@ export default class Receipt extends PureComponent {
       saleType,
     } = order;
     const { shopName } = shop || {};
-    const isShowTax = type === POS_TYPE.WHOLESALE.value || saleType === SALE_TYPE.LOCAL;
+    const isShowTaxInfo = this.judgeIsShowTaxInfo(order);
     const isExpress = saleType === SALE_TYPE.EXPRESS;
     const isShipping = saleType === SALE_TYPE.SHIPPING;
+    const isShowPostageInfo = this.judgeIsShowPostageInfo(order);
     const basicInfo = (
       <div>
-
         <div className={styles.item}>
           <span>Invoice No</span>
           <span>{ID}</span>
         </div>
-        <img style={{ width: '100%' }} id="no" alt="idBarcode" />
+        <img style={{ width: '100%' }} className="no" alt="idBarcode" />
         <div className={styles.item}>
           <span>Sales</span>
           <span>{shopName}</span>
@@ -82,9 +91,9 @@ export default class Receipt extends PureComponent {
       </div>
     );
     const taxInfo = (
-      <div>
+      <div className={`${isShowTaxInfo ? '' : styles.mockNone}`}>
         <h2 className={styles.head}>TAX INVOICE</h2>
-        {basicInfo}
+        { basicInfo }
         {
           paymentData.map(item => (
             <div className={`${styles.list}`} key={item.key}>
@@ -98,12 +107,7 @@ export default class Receipt extends PureComponent {
         <div className={`${styles.item} ${styles.bolder}`}>
           <span>Includes GST of</span>
           <span>
-            {
-              isShowTax ?
-              `$${formatToDecimals(totalPrice * TAX_RATE, 2)}`
-              :
-              '$0'
-            }
+              $ {formatToDecimals(totalPrice * TAX_RATE, 2)}
           </span>
         </div>
         <div className={styles.item}>
@@ -116,7 +120,7 @@ export default class Receipt extends PureComponent {
     const goodsInfo = (
       <div>
         <h2 className={styles.head}>Health Element</h2>
-        {basicInfo}
+        { basicInfo }
         <div>
           Unit R, 63 Hugo Johnston Dr, Penrose
         </div>
@@ -187,9 +191,9 @@ export default class Receipt extends PureComponent {
       </div>
     );
     const postageInfo = (
-      <div>
+      <div className={`${isShowPostageInfo ? '' : styles.mockNone}`}>
         <h2 className={styles.head}>POSTAGE INVOICE</h2>
-        {basicInfo}
+        { basicInfo }
         {
           isExpress && (
             <div>
@@ -253,8 +257,8 @@ export default class Receipt extends PureComponent {
     return (
       <div className={styles.receiptWrapper}>
         {goodsInfo}
-        { isShowTax && taxInfo}
-        {(isExpress || isShipping) && postageInfo}
+        {taxInfo}
+        {postageInfo}
       </div>
     );
   }

@@ -39,7 +39,7 @@ export default class SiderMenu extends PureComponent {
     };
   }
   componentDidMount() {
-    this.setState({menus: this.props.menuData})
+    this.setState({ menus: this.props.menuData });
   }
   componentWillReceiveProps(nextProps) {
     if (nextProps.location.pathname !== this.props.location.pathname) {
