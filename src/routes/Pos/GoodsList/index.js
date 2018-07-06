@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Card, Button, Layout, Icon, Radio, Spin, Pagination, } from 'antd';
+import { Card, Button, Layout, Icon, Radio, Spin, Pagination } from 'antd';
 import CardItem from './CardItem';
 import ChooseCalculator from '../../../components/Calculator/Choose/';
 import SelectedGoods from '../../../components/List/SelectedGoods/';
@@ -21,36 +21,36 @@ const cx = classNames.bind(styles);
 
 export default class GoodsList extends PureComponent {
   paginationChangeHandler = (page, pageSize) => {
-    this.props.dispatch({type: 'commodity/changePaginationCurrent', payload: page})
+    this.props.dispatch({ type: 'commodity/changePaginationCurrent', payload: page });
   }
   clickTableHandler = (activeTabKey, currentPhase) => {
-   if (currentPhase === POS_PHASE.TABLE ) {
-     return
-   }
-   this.props.dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.TABLE } })
+    if (currentPhase === POS_PHASE.TABLE) {
+      return;
+    }
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.TABLE } });
   }
   clickListHandler = (activeTabKey, currentPhase) => {
-   if (currentPhase === POS_PHASE.LIST ) {
-     return
-   }
-   this.props.dispatch({type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } })
+    if (currentPhase === POS_PHASE.LIST) {
+      return;
+    }
+    this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase: POS_PHASE.LIST } });
   }
   render() {
     const { commodity, dispatch } = this.props;
-    const { pagination, activeTabKey } = commodity || {}
-    const { pagingData, pageSize, total, current } = pagination || {}
-    const goodsList = pagingData[current - 1]
-    const { commonLoading } = commodity
+    const { pagination, activeTabKey } = commodity || {};
+    const { pagingData, pageSize, total, current } = pagination || {};
+    const goodsList = pagingData[current - 1];
+    const { commonLoading } = commodity;
     const currentOrder = commodity.orders.filter(item => (item.key === commodity.activeTabKey))[0];
     const { display, saleType, type, targetPhase: currentPhase } = currentOrder;
-    let displayTable = cx({
+    const displayTable = cx({
       [styles.trigger]: true,
-      [styles.activeTrigger]: currentPhase === POS_PHASE.TABLE
-    })
-    let displayCardList = cx({
+      [styles.activeTrigger]: currentPhase === POS_PHASE.TABLE,
+    });
+    const displayCardList = cx({
       [styles.trigger]: true,
-      [styles.activeTrigger]: currentPhase === POS_PHASE.LIST
-    })
+      [styles.activeTrigger]: currentPhase === POS_PHASE.LIST,
+    });
     return (
       <Layout>
         <Sider
@@ -118,8 +118,7 @@ export default class GoodsList extends PureComponent {
               {
                 Array.isArray(goodsList) && goodsList.map(item => <CardItem item={item} key={item.Sku} dispatch={dispatch} saleType={type === POS_TAB_TYPE.STORESALE ? saleType : null} />)
               }
-              <div>
-              </div>
+              <div />
             </div>
           </Spin>
         </Content>

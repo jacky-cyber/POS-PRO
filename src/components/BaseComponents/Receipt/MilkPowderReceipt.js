@@ -1,9 +1,35 @@
 import React, { PureComponent } from 'react';
 import { Table, Row, Col } from 'antd';
+import JsBarcode from 'jsbarcode';
 import styles from './index.less';
 
 
 export default class Receipt extends PureComponent {
+  componentDidMount() {
+    const { order = {} } = this.props;
+    const { ID } = order;
+    if (ID) {
+      JsBarcode('.no', ID, {
+        width: 1,
+        height: 25,
+        displayValue: false,
+        margin: 0,
+      });
+    }
+  }
+  componentWillReceiveProps(nextProps) {
+    const { order = {} } = nextProps;
+    const { prevOrder = {} } = this.props;
+    const { ID: nextID } = order;
+    const { ID: prevID } = prevOrder;
+    if (nextID && nextID !== prevID) {
+      JsBarcode('.no', nextID, {
+        width: 1,
+        height: 25,
+        displayValue: false,
+      });
+    }
+  }
   calcTotalCount = () => {
     const { order = {} } = this.props;
     const { selectedList = [] } = order;
@@ -67,6 +93,7 @@ export default class Receipt extends PureComponent {
                 {createTime}
               </span>
             </div>
+            <img style={{ width: '100%' }} className="no" alt="idBarcode" />
           </Col>
           <Col span={12} className={styles.expressImgWrapper}>
             <div className={styles.expressImg} >

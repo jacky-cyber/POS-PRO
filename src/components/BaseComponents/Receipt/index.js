@@ -17,6 +17,7 @@ export default class Receipt extends PureComponent {
         width: 1,
         height: 25,
         displayValue: false,
+        margin: 0,
       });
     }
   }
@@ -30,6 +31,7 @@ export default class Receipt extends PureComponent {
         width: 1,
         height: 25,
         displayValue: false,
+        margin: 0,
       });
     }
   }

@@ -24,8 +24,8 @@ const numPad = [
     keyboard: '3',
   },
   {
-    key: 'plusTen',
-    label: '+10',
+    key: 'toggle',
+    label: '-/+',
   },
   {
     key: '4',
@@ -43,7 +43,7 @@ const numPad = [
     keyboard: '6',
   },
   {
-    key: 'plusTwenty',
+    key: 'plus20',
     label: '+20',
   },
   {
@@ -62,7 +62,7 @@ const numPad = [
     keyboard: '9',
   },
   {
-    key: 'plusFifty',
+    key: 'plus50',
     label: '+50',
   },
   {
@@ -95,7 +95,6 @@ class PaymentCalculator extends PureComponent {
   }
   componentDidMount() {
     const { button } = this;
-    this.props.dispatch({ type: 'commodity/changePaymentCalculatorButton', payload: button });
     numPad.forEach((item) => {
       if (item.keyboard) {
         Mousetrap.bind(item.keyboard, () => {

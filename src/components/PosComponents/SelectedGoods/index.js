@@ -19,6 +19,9 @@ const saleTypeLabelMapping = {
   orders: commodity.orders,
 }))
 export default class SelectedGoods extends PureComponent {
+  componentWillReceiveProps() {
+    console.log('update');
+  }
   handleClick = (key) => {
     this.props.dispatch({ type: 'commodity/toggleSelectedGoods', payload: key });
   }
@@ -65,7 +68,7 @@ export default class SelectedGoods extends PureComponent {
         },
         {
           id: 'saleType',
-          value: item.SaleType,
+          value: saleType,
           color: '#87d068',
           formatFunc: value => (saleTypeLabelMapping[value]),
           isShow: !!item.SaleType,
@@ -91,6 +94,13 @@ export default class SelectedGoods extends PureComponent {
           formatFunc: () => (`${wholeDiscount}% 整单折扣`),
           isShow: wholeDiscount !== null && wholeDiscount !== 100,
         },
+        {
+          id: 'refund',
+          value: isRefund,
+          color: '#ff4d4f',
+          formatFunc: () => ('退款商品'),
+          isShow: isRefund,
+        },
       ];
       const commonTagListNode = (
         tagList.map((tagItem) => {
@@ -98,6 +108,20 @@ export default class SelectedGoods extends PureComponent {
           return (
             <Tag
               color={tagItem.color}
+              key={tagItem.id}
+            >
+              {tagItem.formatFunc(tagItem.value)}
+            </Tag>
+          );
+        })
+      );
+      const refundTagListNode = (
+        tagList.filter(item => item.id !== 'wholeDiscount').map((tagItem) => {
+          if (!tagItem.isShow) { return null; }
+          return (
+            <Tag
+              color={tagItem.color}
+              key={tagItem.id}
             >
               {tagItem.formatFunc(tagItem.value)}
             </Tag>
@@ -108,11 +132,7 @@ export default class SelectedGoods extends PureComponent {
         <div>
           {
                 isRefund ?
-                (
-                  <Tag color="#ff4d4f">
-                  退款商品
-                  </Tag>
-                )
+                refundTagListNode
                 :
                 commonTagListNode
           }

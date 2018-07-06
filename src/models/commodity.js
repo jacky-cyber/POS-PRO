@@ -356,7 +356,7 @@ export default {
             method: paymentMethod.name,
             methodEN: paymentMethod.value,
             key: paymentDataIndex,
-            cacheCash: null,
+            cacheCash: `${totalPrice}`,
           }];
         } else {
           newPaymentData = [...paymentData, {
@@ -542,12 +542,15 @@ export default {
         const discount = item.Discount;
         // 单品重量
         const weight = item.Weight;
-        // 单品总价
-        const price = unitPrice * count * (
-          (discount || 100) / 100
-        ) * ((wholeDiscount || 100) / 100);
         // 单品销售价
-        const realPrice = unitPrice * ((discount || 100) / 100) * ((wholeDiscount || 100) / 100);
+        let realPrice = 0;
+        if (item.isRefund) {
+          realPrice = unitPrice * ((discount || 100) / 100);
+        } else {
+          realPrice = unitPrice * ((discount || 100) / 100) * ((wholeDiscount || 100) / 100);
+        }
+        // 单品总价
+        const price = realPrice * count;
         goodsPrice += price;
         originPrice += retailPrice * count;
         totalWeight += weight * count;

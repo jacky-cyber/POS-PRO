@@ -18,9 +18,9 @@ function numberHandler(oldCache, buttonName, activePaymentDataIndex, paymentData
       cache = buttonName;
     }
   } else if (oldCache) {
-    cache = oldCache.toString() + buttonName
+    cache = oldCache.toString() + buttonName;
   } else {
-    cache = buttonName
+    cache = buttonName;
   }
   const number = cache - 0;
   const newPaymentData = generateNewPaymentData(paymentData, activePaymentDataIndex, cache, number);
@@ -63,6 +63,36 @@ function delHandler(oldCache, buttonName, activePaymentDataIndex, paymentData, d
   dispatch({ type: 'commodity/changePaymentDataAndCheck', payload: newPaymentData });
 }
 
+function toggleHandler(oldCache, buttonName, activePaymentDataIndex, paymentData, dispatch) {
+  let cache;
+  let number;
+  if (!oldCache) {
+    return;
+  } else {
+    if (oldCache[0] === '-') {
+      cache = oldCache.replace('-', '');
+    } else {
+      cache = `-${oldCache}`;
+    }
+    number = cache - 0;
+  }
+  const newPaymentData = generateNewPaymentData(paymentData, activePaymentDataIndex, cache, number);
+  dispatch({ type: 'commodity/changePaymentDataAndCheck', payload: newPaymentData });
+}
+
+function plusHandler(oldCache, buttonName, activePaymentDataIndex, paymentData, dispatch) {
+  let cache;
+  let number;
+  if (!oldCache) {
+    return;
+  } else {
+    cache = `${(oldCache - 0) + (buttonName.replace('plus', '') - 0)}`;
+    number = cache - 0;
+  }
+  const newPaymentData = generateNewPaymentData(paymentData, activePaymentDataIndex, cache, number);
+  dispatch({ type: 'commodity/changePaymentDataAndCheck', payload: newPaymentData });
+}
+
 
 function cashHandler(dispatch, buttonName, paymentData, activePaymentDataIndex, paymentDataItem) {
   const oldCacheCash = paymentDataItem.cacheCash;
@@ -80,6 +110,12 @@ function cashHandler(dispatch, buttonName, paymentData, activePaymentDataIndex, 
   if (buttonName === 'del') {
     delHandler(oldCacheCash, buttonName, activePaymentDataIndex, paymentData, dispatch);
   }
+  if (buttonName === 'toggle') {
+    toggleHandler(oldCacheCash, buttonName, activePaymentDataIndex, paymentData, dispatch);
+  }
+  if (buttonName.includes('plus')) {
+    plusHandler(oldCacheCash, buttonName, activePaymentDataIndex, paymentData, dispatch);
+  }
 }
 
 export default function calculate(commodity, dispatch, buttonName) {
@@ -90,4 +126,3 @@ export default function calculate(commodity, dispatch, buttonName) {
   const paymentDataItem = paymentData.filter((item, index) => (index === activePaymentDataIndex))[0];
   cashHandler(dispatch, buttonName, paymentData, activePaymentDataIndex, paymentDataItem);
 }
-

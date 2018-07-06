@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Row, Col, Table, Icon } from 'antd';
+import { PaymentCalculator } from 'components/PosComponents';
 import Mbutton from './Mbutton';
 import styles from './Pay.less';
-import PaymentCalculator from '../../../components/Calculator/Payment/';
 
 
 const paymentMethods = [
