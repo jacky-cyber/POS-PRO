@@ -12,6 +12,7 @@ const FormItem = Form.Item;
 
 @connect(state => ({
   dailyOrders: state.orders.dailyOrders,
+  dailyTotalSale: state.orders.dailyTotalSale,
   getDailyOrdersLoading: state.loading.effects['orders/getDailyOrders'],
   getDetailsLoading: state.loading.effects['orders/getOrderDetailAndAddToOrder'],
 }))
@@ -95,11 +96,11 @@ export default class TableList extends PureComponent {
   render() {
     const {
       dailyOrders,
+      dailyTotalSale,
       getDailyOrdersLoading,
       getDetailsLoading,
     } = this.props;
 
-    console.log('dailyOrders', dailyOrders);
 
     const orderColumns = [
       {
@@ -343,6 +344,7 @@ export default class TableList extends PureComponent {
               loading={getDailyOrdersLoading}
               expandedRowRender={expandedRowRender}
               onExpand={this.expandHandler}
+              title={() => `今日销售额：${dailyTotalSale}`}
             />
           </div>
         </Card>

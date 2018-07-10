@@ -495,13 +495,13 @@ export default {
         newSelectedList = selectedList.map((item) => {
           if (item.Key === selectedKey) {
             // 修改过折扣的商品算新的
-            if (item.CacheDiscount) {
+            if (item.CacheDiscount != null) {
               avoidDuplicationIndex += 1;
               isLocked = true;
               return { ...item, Key: `avoidDuplication-${avoidDuplicationIndex}-${item.Key}` };
             }
             // 修改过单价的商品算新的
-            if (item.NewUnitPrice) {
+            if (item.NewUnitPrice != null) {
               avoidDuplicationIndex += 1;
               isLocked = true;
               return { ...item, Key: `avoidDuplication-${avoidDuplicationIndex}-${item.Key}` };

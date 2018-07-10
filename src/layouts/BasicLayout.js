@@ -22,6 +22,11 @@ import { app } from '../index';
 const { Content, Header, Footer } = Layout;
 const { AuthorizedRoute } = Authorized;
 
+
+const p = new Promise((resolve, reject) => {
+  setTimeout(() => { resolve(); }, 3000);
+});
+
 /**
  * 根据菜单取得重定向地址.
  */

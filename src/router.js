@@ -13,6 +13,7 @@ dynamic.setDefaultLoadingComponent(() => {
   return <Spin size="large" className={styles.globalSpin} />;
 });
 
+
 // function RouterConfig({ history, app }) {
 function RouterConfig({ history, app }) {
   const routerData = getRouterData(app);
