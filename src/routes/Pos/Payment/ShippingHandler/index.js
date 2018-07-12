@@ -35,7 +35,55 @@ const keyboardMapping = ['backspace', 'p', 'enter'];
 }))
 
 
-@Form.create()
+@Form.create({
+  onFieldsChange(props, changedFields) {
+    const { dispatch } = props;
+    const key = Object.keys(changedFields)[0];
+    const payload = {
+      [key]: changedFields[key].value,
+    };
+    dispatch({
+      type: 'commodity/changeReceiverAddress',
+      payload,
+    });
+  },
+  mapPropsToFields(props) {
+    const { order } = props;
+    const {
+      shippingData,
+      SenderName,
+      SenderPhoneNumber,
+      ReceiverName,
+      ReceiverPhoneNumber,
+      ReceiverIDNumber,
+      ReceiverAddress,
+      ReceiverDetailedAddress,
+    } = order || [];
+    const value = {
+      shippingData,
+      SenderName,
+      SenderPhoneNumber,
+      ReceiverName,
+      ReceiverPhoneNumber,
+      ReceiverIDNumber,
+      ReceiverAddress,
+      ReceiverDetailedAddress,
+    };
+    const obj = {};
+    Object.keys(value).forEach((item) => {
+      if (item === 'ReceiverAddress') {
+        Object.assign(obj,
+          { [item]: Form.createFormField({ value: value[item].ID }) }
+        );
+      } else {
+        Object.assign(obj,
+          { [item]: Form.createFormField({ value: value[item] }) }
+        );
+      }
+    });
+    return obj;
+  },
+})
 
 export default class ShippingHandler extends PureComponent {
   state = {
@@ -64,12 +112,15 @@ export default class ShippingHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   checkShippingData = (rule, value, callback) => {
-    const { Name } = value[0];
-    if (Name.ID && Name.Name) {
+    const isValid = value.reduce((prev, current) => {
+      const { Name } = current;
+      return prev && Name.ID;
+    }, true);
+    if (isValid) {
       callback();
-      return;
+    } else {
+      callback('快递公司号是必填的');
     }
-    callback('快递公司是必填的');
   }
   fetchWaybillHandler = () => {
     const dataJson = JSON.stringify(this.props.form.getFieldValue('waybill'));
@@ -126,8 +177,6 @@ export default class ShippingHandler extends PureComponent {
     const { form, order, dispatch, loading, submitLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
     const { shippingData, totalWeight, receiveMoney, totalPrice } = order || [];
-    const validate = () => {
-    };
     const errors = getFieldsError();
     const getErrorInfo = () => {
       const errorCount = Object.keys(errors).filter(key => errors[key]).length;
@@ -182,7 +231,6 @@ export default class ShippingHandler extends PureComponent {
         </Print>
         <Card title="代发包裹管理" bordered={false} style={{ marginBottom: 24 }} >
           {getFieldDecorator('shippingData', {
-              initialValue: shippingData,
             rules: [{ validator: this.checkShippingData }],
           })(
             <TableForm

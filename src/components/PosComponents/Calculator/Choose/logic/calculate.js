@@ -190,8 +190,8 @@ export default function calculate(commodity, dispatch, buttonName) {
     const { chooseCalculatorButton, ...newCurrentOrder } = currentOrder;
     const currentOrderJson = JSON.stringify(newCurrentOrder);
     dispatch({ type: 'commodity/addOrUpdateCacheOrder', payload: { ID, order: currentOrderJson } });
-    const targetPhase = POS_PHASE.PAY;
-    dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase } });
+    // const targetPhase = POS_PHASE.PAY;
+    // dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase: currentPhase, targetPhase } });
     return;
   }
   // 数量计算逻辑

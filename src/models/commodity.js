@@ -265,8 +265,12 @@ export default {
       });
     },
     // 获取订单信息
-    *fetchWaybill(action, { call, put }) {
-      const { dataJson, setFieldsValueCallback } = action.payload;
+    *fetchWaybill(action, { call, put, select }) {
+      const commodity = yield select(state => state.commodity);
+      const { activeTabKey } = commodity;
+      const currentOrder = getCurrentOrder(commodity);
+      const { selectedList } = currentOrder;
+      const dataJson = JSON.stringify(selectedList);
       yield put({
         type: 'changeCommonLoading',
         payload: true,
@@ -274,9 +278,16 @@ export default {
       try {
         const response = yield call(fetchWaybill, dataJson);
         if (response.Status) {
-          console.log('response.Result.Data', response.Result.Data);
           message.success('抓取成功');
-          setFieldsValueCallback({ waybill: response.Result.Data });
+          const latestSelectedList = response.Result.Data;
+          const payload = {
+            activeTabKey,
+            latestSelectedList,
+          };
+          yield put({
+            type: 'changeSelectedList',
+            payload,
+          });
         } else {
           message.error('抓取失败');
         }
@@ -560,6 +571,9 @@ export default {
       yield put({ type: 'changeGoodsPrice', payload: goodsPrice });
       yield put({ type: 'changeOriginPrice', payload: originPrice });
       yield put({ type: 'changeTotalWeight', payload: totalWeight });
+      const { shippingData } = currentOrder;
+      const newShippingData = [{ ...(shippingData[0]), Weight: totalWeight }];
+      yield put({ type: 'changeShippingDataAndSumCost', payload: newShippingData });
       yield put({ type: 'sumTotalPrice' });
     },
     *clickAddTabButton(action, { put, select }) {
@@ -804,6 +818,18 @@ export default {
           wholeDiscount: 100,
           chooseCalculatorButton: {},
           // hasFetchMilkPowderWaybill: false,
+          SenderName: '',
+          SenderPhoneNumber: '',
+          ReceiverName: '',
+          ReceiverPhoneNumber: '',
+          ReceiverIDNumber: '',
+          ReceiverAddress: {
+            ID: [],
+            Province: '',
+            City: '',
+            District: '',
+          },
+          ReceiverDetailedAddress: '',
         },
       ];
       const activeTabKey = `orders-${count}`;
@@ -1166,6 +1192,17 @@ export default {
       const newOrders = state.orders.map((item) => {
         if (item.key === activeTabKey) {
           return { ...item, refundOrderDetail };
+        }
+        return item;
+      });
+      return { ...state, orders: newOrders };
+    },
+    changeReceiverAddress(state, action) {
+      const address = action.payload;
+      const { activeTabKey } = state;
+      const newOrders = state.orders.map((item) => {
+        if (item.key === activeTabKey) {
+          return { ...item, ...address };
         }
         return item;
       });

@@ -73,6 +73,7 @@ export async function addOrUpdateCacheOrder({ ID, order }) {
   const options = {
     body: `OrderID=${ID || ''}&Data=${encodeURIComponent(order)}`,
   };
+  console.log('options', options);
   return request(`${DOMAIN}/Order/AddOrUpdateCache`, options);
 }
 

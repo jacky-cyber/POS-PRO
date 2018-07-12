@@ -72,21 +72,8 @@ export default class LocalHandler extends PureComponent {
     const { ID } = order;
     const { selectedList, expressData, shippingData, ...restOrder } = order;
     // 构造奶粉订单必要的地址
-    const address = {
-      SenderName: '',
-      SenderPhoneNumber: '',
-      ReceiverName: '',
-      ReceiverPhoneNumber: '',
-      ReceiverIDNumber: '',
-      ReceiverAddress: {
-        Province: '',
-        City: '',
-        District: '',
-      },
-      ReceiverDetailedAddress: '',
-    };
     const print = this.generatePrint();
-    const newValues = { ...restOrder, waybill: selectedList, ...address, print };
+    const newValues = { ...restOrder, waybill: selectedList, print };
     const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,

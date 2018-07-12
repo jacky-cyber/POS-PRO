@@ -69,22 +69,9 @@ export default class StoreWholeSaleHandler extends PureComponent {
     const { order = {} } = this.props;
     const { ID } = order;
     const { selectedList, expressData, shippingData, ...restOrder } = order;
-    const address = {
-      SenderName: '',
-      SenderPhoneNumber: '',
-      ReceiverName: '',
-      ReceiverPhoneNumber: '',
-      ReceiverIDNumber: '',
-      ReceiverAddress: {
-        Province: '',
-        City: '',
-        District: '',
-      },
-      ReceiverDetailedAddress: '',
-    };
     // 构造打印对象
     const print = this.generatePrint();
-    const newValues = { ...restOrder, waybill: selectedList, ...address, print };
+    const newValues = { ...restOrder, waybill: selectedList, print };
     const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,

@@ -6,34 +6,34 @@ import SearchableSelect from './SearchableSelect';
 
 
 export default class TableForm extends PureComponent {
-  constructor(props) {
-    super(props);
-    const { totalWeight } = props;
-    const dataSource = props.value.map(item => ({
-      ...item,
-      Weight: totalWeight,
-      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, totalWeight, item.WeightedWeight),
-    })
-    );
-    this.state = {
-      dataSource,
-    };
-  }
+  // constructor(props) {
+  //   super(props);
+  //   const { totalWeight } = props;
+  //   const dataSource = props.value.map(item => ({
+  //     ...item,
+  //     Weight: totalWeight,
+  //     RealPrice: calculateExpressOrShippingCost(item.UnitPrice, totalWeight, item.WeightedWeight),
+  //   })
+  //   );
+  //   this.state = {
+  //     dataSource,
+  //   };
+  // }
   handleFieldChange = (e, fieldName, key) => {
-    const { dataSource } = this.state;
+    const data = this.props.value;
     const value = e && (e.target ? e.target.value : e);
     let newData = [];
     if (fieldName === 'Name') {
       const Name = { ID: value.ID, Name: value.Name };
       const UnitPrice = value.Price;
-      newData = dataSource.map((item) => {
+      newData = data.map((item) => {
         if (item.ID === key) {
           return { ...item, Name, UnitPrice };
         }
         return item;
       });
     } else {
-      newData = dataSource.map((item) => {
+      newData = data.map((item) => {
         if (item.ID === key) {
           return { ...item, [fieldName]: value };
         }
@@ -44,13 +44,10 @@ export default class TableForm extends PureComponent {
       ...item,
       RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight),
     }));
-    console.log('shippingData', shippingData);
     this.props.dispatch({ type: 'commodity/changeShippingDataAndSumCost', payload: shippingData });
-    this.setState({ dataSource: shippingData });
   }
   render() {
-    const { dataSource } = this.state;
-    const { express, dispatch } = this.props;
+    const { express, value, dispatch } = this.props;
     const { expressList = [], loading } = express;
     const getCompany = () => dispatch({ type: 'express/getCompany' });
     const content = (
@@ -134,7 +131,7 @@ export default class TableForm extends PureComponent {
       <div>
         <Table
           columns={columns}
-          dataSource={dataSource}
+          dataSource={value}
           pagination={false}
           rowKey={record => record.ID}
           size="small"

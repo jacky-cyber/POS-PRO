@@ -31,7 +31,55 @@ const fieldLabels = {
 }))
 
 
-@Form.create()
+@Form.create({
+  onFieldsChange(props, changedFields) {
+    const { dispatch } = props;
+    const key = Object.keys(changedFields)[0];
+    const payload = {
+      [key]: changedFields[key].value,
+    };
+    dispatch({
+      type: 'commodity/changeReceiverAddress',
+      payload,
+    });
+  },
+  mapPropsToFields(props) {
+    const { order } = props;
+    const {
+      selectedList,
+      SenderName,
+      SenderPhoneNumber,
+      ReceiverName,
+      ReceiverPhoneNumber,
+      ReceiverIDNumber,
+      ReceiverAddress,
+      ReceiverDetailedAddress,
+    } = order || [];
+    const value = {
+      selectedList,
+      SenderName,
+      SenderPhoneNumber,
+      ReceiverName,
+      ReceiverPhoneNumber,
+      ReceiverIDNumber,
+      ReceiverAddress,
+      ReceiverDetailedAddress,
+    };
+    const obj = {};
+    Object.keys(value).forEach((item) => {
+      if (item === 'ReceiverAddress') {
+        Object.assign(obj,
+          { [item]: Form.createFormField({ value: value[item].ID }) }
+        );
+      } else {
+        Object.assign(obj,
+          { [item]: Form.createFormField({ value: value[item] }) }
+        );
+      }
+    });
+    return obj;
+  },
+})
 
 export default class MilkPowderHandler extends PureComponent {
   state = {
@@ -69,12 +117,6 @@ export default class MilkPowderHandler extends PureComponent {
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
   }
   checkWaybill = (rule, value, callback) => {
-    // const waybillRequiredFiltered = value.filter(item => item.Sku.includes('CGF') || item.Sku.includes('CGF'));
-    // if (waybillRequiredFiltered.find(item => (item.InvoiceNo)) || waybillRequiredFiltered.length === 0) {
-    //   callback();
-    //   return;
-    // }
-    // callback('SKU 包含 CGF 或 YDF 的奶粉必须抓取订单号');
     if (value.find(item => (item.InvoiceNo)) || value.length === 0) {
       callback();
       return;
@@ -82,12 +124,13 @@ export default class MilkPowderHandler extends PureComponent {
     callback('奶粉订单提交前必须抓取订单号');
   }
   fetchWaybillHandler = () => {
-    const dataJson = JSON.stringify(this.props.form.getFieldValue('waybill'));
-    const payload = {
-      dataJson,
-      setFieldsValueCallback: this.props.form.setFieldsValue,
-    };
-    this.props.dispatch({ type: 'commodity/fetchWaybill', payload });
+    // const dataJson = JSON.stringify(this.props.form.getFieldValue('waybill'));
+    // const payload = {
+    //   dataJson,
+    //   setFieldsValueCallback: this.props.form.setFieldsValue,
+    // };
+    // this.props.dispatch({ type: 'commodity/fetchWaybill', payload });
+    this.props.dispatch({ type: 'commodity/fetchWaybill' });
   }
   valueHandler = (values) => {
     const { order = {} } = this.props;
@@ -96,10 +139,16 @@ export default class MilkPowderHandler extends PureComponent {
     const print = {
       ID: order.ID,
       createTime: order.createTime,
-      ...values,
+      SenderName: order.SenderName,
+      SenderPhoneNumber: order.SenderPhoneNumber,
+      ReceiverName: order.ReceiverName,
+      ReceiverPhoneNumber: order.ReceiverPhoneNumber,
+      ReceiverIDNumber: order.ReceiverIDNumber,
+      ReceiverAddress: order.ReceiverAddress,
+      ReceiverDetailedAddress: order.receiverDetailedAddress,
     };
     const newValues = {
-      ...values,
+      // ...values,
       ...this.props.order,
       print,
     };
@@ -124,18 +173,6 @@ export default class MilkPowderHandler extends PureComponent {
     const { form, order, dispatch, submitLoading } = this.props;
     const { receiveMoney, totalPrice } = order;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
-    const { selectedList } = order || [];
-    const waybillRequiredFiltered = selectedList.filter(item => item.Sku.includes('CGF') || item.Sku.includes('YDF'));
-    const waybillUnRequiredFiltered = selectedList.filter(item => !item.Sku.includes('CGF') && !item.Sku.includes('YDF'));
-    let selectedListForWaybill = [];
-    waybillRequiredFiltered.forEach((item) => {
-      for (let i = 0; i < item.Count; i++) {
-        selectedListForWaybill.push({
-          ...item, Key: `${item.Sku}-${i}`, Count: 1,
-        });
-      }
-    });
-    selectedListForWaybill = [...selectedListForWaybill, ...waybillUnRequiredFiltered];
     const extraNodeForFetchWaybill = (
       <a onClick={() => this.fetchWaybillHandler()}>抓取订单号</a>
     );
@@ -199,8 +236,7 @@ export default class MilkPowderHandler extends PureComponent {
           </div>
         </Print>
         <Card title="抓取运单号" bordered={false} style={{ marginBottom: 24 }} extra={extraNodeForFetchWaybill}>
-          {getFieldDecorator('waybill', {
-            initialValue: selectedListForWaybill,
+          {getFieldDecorator('selectedList', {
             rules: [{ validator: this.checkWaybill }],
           })(
             <TableForm />

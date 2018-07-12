@@ -23,7 +23,20 @@ const keyboardMapping = ['backspace', 'p', 'enter'];
 }))
 
 
-@Form.create()
+@Form.create({
+  onFieldsChange(props, changedFields) {
+  },
+  mapPropsToFields(props) {
+    const { order } = props;
+    const { expressData } = order || [];
+    const newExpressData = {
+      value: expressData,
+    };
+    return {
+      expressData: Form.createFormField(newExpressData),
+    };
+  },
+})
 
 export default class ExpressHandler extends PureComponent {
   state = {
@@ -52,16 +65,25 @@ export default class ExpressHandler extends PureComponent {
     });
   }
   checkExpressData = (rule, value, callback) => {
-    if (value[0]) {
-      const { Name, InvoiceNo } = value[0];
-      if (Name && InvoiceNo) {
-        callback();
-        return;
-      }
-      callback('快递公司和运单号是必填的');
-    } else {
+    const isValid = value.reduce((prev, current) => {
+      const { Name, InvoiceNo } = current;
+      return prev && Name.ID && InvoiceNo;
+    }, true);
+    if (isValid) {
       callback();
+    } else {
+      callback('快递公司和运单号是必填的');
     }
+    // if (value[0]) {
+    //   const { Name, InvoiceNo } = value[0];
+    //   if (Name && InvoiceNo) {
+    //     callback();
+    //     return;
+    //   }
+    //   callback('快递公司和运单号是必填的');
+    // } else {
+    //   callback();
+    // }
   }
   generatePrint = () => {
     const { order = {} } = this.props;
@@ -85,22 +107,9 @@ export default class ExpressHandler extends PureComponent {
     const { order = {} } = this.props;
     const { ID } = order;
     const { selectedList, ...restOrder } = order;
-    const address = {
-      SenderName: '',
-      SenderPhoneNumber: '',
-      ReceiverName: '',
-      ReceiverPhoneNumber: '',
-      ReceiverIDNumber: '',
-      ReceiverAddress: {
-        Province: '',
-        City: '',
-        District: '',
-      },
-      ReceiverDetailedAddress: '',
-    };
     // 构造打印对象
     const print = this.generatePrint();
-    const newValues = { ...values, ...restOrder, waybill: selectedList, ...address, print };
+    const newValues = { ...values, ...restOrder, waybill: selectedList, print };
     const valuesJson = JSON.stringify(newValues);
     const payload = {
       orderID: ID,
@@ -175,12 +184,13 @@ export default class ExpressHandler extends PureComponent {
         </Print>
         <Card title="邮寄包裹管理" bordered={false} style={{ marginBottom: 24 }} >
           {getFieldDecorator('expressData', {
-              initialValue: expressData,
             rules: [{ validator: this.checkExpressData }],
           })(
             <TableForm
+              activeTabKey={this.props.activeTabKey}
               dispatch={dispatch}
               express={this.props.express}
+              setFieldsValueCallback={this.props.form.setFieldsValue}
             />
           )}
         </Card>

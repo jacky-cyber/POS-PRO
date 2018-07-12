@@ -334,7 +334,6 @@ export default class GoodsTable extends PureComponent {
               }
             }
             formatRefundOrderDetail = (refundOrderDetail) => {
-              console.log('refundOrderDetail', refundOrderDetail);
               return refundOrderDetail.map(item => ({
                 ...item,
                 Key: `refund-${item.Sku}`,
