@@ -1,14 +1,12 @@
 import React, { PureComponent } from 'react';
-import { Card, Button, Form, Icon, Col, Row, DatePicker, TimePicker, Input, Select, Popover, InputNumber, Divider } from 'antd';
+import { Card, Button, Form, Icon, Col, Row, DatePicker, Input, Select, Popover, InputNumber, Spin } from 'antd';
 import { connect } from 'dva';
+import Cookies from 'js-cookie';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import FooterToolbar from '../../components/FooterToolbar';
-import TableForm from './TableForm';
 import styles from './style.less';
 
-const { Option } = Select;
-const { RangePicker } = DatePicker;
-const { TextArea } = Input
+const { TextArea } = Input;
 
 const serviceChargeMapping = {
   unionPay: 0.022,
@@ -196,8 +194,15 @@ const cashFieldsNameMap = {
   cash0Dot1: 'Cash0Dot1',
 };
 
+@connect(({ dailyClosing, loading }) => ({
+  dailyClosingResult: dailyClosing.dailyClosingResult,
+  submitLoading: loading.effects['dailyClosing/addOrUpdateDailyClosing'],
+  getLoading: loading.effects['dailyClosing/getDailyClosing'],
+}))
 
-class CashStatistics extends PureComponent {
+@Form.create()
+
+export default class CashStatistics extends PureComponent {
   state = {
     width: '100%',
   };
@@ -208,18 +213,18 @@ class CashStatistics extends PureComponent {
     window.removeEventListener('resize', this.resizeFooterToolbar);
   }
    resizeFooterToolbar = () => {
-    const sider = document.querySelectorAll('.ant-layout-sider')[0];
-    const width = `calc(100% - ${sider.style.width})`;
-    if (this.state.width !== width) {
-      this.setState({ width });
-    }
-  }
+     const sider = document.querySelectorAll('.ant-layout-sider')[0];
+     const width = `calc(100% - ${sider.style.width})`;
+     if (this.state.width !== width) {
+       this.setState({ width });
+     }
+   }
   dateChangeHandler = (date, dateString) => {
     const payload = {
       dtTurnoverDate: dateString,
       setFieldsValueCallback: this.props.form.setFieldsValue,
-    }
-    this.props.dispatch({type: 'dailyClosing/getDailyClosing', payload})
+    };
+    this.props.dispatch({ type: 'dailyClosing/getDailyClosing', payload });
   }
 
 
@@ -285,22 +290,22 @@ class CashStatistics extends PureComponent {
     return frontEndIncome + backEndIncome;
   }
   render() {
-    const { form, dispatch, dailyClosingResult } = this.props;
+    const { form, submitLoading, getLoading } = this.props;
     const { getFieldDecorator, validateFieldsAndScroll, getFieldsError } = form;
     const cashIncome = this.calcTotalCash();
     const unCashIncome = this.calcUnCashIncome();
     const totalAccountIncome = this.calcTotalAccountIncome();
     const cashInBank = this.calcCashInBank(cashIncome);
-    const unionPayIncome = this.calcIncome('unionPay')
-    const unionPayServiceCharge = this.calcServiceCharge('unionPay')
-    const unionPayIntoAccount = this.calcServiceCharge('unionPay')
-    const creditCardIncome = this.calcIncome('creditCard')
-    const creditCardServiceCharge = this.calcServiceCharge('creditCard')
-    const aliPayIncome = this.calcIncome('aliPay')
-    const aliPayServiceCharge = this.calcServiceCharge('aliPay')
-    const weChatPayServiceCharge = this.calcServiceCharge('weChatPay')
-    const realTotalIncome = cashIncome + unCashIncome
-    const difference = parseFloat((realTotalIncome - totalAccountIncome).toFixed(2))
+    const unionPayIncome = this.calcIncome('unionPay');
+    const unionPayServiceCharge = this.calcServiceCharge('unionPay');
+    const unionPayIntoAccount = this.calcServiceCharge('unionPay');
+    const creditCardIncome = this.calcIncome('creditCard');
+    const creditCardServiceCharge = this.calcServiceCharge('creditCard');
+    const aliPayIncome = this.calcIncome('aliPay');
+    const aliPayServiceCharge = this.calcServiceCharge('aliPay');
+    const weChatPayServiceCharge = this.calcServiceCharge('weChatPay');
+    const realTotalIncome = cashIncome + unCashIncome;
+    const difference = parseFloat((realTotalIncome - totalAccountIncome).toFixed(2));
     const errors = getFieldsError();
     const getErrorInfo = () => {
       const errorCount = Object.keys(errors).filter(key => errors[key]).length;
@@ -314,9 +319,9 @@ class CashStatistics extends PureComponent {
         }
       };
       const errorList = Object.keys(errors).map((key) => {
-        let item = [ ...key ]
-        item[0] = item[0].toLowerCase()
-        item = item.join('')
+        let item = [...key];
+        item[0] = item[0].toLowerCase();
+        item = item.join('');
         if (!errors[key]) {
           return null;
         }
@@ -324,7 +329,7 @@ class CashStatistics extends PureComponent {
           <li key={key} className={styles.errorListItem} onClick={() => scrollToField(key)}>
             <Icon type="cross-circle-o" className={styles.errorIcon} />
             <div className={styles.errorMessage}>{errors[key][0]}</div>
-            <div className={styles.errorField}>{fieldLabelsAndNamesMapping[item]['label']}</div>
+            <div className={styles.errorField}>{fieldLabelsAndNamesMapping[item].label}</div>
           </li>
         );
       });
@@ -365,35 +370,35 @@ class CashStatistics extends PureComponent {
       <span>账面总销售额: {totalAccountIncome}</span>
     );
     const footerExtra = (
-              <Row gutter={16} className={styles.footerExtra}>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.realTotalIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.realTotalIncome.name, {
+      <Row gutter={16} className={styles.footerExtra}>
+        <Col lg={6} md={12} sm={24}>
+          <Form.Item label={fieldLabelsAndNamesMapping.realTotalIncome.label} {...formItemLayout} >
+            {getFieldDecorator(fieldLabelsAndNamesMapping.realTotalIncome.name, {
                       initialValue: 0,
                     })(
                       <span>{realTotalIncome}</span>
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.accountTotalIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.accountTotalIncome.name, {
+          </Form.Item>
+        </Col>
+        <Col lg={6} md={12} sm={24}>
+          <Form.Item label={fieldLabelsAndNamesMapping.accountTotalIncome.label} {...formItemLayout} >
+            {getFieldDecorator(fieldLabelsAndNamesMapping.accountTotalIncome.name, {
                       initialValue: 0,
                     })(
                       <span>{totalAccountIncome}</span>
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.difference.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.difference.name, {
+          </Form.Item>
+        </Col>
+        <Col lg={6} md={12} sm={24}>
+          <Form.Item label={fieldLabelsAndNamesMapping.difference.label} {...formItemLayout} >
+            {getFieldDecorator(fieldLabelsAndNamesMapping.difference.name, {
                       initialValue: 0,
                     })(
                       <span>{difference}</span>
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
+          </Form.Item>
+        </Col>
+      </Row>
       // <div>
       //   <span>实际总销售额 {unCashIncome + cashIncome}</span>
       //   <Divider type="vertical" />
@@ -401,12 +406,12 @@ class CashStatistics extends PureComponent {
       //   <Divider type="vertical" />
       //   <span>差额 {(unCashIncome + cashIncome - totalAccountIncome).toFixed(2)}</span>
       // </div>
-    )
+    );
     const validate = () => {
       validateFieldsAndScroll((error, values) => {
         if (!error) {
-          console.log('values', values)
-          console.log(typeof values.Date.format('YYYY-MM-DD'))
+          console.log('values', values);
+          console.log(typeof values.Date.format('YYYY-MM-DD'));
           const newValues = {
             dtTurnoverDate: values.Date.format('YYYY-MM-DD'),
             i100D: values.Cash100,
@@ -432,15 +437,16 @@ class CashStatistics extends PureComponent {
             fEftpos: values.EftopsIncome,
             fTransfer: values.TransferIncome,
             fZFBWC: values.LatiPayIncome,
-            iDepartmentID: 2,
+            iDepartmentID: Cookies.get('departmentID'),
             fFrontSale: values.FrontEndIncome,
             fBackSale: values.BackEndIncome,
             sSaleName: values.ShopAssistant,
             sOperator: values.Operator,
             fFreight: values.ExportRecord,
-          }
-          console.log('newValues', newValues)
-          this.props.dispatch({type: 'dailyClosing/addOrUpdateDailyClosing', payload: newValues})
+            sDiffAppendix: values.Remark,
+          };
+          console.log('newValues', newValues);
+          this.props.dispatch({ type: 'dailyClosing/addOrUpdateDailyClosing', payload: newValues });
           // submit the values
           // dispatch({
           //   type: 'form/submitAdvancedForm',
@@ -469,365 +475,372 @@ class CashStatistics extends PureComponent {
             </Row>
           </Form>
         </Card>
-        <Card title="基本信息" className={styles.card} bordered={false} />
-        <Card title="在岗营业员" className={styles.card} bordered={false}>
-          <Form layout="horizontal" >
-            <Row guuter={16}>
-              <Col lg={12} md={12} sm={24}>
-                <Form.Item label={fieldLabelsAndNamesMapping.shopAssistant.label}>
-                  {getFieldDecorator(fieldLabelsAndNamesMapping.shopAssistant.name, {
+        <Spin
+          spinning={getLoading}
+          size="large"
+          tip="请先选择日期或等待响应"
+        >
+
+          <Card title="基本信息" className={styles.card} bordered={false} />
+          <Card title="在岗营业员" className={styles.card} bordered={false}>
+            <Form layout="horizontal" >
+              <Row guuter={16}>
+                <Col lg={12} md={12} sm={24}>
+                  <Form.Item label={fieldLabelsAndNamesMapping.shopAssistant.label}>
+                    {getFieldDecorator(fieldLabelsAndNamesMapping.shopAssistant.name, {
                     // initialValue: typeof dailyClosingResult['sSaleName'] === 'string' ? dailyClosingResult['sSaleName'].split(',') : [],
                       initialValue: [],
                     rules: [{ required: true, message: '请选择在岗营业员' }],
                   })(
-                    <Select placeholder="请选择在岗营业员" mode="multiple">
-                      <Option value="xiao">哈登</Option>
-                      <Option value="mao">保罗</Option>
-                    </Select>
-                    )}
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Card>
-        <Card title="实际收入" className={styles.card} bordered={false}>
-          <Card title="现金" className={styles.card} type="inner" extra={extraCash}>
-            <Form layout="horizontal" hideRequiredMark>
-              <Row gutter={16}>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash100.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash100.name, {
+                    <Select
+                      mode="tags"
+                      style={{ width: '100%' }}
+                      tokenSeparators={[',', ';', '，', '；']}
+                    />
+                      )}
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </Card>
+          <Card title="实际收入" className={styles.card} bordered={false}>
+            <Card title="现金" className={styles.card} type="inner" extra={extraCash}>
+              <Form layout="horizontal" hideRequiredMark>
+                <Row gutter={16}>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash100.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash100.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i100D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash50.label} {...cashFormItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash50.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash50.label} {...cashFormItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash50.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i50D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash20.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash20.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash20.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash20.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i20D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash10.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash10.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash10.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash10.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i10D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash5.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash5.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash5.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash5.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i5D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash2.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash2.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash2.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash2.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i2D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash1.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash1.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash1.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash1.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i1D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot5.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot5.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot5.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot5.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i50C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot2.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot2.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot2.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot2.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i20C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot1.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot1.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot1.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot1.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['i10C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cashOpening.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cashOpening.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cashOpening.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cashOpening.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fCashOpening'] || 0,
                       rules: [{ required: true, message: '开箱金额' }],
                     })(
                       <InputNumber min={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.cashClosing.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.cashClosing.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.cashClosing.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.cashClosing.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fCashClosing'] || 0,
                       rules: [{ required: true, message: '闭箱金额' }],
                     })(
                       <InputNumber min={0} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={4} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.bankSaving.label} {...cashFormItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.bankSaving.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={4} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.bankSaving.label} {...cashFormItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.bankSaving.name, {
                       initialValue: 0,
                     })(
                       <span>{cashInBank}</span>
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </Card>
-          <Card title="非现金" className={styles.card} type="inner" extra={extraUnCash}>
-            <Form layout="horizontal" hideRequiredMark>
-              <Row gutter={16}>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.unionPay.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.unionPay.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            </Card>
+            <Card title="非现金" className={styles.card} type="inner" extra={extraUnCash}>
+              <Form layout="horizontal" hideRequiredMark>
+                <Row gutter={16}>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.unionPay.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.unionPay.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fUnipay'] || 0,
                     })(
-                      <InputNumber min={0} precision={0} />
+                      <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.unionPayIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.unionPayIncome.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.unionPayIncome.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.unionPayIncome.name, {
                     })(
                       <span>{this.calcIncome('unionPay')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.unionPayServiceCharge.label} {...formItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.unionPayServiceCharge.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.unionPayServiceCharge.label} {...formItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.unionPayServiceCharge.name, {
                       initialValue: 0,
                     })(
                       <span>{this.calcServiceCharge('unionPay')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.unionPayIntoAccount.label} {...formItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.unionPayIntoAccount.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.unionPayIntoAccount.label} {...formItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.unionPayIntoAccount.name, {
                       initialValue: 0,
                     })(
                       <span>{this.calcIncome('unionPay')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.creditCard.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.creditCard.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.creditCard.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.creditCard.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fCredit'] || 0,
                     })(
-                      <InputNumber min={0} precision={0} />
+                      <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.creditCardIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.creditCardIncome.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.creditCardIncome.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.creditCardIncome.name, {
                       initialValue: 0,
                     })(
                       <span>{this.calcIncome('creditCard')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.creditCardServiceCharge.label} {...formItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.creditCardServiceCharge.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.creditCardServiceCharge.label} {...formItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.creditCardServiceCharge.name, {
                       initialValue: 0,
                     })(
                       <span>{this.calcServiceCharge('creditCard')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.aliPay.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.aliPay.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.aliPay.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.aliPay.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fAlipay'] || 0,
                     })(
-                      <InputNumber min={0} precision={0} />
+                      <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.aliPayIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.aliPayIncome.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.aliPayIncome.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.aliPayIncome.name, {
                       initialValue: 0,
                     })(
                       <span>{this.calcIncome('aliPay')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.aliPayServiceCharge.label} {...formItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.aliPayServiceCharge.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.aliPayServiceCharge.label} {...formItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.aliPayServiceCharge.name, {
                       initialValue: 0,
                     })(
                       <span>{this.calcServiceCharge('aliPay')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.weChatPay.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.weChatPay.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.weChatPay.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.weChatPay.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fWechat'] || 0,
                     })(
-                      <InputNumber min={0} precision={0} />
+                      <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.weChatPayIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.weChatPayIncome.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.weChatPayIncome.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.weChatPayIncome.name, {
                       initialValue: 0,
                     })(
                       <span>{this.calcIncome('weChatPay')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.weChatPayServiceCharge.label} {...formItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.weChatPayServiceCharge.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.weChatPayServiceCharge.label} {...formItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.weChatPayServiceCharge.name, {
                       initialValue: 0,
                     })(
                       <span>{this.calcServiceCharge('weChatPay')}</span>
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.eftopsIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.eftopsIncome.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.eftopsIncome.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.eftopsIncome.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fEftpos'] || 0,
                     })(
-                      <InputNumber min={0} precision={0} />
+                      <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.transferIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.transferIncome.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.transferIncome.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.transferIncome.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fTransfer'] || 0,
                     })(
-                      <InputNumber min={0} precision={0} />
+                      <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.latiPayIncome.label} {...formItemLayout}>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.latiPayIncome.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.latiPayIncome.label} {...formItemLayout}>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.latiPayIncome.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fZFBWC'] || 0,
                     })(
                       <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </Card>
-          <Card title="账面收入" className={styles.card} type="inner" extra={extraTotalAccountIncome}>
-            <Form layout="horizontal" hideRequiredMark>
-              <Row gutter={16}>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.frontEndIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.frontEndIncome.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            </Card>
+            <Card title="账面收入" className={styles.card} type="inner" extra={extraTotalAccountIncome}>
+              <Form layout="horizontal" hideRequiredMark>
+                <Row gutter={16}>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.frontEndIncome.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.frontEndIncome.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fFrontSale'] || 0,
                     })(
                       <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={6} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.backEndIncome.label} {...formItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.backEndIncome.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={6} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.backEndIncome.label} {...formItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.backEndIncome.name, {
                       initialValue: 0,
                       // initialValue: dailyClosingResult['fBackSale'] || 0,
                     })(
                       <InputNumber min={0} precision={2} />
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </Card>
-          <Card title="出口记录" className={styles.card} type="inner" >
-            <Form layout="horizontal" >
-              <Row gutter={16}>
-                <Col lg={12} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.exportRecord.label} {...basicFormItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.exportRecord.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            </Card>
+            <Card title="出口记录" className={styles.card} type="inner" >
+              <Form layout="horizontal" >
+                <Row gutter={16}>
+                  <Col lg={12} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.exportRecord.label} {...basicFormItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.exportRecord.name, {
                       initialValue: [],
                       // initialValue: typeof dailyClosingResult['fFreight'] === 'string' ? dailyClosingResult['fFreight'].split(',') : [],
                     })(
@@ -837,41 +850,46 @@ class CashStatistics extends PureComponent {
                         tokenSeparators={[',', ';', '，', '；']}
                       />
                       )}
-                  </Form.Item>
-                </Col>
-                <Col lg={12} md={12} sm={24}>
-                  <Form.Item label={fieldLabelsAndNamesMapping.operator.label} {...basicFormItemLayout} >
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.operator.name, {
+                    </Form.Item>
+                  </Col>
+                  <Col lg={12} md={12} sm={24}>
+                    <Form.Item label={fieldLabelsAndNamesMapping.operator.label} {...basicFormItemLayout} >
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.operator.name, {
                       initialValue: '',
                       // initialValue: dailyClosingResult['sOperator'] || '',
                       rules: [{ required: true, message: '操作员是必须的' }],
                     })(
                       <Input />
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </Card>
-          <Card title="备注" className={styles.card} type="inner" >
-            <Form layout="horizontal" hideRequiredMark>
-              <Row gutter={16}>
-                <Col lg={24} md={24} sm={24}>
-                  <Form.Item>
-                    {getFieldDecorator(fieldLabelsAndNamesMapping.remark.name, {
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            </Card>
+            <Card title="备注" className={styles.card} type="inner" >
+              <Form layout="horizontal" hideRequiredMark>
+                <Row gutter={16}>
+                  <Col lg={24} md={24} sm={24}>
+                    <Form.Item>
+                      {getFieldDecorator(fieldLabelsAndNamesMapping.remark.name, {
                     })(
                       <TextArea style={{ width: '100%' }} />
                       )}
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            </Card>
           </Card>
-        </Card>
+        </Spin>
 
         <FooterToolbar extra={footerExtra} style={{ width: this.state.wdith, paddingLeft: this.props.collapsed ? 100 : 280 }}>
           {getErrorInfo()}
-          <Button type="primary" onClick={validate}>
+          <Button
+            type="primary"
+            onClick={validate}
+            loading={submitLoading}
+          >
             提交
           </Button>
         </FooterToolbar>
@@ -880,8 +898,8 @@ class CashStatistics extends PureComponent {
   }
 }
 
-export default connect(state => ({
-  // collapsed: state.global.collapsed,
-  // submitting: state.form.advancedFormSubmitting,
-  dailyClosingResult: state.dailyClosing.dailyClosingResult,
-}))(Form.create()(CashStatistics));
+// export default connect(state => ({
+//   // collapsed: state.global.collapsed,
+//   // submitting: state.form.advancedFormSubmitting,
+//   dailyClosingResult: state.dailyClosing.dailyClosingResult,
+// }))(Form.create()(CashStatistics));

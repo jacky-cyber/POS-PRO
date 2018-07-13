@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import moment from 'moment';
 import { SALE_TYPE_MAPPING, POS_TYPE } from 'constant';
-import { Row, Col, Card, Form, Input, Icon, Button, DatePicker, Table } from 'antd';
+import { Row, Col, Card, Form, Input, Icon, Button, DatePicker, Table, Divider } from 'antd';
 import PageHeaderLayout from 'layouts/PageHeaderLayout';
 
 import styles from './index.less';
@@ -90,6 +90,21 @@ export default class TableList extends PureComponent {
           </Col>
         </Row>
       </Form>
+    );
+  }
+  getTitle = () => {
+    const { dailyTotalSale } = this.props;
+    const { totalFee, shippingFee } = dailyTotalSale;
+    return (
+      <div>
+        <span className={styles.title}>
+        今日销售额：{totalFee + shippingFee}
+        </span>
+        <Divider type="vertical" />
+        <span>
+          （商品{totalFee} 邮费{shippingFee}）
+        </span>
+      </div>
     );
   }
 
@@ -344,7 +359,7 @@ export default class TableList extends PureComponent {
               loading={getDailyOrdersLoading}
               expandedRowRender={expandedRowRender}
               onExpand={this.expandHandler}
-              title={() => `今日销售额：${dailyTotalSale}`}
+              title={this.getTitle}
             />
           </div>
         </Card>

@@ -12,7 +12,7 @@ export default {
     orderList: [],
     dailyOrders: [],
     orderDetails: [],
-    dailyTotalSale: null,
+    dailyTotalSale: {},
     pagination: {
       total: null,
       current: 1,
@@ -96,14 +96,19 @@ export default {
       const response = yield call(getDailyOrdersAPI, payload);
       try {
         const orderList = response.Result.Data;
-        const totalSale = response.Result.Count;
+        const totalFee = response.Result.TotalFee;
+        const shippingFee = response.Result.ShippingFee;
+        const fee = {
+          totalFee,
+          shippingFee,
+        };
         yield put({
           type: 'saveDailyOrders',
           payload: Array.isArray(orderList) ? orderList : [],
         });
         yield put({
           type: 'changeDailyTotalSale',
-          payload: totalSale,
+          payload: fee,
         });
       } catch (e) {
         throw e;

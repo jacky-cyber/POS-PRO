@@ -2,6 +2,7 @@ import { stringify } from 'qs';
 import request from 'utils/request';
 import { DOMAIN } from 'constant';
 import { generateParameterInUrl } from 'utils/utils';
+import Cookies from 'js-cookie';
 
 // 登陆
 
@@ -134,7 +135,7 @@ export async function addOrUpdateDailyClosing(payload = {}) {
 // 日结-查找
 export async function getDailyClosing(payload = {}) {
   const options = {
-    body: `dtTurnoverDate=${payload}&iDepartmentID=2`,
+    body: `dtTurnoverDate=${payload}&iDepartmentID=${Cookies.get('departmentID')}`,
   };
   return request(`${DOMAIN}/DailySettle/Get`, options);
 }

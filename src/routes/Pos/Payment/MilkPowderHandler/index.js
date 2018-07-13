@@ -88,7 +88,6 @@ export default class MilkPowderHandler extends PureComponent {
   componentDidMount() {
     Mousetrap.bind('backspace', () => this.prevHandler());
     Mousetrap.bind('p', () => this.printHandler());
-    // Mousetrap.bind('enter', () => this.submitHandler())
     Mousetrap.bind('enter', () => this.submitButton.click());
     this.fetchWaybillHandler();
   }
@@ -97,21 +96,25 @@ export default class MilkPowderHandler extends PureComponent {
       Mousetrap.unbind(item);
     });
   }
-  printHandler = (values) => {
+  getPrintInfo = () => {
     const { order = {} } = this.props;
-    const printInfo = {
-      ...values,
+    // 构造打印对象
+    const print = {
       ID: order.ID,
+      waybill: order.selectedList,
       createTime: order.createTime,
+      SenderName: order.SenderName,
+      SenderPhoneNumber: order.SenderPhoneNumber,
+      ReceiverName: order.ReceiverName,
+      ReceiverPhoneNumber: order.ReceiverPhoneNumber,
+      ReceiverIDNumber: order.ReceiverIDNumber,
+      ReceiverAddress: order.ReceiverAddress,
+      ReceiverDetailedAddress: order.receiverDetailedAddress,
     };
-    this.setState({ printInfo });
-    const { printForm } = this.refs;
-    window.setTimeout(() => {
-      printForm.onPrint();
-    }, 0);
+    return print;
   }
   prevHandler = () => {
-    const activeTabKey = this.props.activeTabKey;
+    const { activeTabKey } = this.props;
     const lastPhase = POS_PHASE.PAY;
     const targetPhase = POS_PHASE.TABLE;
     this.props.dispatch({ type: 'commodity/changePosPhase', payload: { activeTabKey, lastPhase, targetPhase } });
@@ -132,7 +135,11 @@ export default class MilkPowderHandler extends PureComponent {
     // this.props.dispatch({ type: 'commodity/fetchWaybill', payload });
     this.props.dispatch({ type: 'commodity/fetchWaybill' });
   }
-  valueHandler = (values) => {
+  printHandler = () => {
+    const { printForm } = this.refs;
+    printForm.onPrint();
+  }
+  valueHandler = () => {
     const { order = {} } = this.props;
     const { ID } = order;
     // 构造打印对象
@@ -147,9 +154,10 @@ export default class MilkPowderHandler extends PureComponent {
       ReceiverAddress: order.ReceiverAddress,
       ReceiverDetailedAddress: order.receiverDetailedAddress,
     };
+    const { selectedList, ...rest } = this.props.order;
     const newValues = {
-      // ...values,
-      ...this.props.order,
+      ...rest,
+      waybill: selectedList,
       print,
     };
     const valuesJson = JSON.stringify(newValues);
@@ -164,7 +172,9 @@ export default class MilkPowderHandler extends PureComponent {
     const { validateFieldsAndScroll } = form;
     validateFieldsAndScroll((error, values) => {
       if (!error) {
-        callback && callback(values);
+        if (callback) {
+          callback(values);
+        }
       }
     });
   }
@@ -176,13 +186,6 @@ export default class MilkPowderHandler extends PureComponent {
     const extraNodeForFetchWaybill = (
       <a onClick={() => this.fetchWaybillHandler()}>抓取订单号</a>
     );
-    const validate = () => {
-      validateFieldsAndScroll((error, values) => {
-        if (!error) {
-          this.valueHandler(values);
-        }
-      });
-    };
     const errors = getFieldsError();
     const getErrorInfo = () => {
       const errorCount = Object.keys(errors).filter(key => errors[key]).length;
@@ -231,7 +234,7 @@ export default class MilkPowderHandler extends PureComponent {
         >
           <div style={{ display: 'none' }}>
             <div>
-              <MilkPowderReceipt order={printInfo} />
+              <MilkPowderReceipt order={this.getPrintInfo()} />
             </div>
           </div>
         </Print>
