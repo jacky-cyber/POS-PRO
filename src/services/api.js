@@ -42,7 +42,6 @@ export async function deleteCustomer(ID) {
 
 export async function updateCustomer(payload) {
   const parameterString = generateParameterInUrl(payload);
-  console.log('parameterString', parameterString);
   const options = {
     body: `${parameterString}`,
   };
@@ -74,7 +73,6 @@ export async function addOrUpdateCacheOrder({ ID, order }) {
   const options = {
     body: `OrderID=${ID || ''}&Data=${encodeURIComponent(order)}`,
   };
-  console.log('options', options);
   return request(`${DOMAIN}/Order/AddOrUpdateCache`, options);
 }
 

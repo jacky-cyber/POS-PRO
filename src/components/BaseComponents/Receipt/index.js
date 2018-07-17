@@ -61,6 +61,7 @@ export default class Receipt extends PureComponent {
       createTime,
       shop,
       selectedList = [],
+      waybill = [],
       totalPrice,
       expressCost,
       shippingCost,
@@ -70,6 +71,7 @@ export default class Receipt extends PureComponent {
       type,
       saleType,
     } = order;
+    const goodsList = waybill.length > 0 ? waybill : selectedList;
     const { shopName } = shop || {};
     const isShowTaxInfo = this.judgeIsShowTaxInfo(order);
     const isExpress = saleType === SALE_TYPE.EXPRESS;
@@ -136,15 +138,15 @@ export default class Receipt extends PureComponent {
         </Row>
         <div>
           {
-            selectedList.map(item => (
+            goodsList.map(item => (
               <div className={`${styles.list} ${styles.bb}`} key={item.Sku}>
                 <div className={styles.bolder}>{item.EN}</div>
-                <Row>
-                  <Col span={8}>{item.Sku}</Col>
-                  <Col span={4}>${item.RetailPrice}</Col>
-                  <Col span={3}>{item.Count}</Col>
-                  <Col span={4}>${item.RealPrice}</Col>
-                  <Col span={5} style={{ textAlign: 'right' }}>${item.RealPrice * item.Count}</Col>
+                <Row type="flex" justify="space-between">
+                  <Col>{item.Sku}</Col>
+                  <Col>${item.RetailPrice}</Col>
+                  <Col>{item.Count}</Col>
+                  <Col>${item.RealPrice}</Col>
+                  <Col style={{ textAlign: 'right' }}>${item.RealPrice * item.Count}</Col>
                 </Row>
               </div>
             ))

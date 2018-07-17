@@ -1,16 +1,28 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import moment from 'moment';
-import { SALE_TYPE_MAPPING, POS_TYPE } from 'constant';
-import { Row, Col, Card, Form, Input, Icon, Button, DatePicker, Table } from 'antd';
+import { SALE_TYPE_MAPPING, POS_TYPE, POS_TAB_TYPE } from 'constant';
+import { Row, Col, Card, Form, Input, Icon, Button, DatePicker, Table, Badge, Modal } from 'antd';
 import Print from 'rc-print';
 import { Receipt, MilkPowderReceipt } from 'components/BaseComponents';
 import PageHeaderLayout from 'layouts/PageHeaderLayout';
+import CascaderInFormItem from '../../Pos/Payment/MilkPowderHandler/CascaderInFormItem';
+import SearchForm from './SearchForm';
 
 import styles from './index.less';
 
 const FormItem = Form.Item;
-const { RangePicker } = DatePicker;
+
+
+const fieldLabels = {
+  senderName: '寄件人姓名',
+  senderPhoneNumber: '寄件人号码',
+  receiverName: '收件人姓名',
+  receiverPhoneNumber: '收件人号码',
+  receiverIDNumber: '收件人身份证号',
+  receiverAddress: '收件人地址',
+  receiverDetailedAddress: '收件人详细地址（具体到门牌号）',
+};
 
 @connect(state => ({
   orderList: state.orders.orderList,
@@ -25,13 +37,30 @@ const { RangePicker } = DatePicker;
 export default class TableList extends PureComponent {
   state = {
     expandForm: false,
+    visible: false,
+    tempReceiverAddress: {},
   };
 
-  componentDidMount() {
-    this.searchHandler();
-  }
   tableChangeHandler = (pagination = {}, filters, sorter) => {
     this.searchHandler(null, pagination);
+  }
+
+  getStatus = (record) => {
+    const { Type, IsPush } = record;
+    if (Type === POS_TAB_TYPE.MILKPOWDER) {
+      return IsPush === 1 ? 'success' : 'error';
+    } else {
+      return 'default';
+    }
+  }
+
+  getPushDisabled = (record) => {
+    const { Type, IsPush } = record;
+    if (Type === POS_TAB_TYPE.MILKPOWDER) {
+      return IsPush === 1;
+    } else {
+      return true;
+    }
   }
 
   handleFormReset = () => {
@@ -46,24 +75,54 @@ export default class TableList extends PureComponent {
     });
   }
 
-
-  searchHandler = (e, pagination) => {
-    if (e) {
-      e.preventDefault();
-    }
-    const { dispatch, form } = this.props;
+  validate = () => {
+    const { form } = this.props;
+    const { tempReceiverAddress } = this.state;
     form.validateFields((err, fieldsValue) => {
       if (err) return;
+      const { ID, ...restValues } = fieldsValue;
       const value = {
-        PayTime: fieldsValue.date.map(item => item.format('YYYY-MM-DD')).toString(),
-        MemberID: fieldsValue.customer,
+        ...restValues,
+        ReceiverAddress: tempReceiverAddress,
       };
+      const Data = JSON.stringify(value);
+      const OrderID = ID;
       const payload = {
-        value,
-        pagination: pagination || this.props.pagination,
+        value: { OrderID, Data },
       };
-      dispatch({ type: 'orders/getHistoryOrders', payload });
+      console.log('payload', payload);
+      this.props.dispatch({ type: 'orders/pushMilkPowderOrder', payload });
     });
+  }
+
+  // modal 相关操作
+  handleModalOpen = () => {
+    this.setState({
+      visible: true,
+    });
+    return new Promise((resolve) => {
+      resolve();
+    });
+  }
+
+  handleOk = () => {
+    this.validate();
+    this.handleCancel();
+  }
+
+  handleCancel = () => {
+    this.setState({
+      visible: false,
+    });
+  }
+
+
+  searchHandler = (e, pagination) => {
+    const { dispatch } = this.props;
+    const payload = {
+      pagination: pagination || this.props.pagination,
+    };
+    dispatch({ type: 'orders/getHistoryOrders', payload });
   }
 
   getOrderDetailHandler = (ID) => {
@@ -94,6 +153,39 @@ export default class TableList extends PureComponent {
     });
   }
 
+  pushHandler = (record) => {
+    this.getOrderReceiptHandler(record.ID).then(() => {
+      this.handleModalOpen();
+    }).then(() => {
+      const { orderReceipt, form } = this.props;
+      const {
+        ID,
+        SenderName,
+        SenderPhoneNumber,
+        ReceiverName,
+        ReceiverPhoneNumber,
+        ReceiverIDNumber,
+        ReceiverAddress,
+        ReceiverDetailedAddress,
+      } = orderReceipt;
+      const { setFieldsValue } = form;
+      const value = {
+        ID,
+        SenderName,
+        SenderPhoneNumber,
+        ReceiverName,
+        ReceiverPhoneNumber,
+        ReceiverIDNumber,
+        ReceiverAddress: ReceiverAddress.ID,
+        ReceiverDetailedAddress,
+      };
+      this.setState({
+        tempReceiverAddress: ReceiverAddress,
+      });
+      setFieldsValue(value);
+    });
+  }
+
   printHandler = (type) => {
     if (type === POS_TYPE.MILKPOWDER.value) {
       this.milkPowderReceiptDOM.onPrint();
@@ -108,101 +200,57 @@ export default class TableList extends PureComponent {
     this.milkPowderReceiptDOM = node;
   }
 
-  renderForm() {
-    return this.state.expandForm ? this.renderAdvancedForm() : this.renderSimpleForm();
-  }
-  renderSimpleForm() {
-    const { getFieldDecorator } = this.props.form;
-    return (
-      <Form
-        onSubmit={this.searchHandler}
-        layout="inline"
-      >
-        <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
-          <Col md={8} sm={24}>
-            <FormItem label="起止日期">
-              {getFieldDecorator('date', {
-                initialValue: [moment().subtract(7, 'days'), moment()],
-                rules: [{
-                  required: true, message: '请选择起止日期',
-                }],
-              })(
-                <RangePicker
-                  style={{ width: '100%' }}
-                  placeholder={['开始日期', '结束日期']}
-                />
-              )}
-            </FormItem>
-          </Col>
-          <Col md={4} sm={24}>
-            <FormItem label="客户">
-              {getFieldDecorator('customer', {
-                rules: [{
-                  // required: true, message: '请选择会员ID',
-                }],
-              })(
-                <Input />
-              )}
-            </FormItem>
-          </Col>
-          <Col md={8} sm={24}>
-            <span className={styles.submitButtons}>
-              <Button type="primary" htmlType="submit">查询</Button>
-              <Button style={{ marginLeft: 8 }} onClick={this.handleFormReset}>重置</Button>
-              <a style={{ marginLeft: 8 }} onClick={this.toggleForm}>
-                展开 <Icon type="down" />
-              </a>
-            </span>
-          </Col>
-        </Row>
-      </Form>
-    );
-  }
-
-  renderAdvancedForm() {
-    const { getFieldDecorator } = this.props.form;
-    return (
-      <Form onSubmit={this.searchHandler} layout="inline">
-        <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
-          <Col md={8} sm={24}>
-            <FormItem label="起止日期">
-              {getFieldDecorator('date', {
-                rules: [{
-                  required: true, message: '请选择起止日期',
-                }],
-              })(
-                <RangePicker style={{ width: '100%' }} placeholder={['开始日期', '结束日期']} />
-              )}
-            </FormItem>
-          </Col>
-          <Col md={4} sm={24}>
-            <FormItem label="客户">
-              {getFieldDecorator('customer', {
-                rules: [{
-                  // required: true, message: '请选择会员ID',
-                }],
-              })(
-                <Input />
-              )}
-            </FormItem>
-          </Col>
-        </Row>
-        <Row gutter={{ md: 8, lg: 24, xl: 48 }} />
-        <div style={{ overflow: 'hidden' }}>
-          <span style={{ float: 'right', marginBottom: 24 }}>
-            <Button type="primary" htmlType="submit">查询</Button>
-            <Button style={{ marginLeft: 8 }} onClick={this.handleFormReset}>重置</Button>
-            <a style={{ marginLeft: 8 }} onClick={this.toggleForm}>
-              收起 <Icon type="up" />
-            </a>
-          </span>
-        </div>
-      </Form>
-    );
-  }
-
+  // renderSimpleForm() {
+  //   const { getFieldDecorator } = this.props.form;
+  //   return (
+  //     <Form
+  //       onSubmit={this.searchHandler}
+  //       layout="inline"
+  //     >
+  //       <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
+  //         <Col md={8} sm={24}>
+  //           <FormItem label="起止日期">
+  //             {getFieldDecorator('date', {
+  //               initialValue: [moment().subtract(7, 'days'), moment()],
+  //               // rules: [{
+  //               //   required: true, message: '请选择起止日期',
+  //               // }],
+  //             })(
+  //               <RangePicker
+  //                 style={{ width: '100%' }}
+  //                 placeholder={['开始日期', '结束日期']}
+  //               />
+  //             )}
+  //           </FormItem>
+  //         </Col>
+  //         <Col md={4} sm={24}>
+  //           <FormItem label="客户">
+  //             {getFieldDecorator('customer', {
+  //               rules: [{
+  //                 // required: true, message: '请选择会员ID',
+  //               }],
+  //             })(
+  //               <Input />
+  //             )}
+  //           </FormItem>
+  //         </Col>
+  //         <Col md={8} sm={24}>
+  //           <span className={styles.submitButtons}>
+  //             <Button type="primary" htmlType="submit">查询</Button>
+  //             <Button style={{ marginLeft: 8 }} onClick={this.handleFormReset}>重置</Button>
+  //             <a style={{ marginLeft: 8 }} onClick={this.toggleForm}>
+  //               展开 <Icon type="down" />
+  //             </a>
+  //           </span>
+  //         </Col>
+  //       </Row>
+  //     </Form>
+  //   );
+  // }
   render() {
-    const { orderList, orderDetails, orderReceipt } = this.props;
+    const { orderList, orderDetails, orderReceipt, form } = this.props;
+    const { getFieldDecorator } = form;
+    const { visible } = this.state;
 
     const orderColumns = [
       {
@@ -317,6 +365,42 @@ export default class TableList extends PureComponent {
         ],
       },
       {
+        title: '推送',
+        dataIndex: 'Push',
+        children: [
+          {
+            title: '状态',
+            dataIndex: 'IsPush',
+            align: 'center',
+            render: (text, record) => {
+              return (
+                <div>
+                  <Badge status={this.getStatus(record)} />
+                </div>
+              );
+            },
+          },
+          {
+            title: '操作',
+            dataIndex: 'PushAction',
+            align: 'center',
+            render: (text, record) => {
+              return (
+                <div>
+                  <Button
+                    size="small"
+                    onClick={() => this.pushHandler(record)}
+                    disabled={this.getPushDisabled(record)}
+                  >
+                        推送
+                  </Button>
+                </div>
+              );
+            },
+          },
+        ],
+      },
+      {
         title: '操作',
         dataIndex: 'Operation',
         align: 'center',
@@ -399,13 +483,99 @@ export default class TableList extends PureComponent {
       },
     ];
 
+    const pushForm = (
+      <Form layout="vertical">
+        <Form.Item style={{ display: 'none' }} label={fieldLabels.senderName}>
+          {getFieldDecorator('ID', {
+              // initialValue: orderReceipt.SenderName,
+                    // rules: [{ required: true, message: '请输入寄件人姓名' }],
+                  })(
+                    <Input />
+                  )}
+        </Form.Item>
+        <Col span={24}>
+          <Form.Item label={fieldLabels.senderName}>
+            {getFieldDecorator('SenderName', {
+              // initialValue: orderReceipt.SenderName,
+                    // rules: [{ required: true, message: '请输入寄件人姓名' }],
+                  })(
+                    <Input />
+                  )}
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Form.Item label={fieldLabels.senderPhoneNumber}>
+            {getFieldDecorator('SenderPhoneNumber', {
+                    // rules: [{ required: true, message: '请输入寄件人电话' }],
+                  })(
+                    <Input />
+                  )}
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Form.Item label={fieldLabels.receiverName}>
+            {getFieldDecorator('ReceiverName', {
+                    // rules: [{ required: true, message: '请输入收件人姓名' }],
+                  })(
+                    <Input />
+                  )}
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Form.Item label={fieldLabels.receiverPhoneNumber}>
+            {getFieldDecorator('ReceiverPhoneNumber', {
+                    // rules: [{ required: true, message: '请输入收件人电话' }],
+                  })(
+                    <Input />
+                  )}
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Form.Item label={fieldLabels.receiverIDNumber}>
+            {getFieldDecorator('ReceiverIDNumber', {
+                    // rules: [{ required: true, message: '请输入收件人身份证号' }],
+                  })(
+                    <Input />
+                  )}
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Form.Item label={fieldLabels.receiverAddress}>
+            {getFieldDecorator('ReceiverAddress', {
+                    // rules: [{ required: true, message: '选择收件人地址' }],
+                  })(
+                    <CascaderInFormItem />
+                  )}
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Form.Item label={fieldLabels.receiverDetailedAddress}>
+            {getFieldDecorator('ReceiverDetailedAddress', {
+                    // rules: [{ required: true, message: '请输入收件人详细地址（具体到门牌号）' }],
+                  })(
+                    <Input />
+                  )}
+          </Form.Item>
+        </Col>
+      </Form>
+    );
+
 
     return (
       <PageHeaderLayout title="历史订单列表">
+        <Modal
+          title="订单推送"
+          visible={visible}
+          onOk={this.handleOk}
+          onCancel={this.handleCancel}
+          destroyOnClose
+        >
+          { pushForm }
+        </Modal>
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListForm}>
-              {this.renderForm()}
+              <SearchForm />
             </div>
             <Table
               bordered

@@ -5,13 +5,18 @@ import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover } from 'an
 import { connect } from 'dva';
 import Print from 'rc-print';
 import { POS_PHASE } from 'constant';
-import { MilkPowderReceipt } from 'components/BaseComponents';
+import { MilkPowderReceipt, Receipt } from 'components/BaseComponents';
 import TableForm from './TableForm';
 import CascaderInFormItem from './CascaderInFormItem';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import styles from './index.less';
 
 const keyboardMapping = ['backspace', 'p', 'enter'];
+
+const receiptMapping = {
+  RECEIPT: 1,
+  MILKPOWDERRECEIPT: 2,
+};
 
 const fieldLabels = {
   senderName: '寄件人姓名',
@@ -87,7 +92,7 @@ export default class MilkPowderHandler extends PureComponent {
   }
   componentDidMount() {
     Mousetrap.bind('backspace', () => this.prevHandler());
-    Mousetrap.bind('p', () => this.printHandler());
+    Mousetrap.bind('p', () => this.printHandler(receiptMapping.MILKPWDERRECEIPT));
     Mousetrap.bind('enter', () => this.submitButton.click());
     this.fetchWaybillHandler();
   }
@@ -101,15 +106,20 @@ export default class MilkPowderHandler extends PureComponent {
     // 构造打印对象
     const print = {
       ID: order.ID,
-      waybill: order.selectedList,
       createTime: order.createTime,
+      shop: order.shop,
+      totalPrice: order.totalPrice,
+      paymentData: order.paymentData,
+      type: order.type,
+      saleType: order.saleType,
+      waybill: order.selectedList,
       SenderName: order.SenderName,
       SenderPhoneNumber: order.SenderPhoneNumber,
       ReceiverName: order.ReceiverName,
       ReceiverPhoneNumber: order.ReceiverPhoneNumber,
       ReceiverIDNumber: order.ReceiverIDNumber,
       ReceiverAddress: order.ReceiverAddress,
-      ReceiverDetailedAddress: order.receiverDetailedAddress,
+      ReceiverDetailedAddress: order.ReceiverDetailedAddress,
     };
     return print;
   }
@@ -135,25 +145,33 @@ export default class MilkPowderHandler extends PureComponent {
     // this.props.dispatch({ type: 'commodity/fetchWaybill', payload });
     this.props.dispatch({ type: 'commodity/fetchWaybill' });
   }
-  printHandler = () => {
-    const { printForm } = this.refs;
-    printForm.onPrint();
+  printHandler = (mode) => {
+    if (mode === receiptMapping.MILKPOWDERRECEIPT) {
+      const { milkPowderReceipt } = this.refs;
+      milkPowderReceipt.onPrint();
+    } else if (mode === receiptMapping.RECEIPT) {
+      const { receipt } = this.refs;
+      receipt.onPrint();
+    }
+    // const { printForm } = this.refs;
+    // printForm.onPrint();
   }
   valueHandler = () => {
     const { order = {} } = this.props;
     const { ID } = order;
     // 构造打印对象
-    const print = {
-      ID: order.ID,
-      createTime: order.createTime,
-      SenderName: order.SenderName,
-      SenderPhoneNumber: order.SenderPhoneNumber,
-      ReceiverName: order.ReceiverName,
-      ReceiverPhoneNumber: order.ReceiverPhoneNumber,
-      ReceiverIDNumber: order.ReceiverIDNumber,
-      ReceiverAddress: order.ReceiverAddress,
-      ReceiverDetailedAddress: order.receiverDetailedAddress,
-    };
+    // const print = {
+    //   ID: order.ID,
+    //   createTime: order.createTime,
+    //   SenderName: order.SenderName,
+    //   SenderPhoneNumber: order.SenderPhoneNumber,
+    //   ReceiverName: order.ReceiverName,
+    //   ReceiverPhoneNumber: order.ReceiverPhoneNumber,
+    //   ReceiverIDNumber: order.ReceiverIDNumber,
+    //   ReceiverAddress: order.ReceiverAddress,
+    //   ReceiverDetailedAddress: order.ReceiverDetailedAddress,
+    // };
+    const print = this.getPrintInfo();
     const { selectedList, ...rest } = this.props.order;
     const newValues = {
       ...rest,
@@ -229,8 +247,16 @@ export default class MilkPowderHandler extends PureComponent {
     return (
       <div>
         <Print
-          ref="printForm"
-          title="奶粉/生鲜"
+          ref="receipt"
+        >
+          <div style={{ display: 'none' }}>
+            <div>
+              <Receipt order={this.getPrintInfo()} />
+            </div>
+          </div>
+        </Print>
+        <Print
+          ref="milkPowderReceipt"
         >
           <div style={{ display: 'none' }}>
             <div>
@@ -251,7 +277,7 @@ export default class MilkPowderHandler extends PureComponent {
               <Col lg={8} md={12} sm={24}>
                 <Form.Item label={fieldLabels.senderName}>
                   {getFieldDecorator('SenderName', {
-                    rules: [{ required: true, message: '请输入寄件人姓名' }],
+                    // rules: [{ required: true, message: '请输入寄件人姓名' }],
                   })(
                     <Input />
                   )}
@@ -260,7 +286,7 @@ export default class MilkPowderHandler extends PureComponent {
               <Col lg={{ span: 8 }} md={{ span: 12 }} sm={24}>
                 <Form.Item label={fieldLabels.senderPhoneNumber}>
                   {getFieldDecorator('SenderPhoneNumber', {
-                    rules: [{ required: true, message: '请输入寄件人电话' }],
+                    // rules: [{ required: true, message: '请输入寄件人电话' }],
                   })(
                     <Input />
                   )}
@@ -271,7 +297,7 @@ export default class MilkPowderHandler extends PureComponent {
               <Col lg={{ span: 8 }} md={{ span: 12 }} sm={24}>
                 <Form.Item label={fieldLabels.receiverName}>
                   {getFieldDecorator('ReceiverName', {
-                    rules: [{ required: true, message: '请输入收件人姓名' }],
+                    // rules: [{ required: true, message: '请输入收件人姓名' }],
                   })(
                     <Input />
                   )}
@@ -280,7 +306,7 @@ export default class MilkPowderHandler extends PureComponent {
               <Col lg={8} md={12} sm={24}>
                 <Form.Item label={fieldLabels.receiverPhoneNumber}>
                   {getFieldDecorator('ReceiverPhoneNumber', {
-                    rules: [{ required: true, message: '请输入收件人电话' }],
+                    // rules: [{ required: true, message: '请输入收件人电话' }],
                   })(
                     <Input />
                   )}
@@ -289,7 +315,7 @@ export default class MilkPowderHandler extends PureComponent {
               <Col lg={{ span: 8 }} md={{ span: 12 }} sm={24}>
                 <Form.Item label={fieldLabels.receiverIDNumber}>
                   {getFieldDecorator('ReceiverIDNumber', {
-                    rules: [{ required: true, message: '请输入收件人身份证号' }],
+                    // rules: [{ required: true, message: '请输入收件人身份证号' }],
                   })(
                     <Input />
                   )}
@@ -300,7 +326,7 @@ export default class MilkPowderHandler extends PureComponent {
               <Col lg={{ span: 12 }} md={{ span: 24 }} sm={24}>
                 <Form.Item label={fieldLabels.receiverAddress}>
                   {getFieldDecorator('ReceiverAddress', {
-                    rules: [{ required: true, message: '选择收件人地址' }],
+                    // rules: [{ required: true, message: '选择收件人地址' }],
                   })(
                     <CascaderInFormItem />
                   )}
@@ -309,7 +335,7 @@ export default class MilkPowderHandler extends PureComponent {
               <Col lg={{ span: 12 }} md={{ span: 24 }} sm={24}>
                 <Form.Item label={fieldLabels.receiverDetailedAddress}>
                   {getFieldDecorator('ReceiverDetailedAddress', {
-                    rules: [{ required: true, message: '请输入收件人详细地址（具体到门牌号）' }],
+                    // rules: [{ required: true, message: '请输入收件人详细地址（具体到门牌号）' }],
                   })(
                     <Input />
                   )}
@@ -322,10 +348,16 @@ export default class MilkPowderHandler extends PureComponent {
           {getErrorInfo()}
           <Button onClick={this.prevHandler}>返回</Button>
           <Button
-            onClick={() => this.validate(this.printHandler)}
+            onClick={() => this.validate(this.printHandler.bind(this, receiptMapping.RECEIPT))}
             disabled={!!(totalPrice - receiveMoney > 0)}
           >
-            打印
+            打印小票
+          </Button>
+          <Button
+            onClick={() => this.validate(this.printHandler.bind(this, receiptMapping.MILKPOWDERRECEIPT))}
+            disabled={!!(totalPrice - receiveMoney > 0)}
+          >
+            打印面单
           </Button>
           <Button
             type="primary"

@@ -188,15 +188,21 @@ export function getGoodsItemCustomerPrice(
 //   }
 // }
 
-export function calculateExpressOrShippingCost(unitPrice, weight, weightedWeight) {
+export function calculateExpressOrShippingCost(unitPrice, weight, weightedWeight, freeWeight) {
   const totalWeight = weight + weightedWeight;
+  const reducedPostage = freeWeight <= 0 ? 0 : (freeWeight > 1 ? freeWeight * unitPrice : unitPrice);
   if (!unitPrice) { return 0; }
   if (totalWeight <= 0) {
     return 0;
   } else if (totalWeight <= 1) {
-    return unitPrice;
-  } else if (totalWeight >= 1) {}
-  return unitPrice * totalWeight;
+    const reduced = unitPrice - reducedPostage;
+    const final = reduced > 0 ? reduced : 0;
+    return final;
+  } else if (totalWeight >= 1) {
+    const reduced = (unitPrice * totalWeight) - reducedPostage;
+    const final = reduced > 0 ? reduced : 0;
+    return final;
+  }
 }
 
 

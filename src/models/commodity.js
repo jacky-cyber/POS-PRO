@@ -670,7 +670,7 @@ export default {
       }
       if (saleType === SALE_TYPE.SHIPPING) {
         yield put({ type: 'changeExpressDataAndSumCost', payload: [] });
-        yield put({ type: 'changeShippingDataAndSumCost', payload: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0 }] });
+        yield put({ type: 'changeShippingDataAndSumCost', payload: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, FreeWeight: 0, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0 }] });
       }
       const { orders, activeTabKey, currentOrderGoodsList } = yield select(state => state.commodity);
       const currentOrder = orders.filter(item => (item.key === activeTabKey))[0];
@@ -720,6 +720,7 @@ export default {
         Name: { Name: '', ID: '' },
         Weight: 0,
         WeightedWeight: 0.3,
+        FreeWeight: 0,
         UnitPrice: 0,
         RealPrice: 0,
         InvoiceNo: '',
@@ -742,7 +743,7 @@ export default {
       const expressData = action.payload;
       let expressCost = 0;
       expressData.forEach((item) => {
-        item.UnitPrice && (expressCost += calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight));
+        item.UnitPrice && (expressCost += calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, item.FreeWeight));
       });
       yield put({ type: 'changeExpressCost', payload: expressCost });
       yield put({ type: 'sumTotalPrice' });
@@ -751,7 +752,7 @@ export default {
       const shippingData = action.payload;
       let shippingCost = 0;
       shippingData.forEach((item) => {
-        item.UnitPrice && (shippingCost += calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight));
+        item.UnitPrice && (shippingCost += calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, item.FreeWeight));
       });
       yield put({ type: 'changeShippingCost', payload: shippingCost });
       yield put({ type: 'sumTotalPrice' });
@@ -786,7 +787,7 @@ export default {
           goodsPrice: 0,
           expressDataIndex: 0,
           expressData: [],
-          shippingData: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0 }],
+          shippingData: [{ Name: { Name: '', ID: '' }, Weight: 0, WeightedWeight: 0.3, FreeWeight: 0, UnitPrice: 0, RealPrice: 0, InvoiceNo: '', ID: 0 }],
           expressCost: 0,
           shippingCost: 0,
           totalPrice: 0,

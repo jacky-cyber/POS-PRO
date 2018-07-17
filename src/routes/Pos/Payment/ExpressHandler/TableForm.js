@@ -28,7 +28,7 @@ export default class TableForm extends PureComponent {
     });
     const expressData = newData.map(item => ({
       ...item,
-      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight),
+      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, item.FreeWeight),
     }));
     this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData });
   }
@@ -43,7 +43,7 @@ export default class TableForm extends PureComponent {
     });
     const expressData = newData.map(item => ({
       ...item,
-      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight),
+      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, item.FreeWeight),
     }));
     this.props.dispatch({ type: 'commodity/changeExpressDataAndSumCost', payload: expressData });
   }
@@ -59,10 +59,12 @@ export default class TableForm extends PureComponent {
     const columns = [{
       title: '包裹序号',
       dataIndex: 'BoxIndex',
+      align: 'center',
       render: (text, record, index) => <span>{index + 1}</span>,
     }, {
       title: '快递公司',
       dataIndex: 'Name',
+      align: 'center',
       render: (text, record) => (
         <SearchableSelect
           fetchData={getCompany}
@@ -77,18 +79,27 @@ export default class TableForm extends PureComponent {
     }, {
       title: '重量',
       dataIndex: 'Weight',
+      align: 'center',
       render: (text, record) => <InputNumber value={text} min={0} precision={2} onChange={e => this.handleFieldChange(e, 'Weight', record.ID)} />,
     }, {
       title: '加权重量',
       dataIndex: 'WeightedWeight',
+      align: 'center',
       render: (text, record) => <InputNumber value={text} min={0} precision={2} onChange={e => this.handleFieldChange(e, 'WeightedWeight', record.ID)} />,
+    }, {
+      title: '免邮重量',
+      dataIndex: 'FreeWeight',
+      align: 'center',
+      render: (text, record) => <InputNumber value={text} min={0} precision={2} onChange={e => this.handleFieldChange(e, 'FreeWeight', record.ID)} />,
     }, {
       title: '运单号',
       dataIndex: 'InvoiceNo',
-      render: (text, record) => <InputNumber value={text} min={0} onChange={e => this.handleFieldChange(e, 'InvoiceNo', record.ID)} />,
+      align: 'center',
+      render: (text, record) => <Input style={{ width: 200 }} value={text} onChange={e => this.handleFieldChange(e, 'InvoiceNo', record.ID)} />,
     }, {
       title: '快递单价',
       dataIndex: 'UnitPrice',
+      align: 'center',
       render: (text, record) => <InputNumber value={text} min={0} precision={2} onChange={e => this.handleFieldChange(e, 'UnitPrice', record.ID)} />,
     }, {
       title: (
@@ -106,6 +117,7 @@ export default class TableForm extends PureComponent {
         </span>
       ),
       dataIndex: 'RealPrice',
+      align: 'center',
       render: (text, record) => (
         <span>
           {text}
@@ -114,6 +126,7 @@ export default class TableForm extends PureComponent {
     }, {
       title: '操作',
       dataIndex: 'action',
+      align: 'center',
       render: (text, record) => (
         <Popconfirm title="是否要删除此行？" onConfirm={() => this.remove(record.ID)}>
           <a>删除</a>

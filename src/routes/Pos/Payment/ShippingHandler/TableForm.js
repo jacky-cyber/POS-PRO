@@ -42,7 +42,7 @@ export default class TableForm extends PureComponent {
     }
     const shippingData = newData.map(item => ({
       ...item,
-      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight),
+      RealPrice: calculateExpressOrShippingCost(item.UnitPrice, item.Weight, item.WeightedWeight, item.FreeWeight),
     }));
     this.props.dispatch({ type: 'commodity/changeShippingDataAndSumCost', payload: shippingData });
   }
@@ -58,6 +58,7 @@ export default class TableForm extends PureComponent {
     const columns = [{
       title: '快递公司',
       dataIndex: 'Name',
+      align: 'center',
       render: (text, record) => (
         <SearchableSelect
           fetchData={getCompany}
@@ -72,6 +73,7 @@ export default class TableForm extends PureComponent {
     }, {
       title: '重量(kg)',
       dataIndex: 'Weight',
+      align: 'center',
       render: (text, record) => (
         <InputNumber
           value={text}
@@ -83,6 +85,7 @@ export default class TableForm extends PureComponent {
     }, {
       title: '加权重量(kg)',
       dataIndex: 'WeightedWeight',
+      align: 'center',
       render: (text, record) => (
         <InputNumber
           value={text}
@@ -92,8 +95,21 @@ export default class TableForm extends PureComponent {
         />
       ),
     }, {
+      title: '免邮重量',
+      dataIndex: 'FreeWeight',
+      align: 'center',
+      render: (text, record) => (
+        <InputNumber
+          value={text}
+          min={0}
+          precision={2}
+          onChange={e => this.handleFieldChange(e, 'FreeWeight', record.ID)}
+        />
+      ),
+    }, {
       title: '快递单价（元）',
       dataIndex: 'UnitPrice',
+      align: 'center',
       render: (text, record) => (
         <InputNumber
           value={text}
@@ -118,6 +134,7 @@ export default class TableForm extends PureComponent {
         </span>
       ),
       dataIndex: 'RealPrice',
+      align: 'center',
       render: text => (
         <span>
           {

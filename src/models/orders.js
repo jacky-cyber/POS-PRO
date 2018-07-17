@@ -3,7 +3,14 @@ import {
   getHistoryOrderDetailsAPI,
   getHistoryOrderReceiptAPI,
   getDailyOrdersAPI,
+  pushMilkPowderOrderAPI,
 } from 'services/orders';
+import { message } from 'antd';
+import moment from 'moment';
+
+const defaultDate = [moment().subtract(7, 'days'), moment()].map(item => (
+  item.format('YYYY-MM-DD').toString()
+));
 
 export default {
   namespace: 'orders',
@@ -13,19 +20,32 @@ export default {
     dailyOrders: [],
     orderDetails: [],
     dailyTotalSale: {},
+    searchCondition: {
+      PayTime: {
+        value: defaultDate,
+      },
+    },
     pagination: {
       total: null,
       current: 1,
       pageSize: 10,
     },
+    orderReceipt: {},
   },
 
   effects: {
-    *getHistoryOrders(action, { call, put }) {
+    *getHistoryOrders(action, { call, put, select }) {
+      const orders = yield select(state => state.orders);
+      const { searchCondition } = orders;
       const { payload } = action;
       const { pagination } = payload;
-      const response = yield call(getHistoryOrdersAPI, payload);
-      if (response.Status) {
+      // const value = {};
+      // Object.keys(searchCondition).forEach((item) => {
+      //   Object.assign(value, { item: searchCondition.item.value });
+      // });
+      // console.log('value', value);
+      const response = yield call(getHistoryOrdersAPI, { value: searchCondition.PayTime.value, pagination });
+      try {
         const orderList = response.Result.Data;
         const count = response.Result.Count;
         const newPagination = { ...pagination, total: count };
@@ -41,6 +61,8 @@ export default {
           type: 'saveOrderDetails',
           patyload: [],
         });
+      } catch (e) {
+        throw e;
       }
     },
     *getOrderDetails(action, { call, put }) {
@@ -114,6 +136,16 @@ export default {
         throw e;
       }
     },
+    *pushMilkPowderOrder(action, { call }) {
+      const { payload } = action;
+      const response = yield call(pushMilkPowderOrderAPI, payload);
+      if (response.Message === 'success') {
+        message.success('提交成功');
+      } else {
+        message.error('提交失败');
+      }
+    },
+
   },
 
   reducers: {
@@ -153,6 +185,13 @@ export default {
       return {
         ...state,
         dailyTotalSale: payload,
+      };
+    },
+    changeSearchCondition(state, action) {
+      const { payload } = action;
+      return {
+        ...state,
+        searchCondition: payload,
       };
     },
   },

@@ -1,13 +1,13 @@
 import React, { PureComponent } from 'react';
 import { Card, Form, Input, Row, Col, Cascader, Button, Icon, Popover, Table } from 'antd';
+import Print from 'rc-print';
+import Mousetrap from 'mousetrap';
 import { connect } from 'dva';
 import { Receipt } from 'components/BaseComponents';
 import TableForm from './TableForm';
 import CascaderInFormItem from '../MilkPowderHandler/CascaderInFormItem';
 import FooterToolbar from '../../../../components/FooterToolbar';
 import styles from './index.less';
-import Print from 'rc-print';
-import Mousetrap from 'mousetrap';
 import { POS_PHASE } from '../../../../constant';
 
 

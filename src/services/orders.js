@@ -6,7 +6,7 @@ import { generateParameterInUrl } from 'utils/utils';
 export async function getHistoryOrdersAPI(payload) {
   const { value, pagination } = payload;
   const options = {
-    body: `${generateParameterInUrl(value)}&PageSize=${pagination.pageSize}&PageNum=${pagination.current}`,
+    body: `PayTime=${value}&PageSize=${pagination.pageSize}&PageNum=${pagination.current}`,
   };
   return request(`${DOMAIN}/Order/getOrder`, options);
 }
@@ -34,4 +34,13 @@ export async function getDailyOrdersAPI(payload) {
     body: `${generateParameterInUrl(value)}`,
   };
   return request(`${DOMAIN}/Order/getOrderByTime`, options);
+}
+
+// 推送奶粉订单
+export async function pushMilkPowderOrderAPI(payload) {
+  const { value } = payload;
+  const options = {
+    body: `${generateParameterInUrl(value)}`,
+  };
+  return request(`${DOMAIN}/Order/PushMilkOrder`, options);
 }
