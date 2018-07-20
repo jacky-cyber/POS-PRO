@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Card, Button, Form, Icon, Col, Row, DatePicker, Input, Select, Popover, InputNumber, Spin } from 'antd';
+import { formatToDecimals } from 'utils/utils';
 import { connect } from 'dva';
 import Cookies from 'js-cookie';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
@@ -244,34 +245,30 @@ export default class CashStatistics extends PureComponent {
       0;
     const cashOpening = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.cashOpening.name) || 0;
     const income = cashInBox - cashOpening;
-    return income;
+    return formatToDecimals(income, 2);
   }
   calcCashInBank = (cashIncome) => {
     const cashClosing = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.cashClosing.name) || 0;
-    const cashInBank = cashIncome - cashClosing || 0;
-    return cashInBank;
+    const cashOpening = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.cashOpening.name) || 0;
+    const cashInBank = cashIncome + cashOpening - cashClosing || 0;
+    return formatToDecimals(cashInBank, 2);
   }
   calcUnionPayIncome = () => {
     const unionPay = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.unionPay.name) || 0;
     const service = unionPay && unionPay * serviceChargeMapping.unionPay;
-    return (unionPay - service).toFixed(2);
-  }
-  calcUnionPayServiceCharge = () => {
-    const unionPay = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.unionPay.name) || 0;
-    const serviceCharge = unionPay && unionPay * serviceChargeMapping.unionPay;
-    return (serviceCharge).toFixed(2);
+    return formatToDecimals((unionPay - service), 2);
   }
   calcIncome = (name) => {
     const value = this.props.form.getFieldValue(fieldLabelsAndNamesMapping[name].name) || 0;
     const serviceCharge = value && value * serviceChargeMapping[name];
-    const income = parseFloat((value - serviceCharge).toFixed(2));
+    const income = value - serviceCharge;
     // this.props.form.setFieldsValue({[fieldLabelsAndNamesMapping[name]['name']]: income})
-    return income;
+    return formatToDecimals(income, 2);
   }
   calcServiceCharge = (name) => {
     const value = this.props.form.getFieldValue(fieldLabelsAndNamesMapping[name].name) || 0;
-    const serviceCharge = (value && value * serviceChargeMapping[name]).toFixed(2);
-    return parseFloat(serviceCharge);
+    const serviceCharge = value && value * serviceChargeMapping[name];
+    return formatToDecimals(serviceCharge, 2);
   }
   calcUnCashIncome = () => {
     const unionPayIncome = this.calcIncome('unionPay');
@@ -282,12 +279,12 @@ export default class CashStatistics extends PureComponent {
     const transferIncome = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.transferIncome.name) || 0;
     const latiPayIncome = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.latiPayIncome.name) || 0;
     const income = unionPayIncome + creditCardIncome + aliPayIncome + weChatPayIncome + eftopsIncome + transferIncome + latiPayIncome;
-    return income;
+    return formatToDecimals(income, 2);
   }
   calcTotalAccountIncome = () => {
     const frontEndIncome = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.frontEndIncome.name) || 0;
     const backEndIncome = this.props.form.getFieldValue(fieldLabelsAndNamesMapping.backEndIncome.name) || 0;
-    return frontEndIncome + backEndIncome;
+    return formatToDecimals((frontEndIncome + backEndIncome), 2);
   }
   render() {
     const { form, submitLoading, getLoading } = this.props;
@@ -304,8 +301,8 @@ export default class CashStatistics extends PureComponent {
     const aliPayIncome = this.calcIncome('aliPay');
     const aliPayServiceCharge = this.calcServiceCharge('aliPay');
     const weChatPayServiceCharge = this.calcServiceCharge('weChatPay');
-    const realTotalIncome = cashIncome + unCashIncome;
-    const difference = parseFloat((realTotalIncome - totalAccountIncome).toFixed(2));
+    const realTotalIncome = formatToDecimals(cashIncome + unCashIncome, 2);
+    const difference = formatToDecimals((realTotalIncome - totalAccountIncome), 2);
     const errors = getFieldsError();
     const getErrorInfo = () => {
       const errorCount = Object.keys(errors).filter(key => errors[key]).length;
@@ -399,19 +396,10 @@ export default class CashStatistics extends PureComponent {
           </Form.Item>
         </Col>
       </Row>
-      // <div>
-      //   <span>实际总销售额 {unCashIncome + cashIncome}</span>
-      //   <Divider type="vertical" />
-      //   <span>账面中销售额 {totalAccountIncome}</span>
-      //   <Divider type="vertical" />
-      //   <span>差额 {(unCashIncome + cashIncome - totalAccountIncome).toFixed(2)}</span>
-      // </div>
     );
     const validate = () => {
       validateFieldsAndScroll((error, values) => {
         if (!error) {
-          console.log('values', values);
-          console.log(typeof values.Date.format('YYYY-MM-DD'));
           const newValues = {
             dtTurnoverDate: values.Date.format('YYYY-MM-DD'),
             i100D: values.Cash100,
@@ -488,7 +476,6 @@ export default class CashStatistics extends PureComponent {
                 <Col lg={12} md={12} sm={24}>
                   <Form.Item label={fieldLabelsAndNamesMapping.shopAssistant.label}>
                     {getFieldDecorator(fieldLabelsAndNamesMapping.shopAssistant.name, {
-                    // initialValue: typeof dailyClosingResult['sSaleName'] === 'string' ? dailyClosingResult['sSaleName'].split(',') : [],
                       initialValue: [],
                     rules: [{ required: true, message: '请选择在岗营业员' }],
                   })(
@@ -511,7 +498,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash100.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash100.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i100D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -521,7 +507,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash50.label} {...cashFormItemLayout} >
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash50.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i50D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -531,7 +516,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash20.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash20.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i20D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -541,7 +525,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash10.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash10.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i10D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -551,7 +534,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash5.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash5.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i5D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -563,7 +545,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash2.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash2.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i2D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -573,7 +554,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash1.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash1.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i1D'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -583,7 +563,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot5.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot5.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i50C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -593,7 +572,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot2.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot2.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i20C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -603,7 +581,6 @@ export default class CashStatistics extends PureComponent {
                     <Form.Item label={fieldLabelsAndNamesMapping.cash0Dot1.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cash0Dot1.name, {
                       initialValue: 0,
-                      // initialValue: dailyClosingResult['i10C'] || 0,
                     })(
                       <InputNumber min={0} precision={0} />
                       )}
@@ -614,8 +591,7 @@ export default class CashStatistics extends PureComponent {
                   <Col lg={4} md={12} sm={24}>
                     <Form.Item label={fieldLabelsAndNamesMapping.cashOpening.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cashOpening.name, {
-                      initialValue: 0,
-                      // initialValue: dailyClosingResult['fCashOpening'] || 0,
+                      initialValue: 300,
                       rules: [{ required: true, message: '开箱金额' }],
                     })(
                       <InputNumber min={0} />
@@ -625,8 +601,7 @@ export default class CashStatistics extends PureComponent {
                   <Col lg={4} md={12} sm={24}>
                     <Form.Item label={fieldLabelsAndNamesMapping.cashClosing.label} {...cashFormItemLayout}>
                       {getFieldDecorator(fieldLabelsAndNamesMapping.cashClosing.name, {
-                      initialValue: 0,
-                      // initialValue: dailyClosingResult['fCashClosing'] || 0,
+                      initialValue: 300,
                       rules: [{ required: true, message: '闭箱金额' }],
                     })(
                       <InputNumber min={0} />
