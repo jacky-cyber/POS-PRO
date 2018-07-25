@@ -19,6 +19,7 @@ const originalColumns = [
   {
     title: '商品名',
     dataIndex: 'EN',
+    render: (text, record) => (`[${record.Sku}] ${text}`),
   },
   {
     title: '零售价',
@@ -223,17 +224,6 @@ export default class GoodsTable extends PureComponent {
               // }
             }
 
-            updateColumns = (type) => {
-              if (type === 3) {
-                this.setState({
-                  columns: [...wholesaleColumns, ...this.state.commonColumns],
-                });
-              } else {
-                this.setState({
-                  columns: [...originalColumns, ...this.state.commonColumns],
-                });
-              }
-            }
             countChangeHandler = (value, record) => {
               const key = record.Key;
               const newContent = this.state.content.map((item) => {
@@ -331,6 +321,18 @@ export default class GoodsTable extends PureComponent {
                 return this.formatRefundOrderDetail(refundOrderDetail);
               } else {
                 return false;
+              }
+            }
+
+            updateColumns = (type) => {
+              if (type === 3) {
+                this.setState({
+                  columns: [...wholesaleColumns, ...this.state.commonColumns],
+                });
+              } else {
+                this.setState({
+                  columns: [...originalColumns, ...this.state.commonColumns],
+                });
               }
             }
             formatRefundOrderDetail = (refundOrderDetail) => {

@@ -20,7 +20,6 @@ const saleTypeLabelMapping = {
 }))
 export default class SelectedGoods extends PureComponent {
   componentWillReceiveProps() {
-    console.log('update');
   }
   handleClick = (key) => {
     this.props.dispatch({ type: 'commodity/toggleSelectedGoods', payload: key });
@@ -151,9 +150,9 @@ export default class SelectedGoods extends PureComponent {
             <Col span={18} className={cardTitle}>
               {
                 isRefund ?
-                `【退货】 ${item.EN}`
+                `【退货】[${item.Sku}] ${item.EN}`
                 :
-                item.EN
+                `[${item.Sku}] ${item.EN}`
               }
             </Col>
             <Col

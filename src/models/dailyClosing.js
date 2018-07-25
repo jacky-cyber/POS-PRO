@@ -52,9 +52,9 @@ export default {
           // iDepartmentID: 2,
           FrontEndIncome: payload.fFrontSale,
           BackEndIncome: payload.fBackSale,
-          ShopAssistant: typeof payload.sSaleName === 'string' ? payload.sSaleName.split(',') : [],
+          ShopAssistant: (payload.sSaleName && typeof payload.sSaleName === 'string') ? payload.sSaleName.split(',') : [],
           Operator: payload.sOperator,
-          ExportRecord: typeof payload.fFreight === 'string' ? payload.fFreight.split(',') : [],
+          ExportRecord: (payload.fFreight && typeof payload.fFreight === 'string') ? payload.fFreight.split(',') : [],
           Remark: payload.sDiffAppendix,
         });
         yield put({

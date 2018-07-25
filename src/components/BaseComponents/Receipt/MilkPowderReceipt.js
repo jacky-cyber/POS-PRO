@@ -76,7 +76,7 @@ export default class Receipt extends PureComponent {
       <div>
         <div className={styles.subTitle}>订单信息</div>
         <Row className={styles.content} type="flex" justify="space-between" align="middle">
-          <Col span={12}>
+          <Col>
             <div className={styles.item}>
               <span>
                 订单号
@@ -93,9 +93,9 @@ export default class Receipt extends PureComponent {
                 {createTime}
               </span>
             </div>
-            <img style={{ width: '100%' }} className="no" alt="idBarcode" />
+            <img style={{ width: 200 }} className="no" alt="idBarcode" />
           </Col>
-          <Col span={12} className={styles.expressImgWrapper}>
+          <Col className={styles.expressImgWrapper}>
             <div className={styles.expressImg} >
               <img src={require('assets/img/cg.jpg')} alt="" />
               <div className={styles.imgDesc}>www.flywayex.com</div>
@@ -110,6 +110,11 @@ export default class Receipt extends PureComponent {
               <img src={require('assets/img/qr.jpg')} alt="" className={styles.expressImg} />
               <div className={styles.imgDesc}>www.qexpress.co.nz</div>
               <div className={styles.imgDesc}>易达通</div>
+            </div>
+            <div className={styles.expressImg} >
+              <img src={require('assets/img/vangen.png')} alt="" className={styles.expressImg} />
+              <div className={styles.imgDesc}>www.vgexp.cn</div>
+              <div className={styles.imgDesc}>万庚</div>
             </div>
           </Col>
         </Row>
