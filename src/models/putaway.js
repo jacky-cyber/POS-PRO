@@ -21,7 +21,8 @@ export default {
     *getGoodsForPutaway({ payload }, { call, put, select }) {
       const { searchCondition } = yield select(state => state.putaway);
       const { value = searchCondition, pagination = { current: 1, pageSize: 10 } } = payload;
-      const response = yield call(getGoodsForPutawayAPI, payload);
+      const payloadForAPI = { value, pagination };
+      const response = yield call(getGoodsForPutawayAPI, payloadForAPI);
       if (response) {
         const goodsForPutawayList = response.Result.Data;
         const list = Array.isArray(goodsForPutawayList) ? goodsForPutawayList : [];
@@ -86,7 +87,6 @@ export default {
     },
     changePagination(state, action) {
       const { payload: pagination } = action;
-      console.log('pagination', pagination);
       return { ...state, pagination };
     },
     changePaginationTotal(state, action) {

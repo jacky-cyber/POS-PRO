@@ -56,6 +56,7 @@ toggleEditable = (e, key) => {
   e.preventDefault();
   const newData = this.state.data.map(item => ({ ...item }));
   const target = this.getRowByKey(key, newData);
+  console.log('target', target);
   if (target) {
     // 进入编辑状态时保存原始数据
     if (!target.isEditing) {
@@ -271,7 +272,7 @@ render() {
       }
       return (
         <SwitchableFormItem
-          value={text}
+          value={text || []}
           isEditing={record.isEditing}
           formItemElement={BarcodeSelect}
           onChange={e => this.fieldChangeHandler(e, 'Barcode', record.ID)}
